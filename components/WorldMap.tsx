@@ -1,12 +1,12 @@
 'use client';
 
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import DestinationPanel from './DestinationPanel';
 
-// Fix Leaflet icons
+// Fix Leaflet default icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -25,6 +25,7 @@ function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void
 
 export default function WorldMap() {
   const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
+  const mapRef = useRef<any>(null);
 
   const handleMapClick = (lat: number, lng: number) => {
     // Open panel immediately
@@ -34,10 +35,9 @@ export default function WorldMap() {
       placeName: `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`,
     });
 
-    // Auto-zoom the map to the clicked spot (level 10 = city/street view)
-    const map = (window as any).leafletMap;
-    if (map) {
-      map.flyTo([lat, lng], 10, { duration: 1.5 });
+    // Auto-zoom to clicked spot (city/street level)
+    if (mapRef.current) {
+      mapRef.current.flyTo([lat, lng], 10, { duration: 1.5 });
     }
   };
 
@@ -50,9 +50,7 @@ export default function WorldMap() {
         zoom={2}
         style={{ height: '600px', width: '100%' }}
         className="rounded-3xl"
-        whenReady={(map) => {
-          (window as any).leafletMap = map.target; // save map reference for auto-zoom
-        }}
+        ref={mapRef}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -60,7 +58,7 @@ export default function WorldMap() {
         />
         <ClickHandler onClick={handleMapClick} />
 
-        {/* Demo markers for popular places */}
+        {/* Demo markers */}
         <Marker position={[40.7128, -74.0060]}>
           <Popup>New York</Popup>
         </Marker>
