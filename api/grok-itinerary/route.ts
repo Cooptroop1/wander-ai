@@ -1,23 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';   // ← this fixes the 405 auth issue
+export const dynamic = 'force-dynamic';   // ← this bypasses Supabase auth
 
 export async function POST(request: NextRequest) {
   try {
     const { placeName, homeCity, lat, lng } = await request.json();
 
-    console.log('🔑 GROK_API_KEY exists?', !!process.env.GROK_API_KEY);
-    console.log('📍 Request for:', placeName, homeCity);
+    const prompt = `You are a helpful travel planner. Create a nice 3-4 day itinerary for ${placeName} (coordinates: ${lat}, ${lng}). User is flying from ${homeCity || 'their home city'}.
 
-    const prompt = `Create a short 3-4 day trip itinerary for ${placeName}. User is flying from ${homeCity || 'their home city'}. Return ONLY valid JSON in this exact format:
+Return **ONLY** valid JSON like this:
 {
   "summary": "short exciting one-liner",
-  "flights": "realistic price range",
-  "hotels": ["hotel 1 – $price", "hotel 2 – $price"],
+  "flights": "realistic price range from their city",
+  "hotels": ["Hotel 1 – $price/night", "Hotel 2 – $price/night"],
   "weather": "weather summary",
   "itinerary": [
-    { "day": 1, "title": "...", "desc": "..." },
-    { "day": 2, "title": "...", "desc": "..." }
+    { "day": 1, "title": "Day title", "desc": "short description" },
+    { "day": 2, "title": "Day title", "desc": "short description" }
   ]
 }`;
 
@@ -37,20 +36,19 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Grok error:', response.status, errorText);
-      return NextResponse.json({ error: `Grok API error ${response.status}` }, { status: response.status });
+      return NextResponse.json({ error: `Grok error ${response.status}` }, { status: response.status });
     }
 
     const data = await response.json();
     const text = data.choices[0].message.content;
 
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const itinerary = jsonMatch ? JSON.parse(jsonMatch[0]) : { summary: "No JSON returned" };
+    const itinerary = jsonMatch ? JSON.parse(jsonMatch[0]) : { summary: "Grok returned something weird" };
 
     return NextResponse.json(itinerary);
 
   } catch (err: any) {
-    console.error('🚨 Full error in route:', err.message);
+    console.error(err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
