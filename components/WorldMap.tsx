@@ -14,10 +14,22 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void }) {
+function ClickHandler({ onZoom, onSelect }: { 
+  onZoom: (lat: number, lng: number) => void;
+  onSelect: (lat: number, lng: number) => void;
+}) {
   useMapEvents({
     click(e) {
-      onClick(e.latlng.lat, e.latlng.lng);
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+
+      // If map is already zoomed in (level 6 or higher), treat this as "select" click
+      if (e.target.getZoom() >= 6) {
+        onSelect(lat, lng);
+      } else {
+        // First click = zoom only
+        onZoom(lat, lng);
+      }
     },
   });
   return null;
@@ -27,20 +39,18 @@ export default function WorldMap() {
   const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
   const mapRef = useRef<any>(null);
 
-  const handleMapClick = (lat: number, lng: number) => {
-    // First: zoom the map (city level)
+  const handleZoom = (lat: number, lng: number) => {
     if (mapRef.current) {
       mapRef.current.flyTo([lat, lng], 8, { duration: 1.2 });
     }
+  };
 
-    // Then open the panel (small delay so zoom starts first)
-    setTimeout(() => {
-      setPanelData({
-        lat,
-        lng,
-        placeName: `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`,
-      });
-    }, 400);
+  const handleSelect = (lat: number, lng: number) => {
+    setPanelData({
+      lat,
+      lng,
+      placeName: `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`,
+    });
   };
 
   const closePanel = () => setPanelData(null);
@@ -58,7 +68,7 @@ export default function WorldMap() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; OpenStreetMap contributors'
         />
-        <ClickHandler onClick={handleMapClick} />
+        <ClickHandler onZoom={handleZoom} onSelect={handleSelect} />
 
         {/* Demo markers */}
         <Marker position={[40.7128, -74.0060]}>
@@ -72,7 +82,7 @@ export default function WorldMap() {
         </Marker>
       </MapContainer>
 
-      {/* Full-screen panel */}
+      {/* Full-screen panel only opens on 2nd click */}
       {panelData && (
         <DestinationPanel
           isOpen={true}
