@@ -18,18 +18,32 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
 
   const generateItinerary = async () => {
     setLoading(true);
+    console.log('🚀 Starting Grok request for:', placeName);
+
     try {
       const res = await fetch('/api/grok-itinerary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ placeName, homeCity, lat, lng }),
       });
+
+      console.log('📡 Response status:', res.status);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ Grok API error body:', errorText);
+        throw new Error(`HTTP ${res.status}: ${errorText}`);
+      }
+
       const data = await res.json();
+      console.log('✅ Grok response:', data);
       setItinerary(data);
-    } catch (err) {
-      alert('Something went wrong with Grok – check your API key or credits');
+    } catch (err: any) {
+      console.error('Full fetch error:', err);
+      alert('Error: ' + (err.message || 'Check F12 console for details'));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   if (!isOpen) return null;
@@ -45,7 +59,6 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Home city */}
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Where are you flying from?</label>
             <input
@@ -55,13 +68,6 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
               onChange={(e) => setHomeCity(e.target.value)}
               className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
-            <div className="flex gap-2 mt-3 text-xs flex-wrap">
-              {['London', 'New York', 'Sydney', 'Los Angeles', 'Paris', 'Tokyo'].map(city => (
-                <button key={city} onClick={() => setHomeCity(city)} className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-3xl">
-                  {city}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="text-xs font-mono text-zinc-400 mb-8">
@@ -70,6 +76,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
 
           {!itinerary ? (
             <button 
+              type="button"
               onClick={generateItinerary}
               disabled={loading}
               className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-70"
@@ -80,7 +87,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             <div className="space-y-8">
               <p className="text-emerald-400 text-xl">{itinerary.summary}</p>
               <div className="bg-zinc-800 rounded-3xl p-6 space-y-6 text-sm">
-                <div><strong>✈️ Flights from {homeCity || 'your city'}:</strong> {itinerary.flights}</div>
+                <div><strong>✈️ Flights:</strong> {itinerary.flights}</div>
                 <div><strong>🏨 Hotels:</strong><br />{itinerary.hotels?.join('<br />')}</div>
                 <div><strong>☀️ Weather:</strong> {itinerary.weather}</div>
               </div>
