@@ -6,7 +6,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import DestinationPanel from './DestinationPanel';
 
-// Fix default marker icons
+// Fix Leaflet icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -26,30 +26,15 @@ function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void
 export default function WorldMap() {
   const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
 
-  const handleMapClick = async (lat: number, lng: number) => {
-    // Show panel immediately
+  const handleMapClick = (lat: number, lng: number) => {
+    // Open panel IMMEDIATELY with nice fallback name
     setPanelData({
       lat,
       lng,
-      placeName: 'Loading location name...',
+      placeName: `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`,
     });
 
-    // Get real place name
-    try {
-      const res = await fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`);
-      const data = await res.json();
-      setPanelData({
-        lat,
-        lng,
-        placeName: data.placeName || 'Unknown location',
-      });
-    } catch {
-      setPanelData({
-        lat,
-        lng,
-        placeName: 'Unknown location',
-      });
-    }
+    // (Optional) Try to get real name in background — we can improve later
   };
 
   const closePanel = () => setPanelData(null);
@@ -80,7 +65,7 @@ export default function WorldMap() {
         </Marker>
       </MapContainer>
 
-      {/* Destination Panel */}
+      {/* Panel opens instantly */}
       {panelData && (
         <DestinationPanel
           isOpen={true}
