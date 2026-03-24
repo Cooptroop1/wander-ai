@@ -7,14 +7,15 @@ interface DestinationPanelProps {
   onClose: () => void;
   lat: number;
   lng: number;
+  placeName: string;
 }
 
-export default function DestinationPanel({ isOpen, onClose, lat, lng }: DestinationPanelProps) {
+export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName }: DestinationPanelProps) {
   if (!isOpen) return null;
 
   return (
     <>
-      {/* Backdrop - click to close */}
+      {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black/60 z-[9998]"
         onClick={onClose}
@@ -26,7 +27,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng }: Destinat
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold flex items-center gap-3">
-              🌍 Destination
+              🌍 {placeName}
             </h2>
             <button 
               onClick={onClose} 
@@ -36,15 +37,12 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng }: Destinat
             </button>
           </div>
 
-          {/* Coordinates */}
-          <div className="bg-zinc-800 rounded-3xl p-6 mb-8">
-            <p className="text-zinc-400 text-sm mb-1">You clicked near</p>
-            <p className="font-mono text-2xl font-medium">
-              {lat.toFixed(4)}° N, {lng.toFixed(4)}° E
-            </p>
+          {/* Coordinates (small) */}
+          <div className="bg-zinc-800 rounded-3xl p-4 mb-8 text-xs font-mono text-zinc-400">
+            {lat.toFixed(4)}° N, {lng.toFixed(4)}° E
           </div>
 
-          {/* Placeholder content (AI will fill this next) */}
+          {/* Content (AI coming next) */}
           <div className="space-y-8">
             <div>
               <h3 className="font-semibold text-lg mb-3">✈️ Flights from your city</h3>
@@ -62,7 +60,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng }: Destinat
             </div>
 
             <button 
-              onClick={() => alert('🚀 Next step: Grok API will generate full AI itinerary here!')}
+              onClick={() => alert('🚀 Next step: Grok API will generate full AI itinerary!')}
               className="w-full py-6 bg-white text-black rounded-3xl font-semibold text-xl hover:bg-emerald-400 transition-all active:scale-95"
             >
               ✨ Generate full AI itinerary with Grok
