@@ -27,14 +27,18 @@ export default function WorldMap() {
   const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
 
   const handleMapClick = (lat: number, lng: number) => {
-    // Open panel IMMEDIATELY with nice fallback name
+    // Open panel immediately
     setPanelData({
       lat,
       lng,
       placeName: `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`,
     });
 
-    // (Optional) Try to get real name in background — we can improve later
+    // Auto-zoom the map to the clicked spot (level 10 = city/street view)
+    const map = (window as any).leafletMap;
+    if (map) {
+      map.flyTo([lat, lng], 10, { duration: 1.5 });
+    }
   };
 
   const closePanel = () => setPanelData(null);
@@ -46,6 +50,9 @@ export default function WorldMap() {
         zoom={2}
         style={{ height: '600px', width: '100%' }}
         className="rounded-3xl"
+        whenReady={(map) => {
+          (window as any).leafletMap = map.target; // save map reference for auto-zoom
+        }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -53,7 +60,7 @@ export default function WorldMap() {
         />
         <ClickHandler onClick={handleMapClick} />
 
-        {/* Demo markers */}
+        {/* Demo markers for popular places */}
         <Marker position={[40.7128, -74.0060]}>
           <Popup>New York</Popup>
         </Marker>
@@ -65,7 +72,7 @@ export default function WorldMap() {
         </Marker>
       </MapContainer>
 
-      {/* Panel opens instantly */}
+      {/* Full-screen panel */}
       {panelData && (
         <DestinationPanel
           isOpen={true}
