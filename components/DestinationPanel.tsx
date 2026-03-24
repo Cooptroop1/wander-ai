@@ -14,14 +14,18 @@ interface DestinationPanelProps {
 export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName }: DestinationPanelProps) {
   const [itinerary, setItinerary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [homeCity, setHomeCity] = useState(''); // ← new field
 
   const generateMockItinerary = () => {
     setLoading(true);
     setTimeout(() => {
       setItinerary({
         place: placeName,
-        summary: `Perfect trip to ${placeName} – we’ll make this real with Grok soon!`,
-        flights: "Round-trip from your home city ≈ $420–$720",
+        home: homeCity || 'your city',
+        summary: `Perfect trip to ${placeName} from ${homeCity || 'your city'}!`,
+        flights: homeCity 
+          ? `Round-trip from ${homeCity} ≈ $420–$720` 
+          : "Round-trip from your city ≈ $420–$720",
         hotels: [
           "🌟 4.9 • Beachfront / City Center Resort – $95/night",
           "🌟 4.7 • Boutique Hotel – $68/night"
@@ -51,18 +55,36 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Coordinates (small) */}
+          {/* NEW: Home city input */}
+          <div className="mb-8">
+            <label className="block text-sm text-zinc-400 mb-2">✈️ Where are you flying from?</label>
+            <input
+              type="text"
+              placeholder="e.g. London, New York, Sydney..."
+              value={homeCity}
+              onChange={(e) => setHomeCity(e.target.value)}
+              className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            />
+            <div className="flex gap-2 mt-3 text-xs flex-wrap">
+              {['London', 'New York', 'Sydney', 'Los Angeles', 'Paris', 'Tokyo'].map(city => (
+                <button
+                  key={city}
+                  onClick={() => setHomeCity(city)}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-3xl transition-colors"
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Coordinates */}
           <div className="text-xs font-mono text-zinc-400 mb-8">
             {lat.toFixed(4)}° N, {lng.toFixed(4)}° E
           </div>
 
           {!itinerary ? (
             <div className="space-y-8">
-              <div>
-                <h3 className="font-semibold text-lg mb-3">✈️ Flights from your city</h3>
-                <div className="bg-zinc-800 rounded-3xl p-5 text-sm">Round-trip ≈ $420–$720 • Multiple daily options</div>
-              </div>
-
               <div>
                 <h3 className="font-semibold text-lg mb-3">🏨 Hotels</h3>
                 <div className="space-y-3">
@@ -81,10 +103,9 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             </div>
           ) : (
             <div className="space-y-8 text-left">
-              {/* Full itinerary content goes here – we’ll expand it later */}
               <p className="text-emerald-400 text-xl">{itinerary.summary}</p>
               <div className="bg-zinc-800 rounded-3xl p-6 text-sm space-y-6">
-                <div><strong>Flights:</strong> {itinerary.flights}</div>
+                <div><strong>Flights from {itinerary.home}:</strong> {itinerary.flights}</div>
                 <div><strong>Hotels:</strong> {itinerary.hotels.join(' • ')}</div>
                 <div><strong>Weather:</strong> {itinerary.weather}</div>
               </div>
