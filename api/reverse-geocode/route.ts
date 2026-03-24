@@ -10,31 +10,23 @@ export async function GET(request: NextRequest) {
 
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=10&accept-language=en`,
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`,
       {
         headers: {
-          'User-Agent': 'WanderAI/1.0[](https://wander-ai.vercel.app)',
-          'Accept': 'application/json',
+          'User-Agent': 'WanderAI/1.0',
         },
       }
     );
 
-    if (!res.ok) throw new Error('Nominatim failed');
-
     const data = await res.json();
 
-    // Much better place name logic
-    let placeName = data.display_name || '';
-
-    if (!placeName) {
-      const addr = data.address || {};
-      const parts = [
-        addr.city || addr.town || addr.village || addr.municipality,
-        addr.county || addr.state || addr.region,
-        addr.country
-      ].filter(Boolean);
-      placeName = parts.join(', ') || 'Unknown location';
-    }
+    // Build a nice readable place name
+    const placeName = 
+      data.locality || 
+      data.city || 
+      data.principalSubdivision || 
+      data.countryName || 
+      'Unknown location';
 
     return NextResponse.json({ placeName });
   } catch (error) {
