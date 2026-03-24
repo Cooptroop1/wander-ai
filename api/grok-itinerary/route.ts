@@ -1,50 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const { placeName, homeCity, lat, lng } = await request.json();
+  try {
+    const { placeName, homeCity, lat, lng } = await request.json();
 
-  const prompt = `You are a friendly travel expert. Create a beautiful 3-4 day trip itinerary for ${placeName} (lat ${lat}, lng ${lng}).
+    console.log('🔑 GROK_API_KEY exists?', !!process.env.GROK_API_KEY);
 
-User is flying from: ${homeCity || 'their home city'}.
+    const prompt = `Create a short 3-day trip itinerary for ${placeName}. User flying from ${homeCity || 'their city'}. Return ONLY valid JSON.`;
 
-Make it exciting, realistic, and personal. Include:
-- Flight price estimate from their home city
-- 2 hotel suggestions with rough prices
-- Weather summary
-- Day-by-day plan (short & fun)
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'grok-4-1-fast-reasoning',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 800,
+      }),
+    });
 
-Return ONLY valid JSON in this exact format:
-{
-  "summary": "short exciting one-liner",
-  "flights": "realistic price range and details",
-  "hotels": ["hotel 1 – $price", "hotel 2 – $price"],
-  "weather": "weather summary",
-  "itinerary": [
-    { "day": 1, "title": "...", "desc": "..." },
-    { "day": 2, "title": "...", "desc": "..." }
-  ]
-}`;
+    if (!response.ok) {
+      const errorText = await response.text();
+      return NextResponse.json({ error: `Grok API error: ${response.status} - ${errorText}` }, { status: response.status });
+    }
 
-  const response = await fetch('https://api.x.ai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'grok-4-1-fast-reasoning',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.8,
-      max_tokens: 1200,
-    }),
-  });
+    const data = await response.json();
+    const text = data.choices[0].message.content;
 
-  const data = await response.json();
-  const itineraryText = data.choices[0].message.content;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const itinerary = jsonMatch ? JSON.parse(jsonMatch[0]) : { summary: "No JSON found" };
 
-  // Extract the JSON from Grok's reply
-  const jsonMatch = itineraryText.match(/\{[\s\S]*\}/);
-  const itinerary = jsonMatch ? JSON.parse(jsonMatch[0]) : { summary: "Something went wrong", flights: "", hotels: [], weather: "", itinerary: [] };
+    return NextResponse.json(itinerary);
 
-  return NextResponse.json(itinerary);
+  } catch (err: any) {
+    console.error('Grok route error:', err.message);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
 }
