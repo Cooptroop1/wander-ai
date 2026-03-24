@@ -1,7 +1,7 @@
 'use client';
 
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import DestinationPanel from './DestinationPanel';
@@ -28,17 +28,19 @@ export default function WorldMap() {
   const mapRef = useRef<any>(null);
 
   const handleMapClick = (lat: number, lng: number) => {
-    // Open panel immediately
-    setPanelData({
-      lat,
-      lng,
-      placeName: `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`,
-    });
-
-    // Auto-zoom to clicked spot (city/street level)
+    // First: zoom the map (city level)
     if (mapRef.current) {
-      mapRef.current.flyTo([lat, lng], 10, { duration: 1.5 });
+      mapRef.current.flyTo([lat, lng], 8, { duration: 1.2 });
     }
+
+    // Then open the panel (small delay so zoom starts first)
+    setTimeout(() => {
+      setPanelData({
+        lat,
+        lng,
+        placeName: `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`,
+      });
+    }, 400);
   };
 
   const closePanel = () => setPanelData(null);
