@@ -6,7 +6,7 @@ import { useState } from 'react';
 interface DestinationPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  lat: number; 
+  lat: number;
   lng: number;
   placeName: string;
 }
@@ -100,12 +100,12 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             <div className="space-y-8">
               <p className="text-emerald-400 text-xl">{itinerary.summary}</p>
 
-              {/* REAL FLIGHT SEARCH WITH DATES */}
+              {/* KIWI.COM FLIGHTS - FIXED DEEP LINK */}
               <div>
                 <h3 className="font-semibold mb-2">✈️ Flights</h3>
                 <div className="bg-zinc-800 rounded-3xl p-5 text-sm mb-3">{itinerary.flights}</div>
                 <a
-                  href={`https://www.kiwi.com/en/search/results/${encodeURIComponent(homeCity || 'LON')}/${encodeURIComponent(placeName)}/${departureDate.replace(/-/g, '')}/${returnDate.replace(/-/g, '')}`}
+                  href={`https://www.kiwi.com/en/search/results/${encodeURIComponent(homeCity || 'LON')}/${encodeURIComponent(placeName.replace(/^Near .*?°[NE], /, '').trim())}/${departureDate.replace(/-/g, '')}/${returnDate.replace(/-/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold text-lg"
@@ -114,7 +114,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                 </a>
               </div>
 
-              {/* REAL HOTEL SEARCH WITH DATES */}
+              {/* BOOKING.COM HOTELS */}
               <div>
                 <h3 className="font-semibold mb-2">🏨 Hotels</h3>
                 <div className="space-y-3">
