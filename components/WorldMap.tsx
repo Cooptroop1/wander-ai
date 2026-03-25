@@ -1,7 +1,7 @@
 'use client';
 
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import DestinationPanel from './DestinationPanel';
@@ -25,15 +25,8 @@ function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void
 
 export default function WorldMap() {
   const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
-  const mapRef = useRef<any>(null);
 
   const handleMapClick = async (lat: number, lng: number) => {
-    // Zoom to a nicer city-level view (level 7 = perfect for picking city area)
-    if (mapRef.current) {
-      mapRef.current.flyTo([lat, lng], 7, { duration: 1.2 });
-    }
-
-    // Get real place name
     let placeName = `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`;
     try {
       const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
@@ -41,7 +34,6 @@ export default function WorldMap() {
       placeName = data.locality || data.city || data.principalSubdivision || data.countryName || placeName;
     } catch (e) {}
 
-    // Open panel with real name
     setPanelData({ lat, lng, placeName });
   };
 
@@ -54,7 +46,6 @@ export default function WorldMap() {
         zoom={2}
         style={{ height: '600px', width: '100%' }}
         className="rounded-3xl"
-        ref={mapRef}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
