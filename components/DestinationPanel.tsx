@@ -6,7 +6,7 @@ import { useState } from 'react';
 interface DestinationPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  lat: number;
+  lat: number; 
   lng: number;
   placeName: string;
 }
