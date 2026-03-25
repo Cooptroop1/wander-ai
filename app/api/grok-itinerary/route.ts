@@ -2,9 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { placeName, homeCity, lat, lng } = await request.json();
+    const { placeName, homeCity, lat, lng, departureDate, returnDate } = await request.json();
 
-    const prompt = `Create a nice 3-4 day trip itinerary for ${placeName}. User is flying from ${homeCity || 'their home city'}. Return ONLY valid JSON in this exact format:
+    const prompt = `You are a travel expert. Create a realistic itinerary for ${placeName}.
+
+User is flying from: ${homeCity || 'their home city'}
+Departure date: ${departureDate || 'any date'}
+Return date: ${returnDate || 'any date'}
+
+IMPORTANT: Calculate the EXACT number of nights = (return date - departure date). 
+Do NOT default to 4 days. Use the real dates above and make the trip length match exactly.
+
+Return ONLY valid JSON in this exact format:
 {
   "summary": "short exciting one-liner",
   "flights": "realistic price range",
@@ -25,8 +34,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         model: 'grok-4-1-fast-reasoning',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.8,
-        max_tokens: 1000,
+        temperature: 0.7,
+        max_tokens: 1200,
       }),
     });
 
