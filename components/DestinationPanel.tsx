@@ -24,14 +24,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
       const res = await fetch('/api/grok-itinerary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          placeName, 
-          homeCity, 
-          lat, 
-          lng,
-          departureDate,
-          returnDate 
-        }),
+        body: JSON.stringify({ placeName, homeCity, lat, lng, departureDate, returnDate }),
       });
 
       if (!res.ok) throw new Error('Grok error');
@@ -64,7 +57,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
               placeholder="e.g. London, New York..."
               value={homeCity}
               onChange={(e) => setHomeCity(e.target.value)}
-              className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500"
+              className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
           </div>
 
@@ -106,11 +99,41 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
           ) : (
             <div className="space-y-8">
               <p className="text-emerald-400 text-xl">{itinerary.summary}</p>
-              {/* ... rest of the itinerary display stays the same ... */}
-              <div className="bg-zinc-800 rounded-3xl p-6 space-y-6 text-sm">
-                <div><strong>✈️ Flights:</strong> {itinerary.flights}</div>
-                <div><strong>🏨 Hotels:</strong><br />{itinerary.hotels?.join('<br />')}</div>
-                <div><strong>☀️ Weather:</strong> {itinerary.weather}</div>
+
+              {/* REAL FLIGHT SEARCH WITH DATES */}
+              <div>
+                <h3 className="font-semibold mb-2">✈️ Flights</h3>
+                <div className="bg-zinc-800 rounded-3xl p-5 text-sm mb-3">{itinerary.flights}</div>
+                <a
+                  href={`https://www.kiwi.com/en/search/results/${encodeURIComponent(homeCity || 'LON')}/${encodeURIComponent(placeName)}/${departureDate.replace(/-/g, '')}/${returnDate.replace(/-/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold text-lg"
+                >
+                  🔎 Search real flights &amp; prices on Kiwi.com →
+                </a>
+              </div>
+
+              {/* Hotels (affiliate) */}
+              <div>
+                <h3 className="font-semibold mb-2">🏨 Hotels</h3>
+                <div className="space-y-3">
+                  {itinerary.hotels?.map((hotel: string, i: number) => (
+                    <div key={i} className="bg-zinc-800 rounded-3xl p-5 text-sm">{hotel}</div>
+                  ))}
+                </div>
+                <a
+                  href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(placeName)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold mt-4"
+                >
+                  Book Hotel on Booking.com →
+                </a>
+              </div>
+
+              <div className="bg-zinc-800 rounded-3xl p-6 text-sm">
+                <strong>☀️ Weather:</strong> {itinerary.weather}
               </div>
 
               <div>
