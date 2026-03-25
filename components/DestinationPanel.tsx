@@ -114,7 +114,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                 </a>
               </div>
 
-              {/* Hotels (affiliate) */}
+              {/* REAL HOTEL SEARCH WITH DATES */}
               <div>
                 <h3 className="font-semibold mb-2">🏨 Hotels</h3>
                 <div className="space-y-3">
@@ -123,12 +123,12 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                   ))}
                 </div>
                 <a
-                  href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(placeName)}`}
+                  href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(placeName)}&checkin=${departureDate}&checkout=${returnDate}&group_adults=2&no_rooms=1`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold mt-4"
                 >
-                  Book Hotel on Booking.com →
+                  🔎 Search real hotels &amp; prices on Booking.com →
                 </a>
               </div>
 
