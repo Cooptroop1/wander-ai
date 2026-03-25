@@ -1,22 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';   // ← this bypasses Supabase auth
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
     const { placeName, homeCity, lat, lng } = await request.json();
 
-    const prompt = `You are a helpful travel planner. Create a nice 3-4 day itinerary for ${placeName} (coordinates: ${lat}, ${lng}). User is flying from ${homeCity || 'their home city'}.
-
-Return **ONLY** valid JSON like this:
+    const prompt = `Create a nice 3-4 day trip itinerary for ${placeName}. User is flying from ${homeCity || 'their home city'}. Return ONLY valid JSON in this exact format:
 {
   "summary": "short exciting one-liner",
-  "flights": "realistic price range from their city",
+  "flights": "realistic price range",
   "hotels": ["Hotel 1 – $price/night", "Hotel 2 – $price/night"],
   "weather": "weather summary",
   "itinerary": [
-    { "day": 1, "title": "Day title", "desc": "short description" },
-    { "day": 2, "title": "Day title", "desc": "short description" }
+    { "day": 1, "title": "...", "desc": "..." },
+    { "day": 2, "title": "...", "desc": "..." }
   ]
 }`;
 
