@@ -18,8 +18,6 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
 
   const generateItinerary = async () => {
     setLoading(true);
-    console.log('🚀 Starting Grok request for:', placeName);
-
     try {
       const res = await fetch('/api/grok-itinerary', {
         method: 'POST',
@@ -27,23 +25,13 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
         body: JSON.stringify({ placeName, homeCity, lat, lng }),
       });
 
-      console.log('📡 Response status:', res.status);
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('❌ Error body:', errorText);
-        throw new Error(`HTTP ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error('Grok error');
       const data = await res.json();
-      console.log('✅ Grok returned:', data);
       setItinerary(data);
-    } catch (err: any) {
-      console.error('Full error:', err);
-      alert(`Error ${err.message || '404'} — check F12 console`);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      alert('Error with Grok — check F12 console');
     }
+    setLoading(false);
   };
 
   if (!isOpen) return null;
@@ -59,7 +47,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Home city + quick buttons */}
+          {/* Home city */}
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Where are you flying from?</label>
             <input
@@ -71,11 +59,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             />
             <div className="flex gap-2 mt-3 text-xs flex-wrap">
               {['London', 'New York', 'Sydney', 'Los Angeles', 'Paris', 'Tokyo'].map(city => (
-                <button
-                  key={city}
-                  onClick={() => setHomeCity(city)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-3xl transition-colors"
-                >
+                <button key={city} onClick={() => setHomeCity(city)} className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-3xl transition-colors">
                   {city}
                 </button>
               ))}
@@ -98,10 +82,42 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
           ) : (
             <div className="space-y-8">
               <p className="text-emerald-400 text-xl">{itinerary.summary}</p>
-              <div className="bg-zinc-800 rounded-3xl p-6 space-y-6 text-sm">
-                <div><strong>✈️ Flights:</strong> {itinerary.flights}</div>
-                <div><strong>🏨 Hotels:</strong><br />{itinerary.hotels?.join('<br />')}</div>
-                <div><strong>☀️ Weather:</strong> {itinerary.weather}</div>
+
+              {/* FLIGHTS with affiliate button */}
+              <div>
+                <h3 className="font-semibold mb-2">✈️ Flights</h3>
+                <div className="bg-zinc-800 rounded-3xl p-5 text-sm mb-3">{itinerary.flights}</div>
+                <a
+                  href={`https://www.kiwi.com/en/search/results?from=${encodeURIComponent(homeCity || 'LON')}&to=${encodeURIComponent(placeName)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold"
+                >
+                  Book Flight on Kiwi.com →
+                </a>
+              </div>
+
+              {/* HOTELS with affiliate button */}
+              <div>
+                <h3 className="font-semibold mb-2">🏨 Hotels</h3>
+                <div className="space-y-3">
+                  {itinerary.hotels?.map((hotel: string, i: number) => (
+                    <div key={i} className="bg-zinc-800 rounded-3xl p-5 text-sm">{hotel}</div>
+                  ))}
+                </div>
+                <a
+                  href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(placeName)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold mt-4"
+                >
+                  Book Hotel on Booking.com →
+                </a>
+              </div>
+
+              {/* Weather & Itinerary */}
+              <div className="bg-zinc-800 rounded-3xl p-6 text-sm">
+                <strong>☀️ Weather:</strong> {itinerary.weather}
               </div>
 
               <div>
