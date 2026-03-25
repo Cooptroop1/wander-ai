@@ -6,7 +6,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import DestinationPanel from './DestinationPanel';
 
-// Fix Leaflet default icons
+// Fix Leaflet icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -14,22 +14,10 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-function ClickHandler({ onZoom, onSelect }: { 
-  onZoom: (lat: number, lng: number) => void;
-  onSelect: (lat: number, lng: number) => void;
-}) {
+function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void }) {
   useMapEvents({
     click(e) {
-      const lat = e.latlng.lat;
-      const lng = e.latlng.lng;
-
-      // If map is already zoomed in (level 6 or higher), treat this as "select" click
-      if (e.target.getZoom() >= 6) {
-        onSelect(lat, lng);
-      } else {
-        // First click = zoom only
-        onZoom(lat, lng);
-      }
+      onClick(e.latlng.lat, e.latlng.lng);
     },
   });
   return null;
@@ -39,18 +27,22 @@ export default function WorldMap() {
   const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
   const mapRef = useRef<any>(null);
 
-  const handleZoom = (lat: number, lng: number) => {
+  const handleMapClick = async (lat: number, lng: number) => {
+    // Zoom to a nicer city-level view (level 7 = perfect for picking city area)
     if (mapRef.current) {
-      mapRef.current.flyTo([lat, lng], 8, { duration: 1.2 });
+      mapRef.current.flyTo([lat, lng], 7, { duration: 1.2 });
     }
-  };
 
-  const handleSelect = (lat: number, lng: number) => {
-    setPanelData({
-      lat,
-      lng,
-      placeName: `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`,
-    });
+    // Get real place name
+    let placeName = `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`;
+    try {
+      const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+      const data = await res.json();
+      placeName = data.locality || data.city || data.principalSubdivision || data.countryName || placeName;
+    } catch (e) {}
+
+    // Open panel with real name
+    setPanelData({ lat, lng, placeName });
   };
 
   const closePanel = () => setPanelData(null);
@@ -68,7 +60,7 @@ export default function WorldMap() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; OpenStreetMap contributors'
         />
-        <ClickHandler onZoom={handleZoom} onSelect={handleSelect} />
+        <ClickHandler onClick={handleMapClick} />
 
         {/* Demo markers */}
         <Marker position={[40.7128, -74.0060]}>
@@ -82,7 +74,6 @@ export default function WorldMap() {
         </Marker>
       </MapContainer>
 
-      {/* Full-screen panel only opens on 2nd click */}
       {panelData && (
         <DestinationPanel
           isOpen={true}
