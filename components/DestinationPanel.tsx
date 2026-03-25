@@ -18,7 +18,12 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
   const [departureDate, setDepartureDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
 
+  // Form validation - button only works when everything is filled
+  const isFormValid = homeCity.trim() !== '' && departureDate !== '' && returnDate !== '';
+
   const generateItinerary = async () => {
+    if (!isFormValid) return; // extra safety
+
     setLoading(true);
     try {
       const res = await fetch('/api/grok-itinerary', {
@@ -51,7 +56,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
         <div className="flex-1 p-6 overflow-y-auto">
           {/* Home city */}
           <div className="mb-6">
-            <label className="block text-sm text-zinc-400 mb-2">✈️ Where are you flying from?</label>
+            <label className="block text-sm text-zinc-400 mb-2">✈️ Where are you flying from? <span className="text-red-400">*</span></label>
             <input
               type="text"
               placeholder="e.g. London, New York..."
@@ -64,7 +69,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
           {/* Dates */}
           <div className="grid grid-cols-2 gap-4 mb-8">
             <div>
-              <label className="block text-sm text-zinc-400 mb-2">Departure date</label>
+              <label className="block text-sm text-zinc-400 mb-2">Departure date <span className="text-red-400">*</span></label>
               <input
                 type="date"
                 value={departureDate}
@@ -73,7 +78,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
               />
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-2">Return date</label>
+              <label className="block text-sm text-zinc-400 mb-2">Return date <span className="text-red-400">*</span></label>
               <input
                 type="date"
                 value={returnDate}
@@ -91,8 +96,8 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             <button 
               type="button"
               onClick={generateItinerary}
-              disabled={loading}
-              className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-70"
+              disabled={!isFormValid || loading}
+              className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "🤖 Asking Grok..." : "✨ Get full AI itinerary"}
             </button>
@@ -100,7 +105,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             <div className="space-y-8">
               <p className="text-emerald-400 text-xl">{itinerary.summary}</p>
 
-              {/* KIWI.COM FLIGHTS - FIXED DEEP LINK */}
+              {/* FLIGHTS */}
               <div>
                 <h3 className="font-semibold mb-2">✈️ Flights</h3>
                 <div className="bg-zinc-800 rounded-3xl p-5 text-sm mb-3">{itinerary.flights}</div>
@@ -114,7 +119,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                 </a>
               </div>
 
-              {/* BOOKING.COM HOTELS */}
+              {/* HOTELS */}
               <div>
                 <h3 className="font-semibold mb-2">🏨 Hotels</h3>
                 <div className="space-y-3">
