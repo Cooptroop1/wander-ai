@@ -31,16 +31,16 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
 
       if (!res.ok) {
         const errorText = await res.text();
-        console.error('❌ Grok API error body:', errorText);
-        throw new Error(`HTTP ${res.status}: ${errorText}`);
+        console.error('❌ Error body:', errorText);
+        throw new Error(`HTTP ${res.status}`);
       }
 
       const data = await res.json();
-      console.log('✅ Grok response:', data);
+      console.log('✅ Grok returned:', data);
       setItinerary(data);
     } catch (err: any) {
-      console.error('Full fetch error:', err);
-      alert('Error: ' + (err.message || 'Check F12 console for details'));
+      console.error('Full error:', err);
+      alert(`Error ${err.message || '404'} — check F12 console`);
     } finally {
       setLoading(false);
     }
@@ -59,6 +59,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
+          {/* Home city + quick buttons */}
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Where are you flying from?</label>
             <input
@@ -68,6 +69,17 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
               onChange={(e) => setHomeCity(e.target.value)}
               className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
+            <div className="flex gap-2 mt-3 text-xs flex-wrap">
+              {['London', 'New York', 'Sydney', 'Los Angeles', 'Paris', 'Tokyo'].map(city => (
+                <button
+                  key={city}
+                  onClick={() => setHomeCity(city)}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-3xl transition-colors"
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="text-xs font-mono text-zinc-400 mb-8">
