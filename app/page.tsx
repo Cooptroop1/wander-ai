@@ -1,4 +1,4 @@
-'use client';
+'use client';   // ← This is the important fix
 
 import { useState, useEffect } from 'react';
 import WorldMap from '../components/WorldMap';
@@ -6,9 +6,9 @@ import WorldMap from '../components/WorldMap';
 export default function Home() {
   const [showWelcome, setShowWelcome] = useState(true);
 
-  // Remember if user has seen the popup (so it doesn't show again on refresh)
   useEffect(() => {
-    if (localStorage.getItem('hasSeenWelcome')) {
+    // Only run on client
+    if (localStorage.getItem('hasSeenWelcome') === 'true') {
       setShowWelcome(false);
     }
   }, []);
