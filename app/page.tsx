@@ -1,15 +1,16 @@
-'use client';   // ← This is the important fix
+'use client';
 
 import { useState, useEffect } from 'react';
 import WorldMap from '../components/WorldMap';
 
 export default function Home() {
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false); // start hidden on server
 
   useEffect(() => {
-    // Only run on client
-    if (localStorage.getItem('hasSeenWelcome') === 'true') {
-      setShowWelcome(false);
+    // Only run on the client after mount
+    const hasSeen = localStorage.getItem('hasSeenWelcome');
+    if (!hasSeen) {
+      setShowWelcome(true);
     }
   }, []);
 
