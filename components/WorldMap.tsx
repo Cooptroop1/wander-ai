@@ -27,26 +27,31 @@ export default function WorldMap() {
   const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
 
   const handleMapClick = async (lat: number, lng: number) => {
-    // Slightly wider zoom so you see the whole city area
-    // (you can still zoom in/out manually with mouse wheel or buttons)
+    // Nice wide city-level zoom
     const map = document.querySelector('.leaflet-container') as any;
     if (map && map._leaflet_map) {
-      map._leaflet_map.flyTo([lat, lng], 6, { duration: 1.2 });
+      map._leaflet_map.flyTo([lat, lng], 7, { duration: 1.2 });
     }
 
-    // Get a clean city-level name
+    // Force English place name
     let placeName = `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`;
     try {
-      const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=en`,
+        { headers: { 'User-Agent': 'WanderAI' } }
+      );
       const data = await res.json();
 
-      // Prefer city over street/suburb
-      placeName = 
-        data.city || 
-        data.locality || 
-        data.principalSubdivision || 
-        data.countryName || 
-        placeName;
+      // Best English name possible
+      const addr = data.address || {};
+      placeName = [
+        addr.city,
+        addr.town,
+        addr.village,
+        addr.municipality,
+        addr.state,
+        addr.country
+      ].filter(Boolean).join(', ') || data.display_name || placeName;
     } catch (e) {}
 
     setPanelData({ lat, lng, placeName });
