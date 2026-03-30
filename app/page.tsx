@@ -1,27 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import WorldMap from '../components/WorldMap';
+import { useState } from 'react';
 
 export default function Home() {
-  const [showWelcome, setShowWelcome] = useState(false); // start hidden on server
-
-  useEffect(() => {
-    // Only run on the client after mount
-    const hasSeen = localStorage.getItem('hasSeenWelcome');
-    if (!hasSeen) {
-      setShowWelcome(true);
-    }
-  }, []);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   const handleStart = () => {
     setShowWelcome(false);
-    localStorage.setItem('hasSeenWelcome', 'true');
   };
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
-      {/* Welcome Popup */}
+      {/* Welcome Popup - always shows on first visit */}
       {showWelcome && (
         <div className="fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center p-6">
           <div className="bg-zinc-900 rounded-3xl max-w-md w-full p-8 text-center shadow-2xl">
