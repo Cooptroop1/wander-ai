@@ -18,12 +18,10 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
   const [departureDate, setDepartureDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
 
-  // Form validation - button only works when everything is filled
   const isFormValid = homeCity.trim() !== '' && departureDate !== '' && returnDate !== '';
 
   const generateItinerary = async () => {
-    if (!isFormValid) return; // extra safety
-
+    if (!isFormValid) return;
     setLoading(true);
     try {
       const res = await fetch('/api/grok-itinerary', {
@@ -66,15 +64,15 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             />
           </div>
 
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          {/* Dates - improved for mobile */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <div>
               <label className="block text-sm text-zinc-400 mb-2">Departure date <span className="text-red-400">*</span></label>
               <input
                 type="date"
                 value={departureDate}
                 onChange={(e) => setDepartureDate(e.target.value)}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white"
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 text-base"
               />
             </div>
             <div>
@@ -83,7 +81,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                 type="date"
                 value={returnDate}
                 onChange={(e) => setReturnDate(e.target.value)}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white"
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 text-base"
               />
             </div>
           </div>
@@ -105,7 +103,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             <div className="space-y-8">
               <p className="text-emerald-400 text-xl">{itinerary.summary}</p>
 
-              {/* FLIGHTS */}
+              {/* Flights */}
               <div>
                 <h3 className="font-semibold mb-2">✈️ Flights</h3>
                 <div className="bg-zinc-800 rounded-3xl p-5 text-sm mb-3">{itinerary.flights}</div>
@@ -119,7 +117,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                 </a>
               </div>
 
-              {/* HOTELS */}
+              {/* Hotels */}
               <div>
                 <h3 className="font-semibold mb-2">🏨 Hotels</h3>
                 <div className="space-y-3">
