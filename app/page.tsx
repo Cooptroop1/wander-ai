@@ -2,11 +2,11 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { AuthButton } from '@/components/auth-button';
-import { DeployButton } from '@/components/deploy-button';
 
 const WorldMap = dynamic(() => import('../components/WorldMap'), { ssr: false });
 const WelcomePopup = dynamic(() => import('../components/WelcomePopup'), { ssr: false });
+const AuthButton = dynamic(() => import('@/components/auth-button'), { ssr: false });
+const DeployButton = dynamic(() => import('@/components/deploy-button'), { ssr: false });
 
 export default function Home() {
   return (
