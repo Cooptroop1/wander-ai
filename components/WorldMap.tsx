@@ -5,14 +5,7 @@ import { useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import DestinationPanel from './DestinationPanel';
-
-// Fix Leaflet icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
+import MyTripsModal from './MyTripsModal';
 
 function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void }) {
   useMapEvents({
@@ -25,33 +18,14 @@ function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void
 
 export default function WorldMap() {
   const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
+  const [showMyTrips, setShowMyTrips] = useState(false);
 
   const handleMapClick = async (lat: number, lng: number) => {
-    // Nice wide city-level zoom
-    const map = document.querySelector('.leaflet-container') as any;
-    if (map && map._leaflet_map) {
-      map._leaflet_map.flyTo([lat, lng], 7, { duration: 1.2 });
-    }
-
-    // Force English place name
     let placeName = `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`;
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=en`,
-        { headers: { 'User-Agent': 'WanderAI' } }
-      );
+      const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
       const data = await res.json();
-
-      // Best English name possible
-      const addr = data.address || {};
-      placeName = [
-        addr.city,
-        addr.town,
-        addr.village,
-        addr.municipality,
-        addr.state,
-        addr.country
-      ].filter(Boolean).join(', ') || data.display_name || placeName;
+      placeName = data.city || data.locality || data.principalSubdivision || data.countryName || placeName;
     } catch (e) {}
 
     setPanelData({ lat, lng, placeName });
@@ -85,6 +59,15 @@ export default function WorldMap() {
         </Marker>
       </MapContainer>
 
+      {/* My Trips Button */}
+      <button
+        onClick={() => setShowMyTrips(true)}
+        className="fixed top-6 right-6 bg-white text-black px-5 py-3 rounded-3xl font-semibold flex items-center gap-2 shadow-xl z-50 hover:bg-emerald-400 transition-all"
+      >
+        📖 My Trips
+      </button>
+
+      {/* Destination Panel */}
       {panelData && (
         <DestinationPanel
           isOpen={true}
@@ -94,6 +77,9 @@ export default function WorldMap() {
           placeName={panelData.placeName}
         />
       )}
+
+      {/* My Trips Modal */}
+      <MyTripsModal isOpen={showMyTrips} onClose={() => setShowMyTrips(false)} />
     </>
   );
 }
