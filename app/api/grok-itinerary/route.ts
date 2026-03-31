@@ -4,9 +4,14 @@ export async function POST(request: NextRequest) {
   try {
     const { placeName, homeCity, lat, lng, departureDate, returnDate } = await request.json();
 
-    const prompt = `Create a nice 3-4 day trip itinerary for ${placeName}. User is flying from ${homeCity || 'their home city'}.
-Departure: ${departureDate || 'any date'}
-Return: ${returnDate || 'any date'}
+    const prompt = `Create a realistic itinerary for ${placeName}.
+
+User is flying from: ${homeCity || 'their home city'}
+Departure date: ${departureDate || 'any date'}
+Return date: ${returnDate || 'any date'}
+
+IMPORTANT: Calculate the EXACT number of nights = (return date - departure date). 
+Do NOT default to 4 days. Use the real dates and make the trip length match exactly.
 
 Return ONLY valid JSON in this exact format:
 {
@@ -30,7 +35,7 @@ Return ONLY valid JSON in this exact format:
         model: 'grok-4-1-fast-reasoning',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.8,
-        max_tokens: 1000,
+        max_tokens: 1200,
       }),
     });
 
