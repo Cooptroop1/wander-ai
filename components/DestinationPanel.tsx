@@ -1,6 +1,6 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { X, Bookmark } from 'lucide-react';
 import { useState } from 'react';
 
 interface DestinationPanelProps {
@@ -39,6 +39,28 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
     setLoading(false);
   };
 
+  const saveTrip = () => {
+    if (!itinerary) return;
+
+    const savedTrips = JSON.parse(localStorage.getItem('savedTrips') || '[]');
+    const newTrip = {
+      id: Date.now(),
+      placeName,
+      homeCity,
+      departureDate,
+      returnDate,
+      lat,
+      lng,
+      ...itinerary,
+      savedAt: new Date().toISOString(),
+    };
+
+    savedTrips.push(newTrip);
+    localStorage.setItem('savedTrips', JSON.stringify(savedTrips));
+
+    alert('✅ Trip saved! You can view it later from the "My Trips" button.');
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -52,7 +74,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Home city - your good box */}
+          {/* Home city */}
           <div className="mb-6">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Where are you flying from? <span className="text-red-400">*</span></label>
             <input
@@ -64,7 +86,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             />
           </div>
 
-          {/* Dates - now identical to home city box + stacked on mobile */}
+          {/* Dates */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <div>
               <label className="block text-sm text-zinc-400 mb-2">Departure date <span className="text-red-400">*</span></label>
@@ -72,7 +94,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                 type="date"
                 value={departureDate}
                 onChange={(e) => setDepartureDate(e.target.value)}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 text-base"
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
               />
             </div>
             <div>
@@ -81,7 +103,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                 type="date"
                 value={returnDate}
                 onChange={(e) => setReturnDate(e.target.value)}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 text-base"
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
               />
             </div>
           </div>
@@ -103,19 +125,16 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             <div className="space-y-8">
               <p className="text-emerald-400 text-xl">{itinerary.summary}</p>
 
+              {/* Flights */}
               <div>
                 <h3 className="font-semibold mb-2">✈️ Flights</h3>
                 <div className="bg-zinc-800 rounded-3xl p-5 text-sm mb-3">{itinerary.flights}</div>
-                <a
-                  href={`https://www.kiwi.com/en/search/results/${encodeURIComponent(homeCity || 'LON')}/${encodeURIComponent(placeName.replace(/^Near .*?°[NE], /, '').trim())}/${departureDate.replace(/-/g, '')}/${returnDate.replace(/-/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold text-lg"
-                >
-                  🔎 Search real flights &amp; prices on Kiwi.com →
+                <a href={`https://www.kiwi.com/en/search/results/${encodeURIComponent(homeCity || 'LON')}/${encodeURIComponent(placeName.replace(/^Near .*?°[NE], /, '').trim())}/${departureDate.replace(/-/g, '')}/${returnDate.replace(/-/g, '')}`} target="_blank" rel="noopener noreferrer" className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold text-lg">
+                  🔎 Search real flights on Kiwi.com →
                 </a>
               </div>
 
+              {/* Hotels */}
               <div>
                 <h3 className="font-semibold mb-2">🏨 Hotels</h3>
                 <div className="space-y-3">
@@ -123,13 +142,8 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                     <div key={i} className="bg-zinc-800 rounded-3xl p-5 text-sm">{hotel}</div>
                   ))}
                 </div>
-                <a
-                  href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(placeName)}&checkin=${departureDate}&checkout=${returnDate}&group_adults=2&no_rooms=1`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold mt-4"
-                >
-                  🔎 Search real hotels &amp; prices on Booking.com →
+                <a href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(placeName)}&checkin=${departureDate}&checkout=${returnDate}&group_adults=2&no_rooms=1`} target="_blank" rel="noopener noreferrer" className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold mt-4">
+                  🔎 Search real hotels on Booking.com →
                 </a>
               </div>
 
@@ -149,6 +163,15 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                   </div>
                 ))}
               </div>
+
+              {/* SAVE BUTTON */}
+              <button 
+                onClick={saveTrip}
+                className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-3xl font-semibold flex items-center justify-center gap-2"
+              >
+                <Bookmark size={20} />
+                Save this trip
+              </button>
 
               <button onClick={() => setItinerary(null)} className="text-zinc-400 hover:text-white">← Generate another trip</button>
             </div>
