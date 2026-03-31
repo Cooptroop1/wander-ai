@@ -52,7 +52,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Home city */}
+          {/* Home city - your perfect box */}
           <div className="mb-6">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Where are you flying from? <span className="text-red-400">*</span></label>
             <input
@@ -64,7 +64,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             />
           </div>
 
-          {/* Dates - improved for mobile */}
+          {/* Dates - now match the home city box perfectly */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <div>
               <label className="block text-sm text-zinc-400 mb-2">Departure date <span className="text-red-400">*</span></label>
@@ -72,7 +72,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                 type="date"
                 value={departureDate}
                 onChange={(e) => setDepartureDate(e.target.value)}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 text-base"
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
               />
             </div>
             <div>
@@ -81,7 +81,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                 type="date"
                 value={returnDate}
                 onChange={(e) => setReturnDate(e.target.value)}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 text-base"
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
               />
             </div>
           </div>
@@ -103,7 +103,6 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             <div className="space-y-8">
               <p className="text-emerald-400 text-xl">{itinerary.summary}</p>
 
-              {/* Flights */}
               <div>
                 <h3 className="font-semibold mb-2">✈️ Flights</h3>
                 <div className="bg-zinc-800 rounded-3xl p-5 text-sm mb-3">{itinerary.flights}</div>
@@ -117,7 +116,6 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
                 </a>
               </div>
 
-              {/* Hotels */}
               <div>
                 <h3 className="font-semibold mb-2">🏨 Hotels</h3>
                 <div className="space-y-3">
