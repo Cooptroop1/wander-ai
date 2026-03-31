@@ -59,10 +59,10 @@ export default function WorldMap() {
         </Marker>
       </MapContainer>
 
-      {/* My Trips Button */}
+      {/* My Trips Button - always visible */}
       <button
         onClick={() => setShowMyTrips(true)}
-        className="fixed top-6 right-6 bg-white text-black px-5 py-3 rounded-3xl font-semibold flex items-center gap-2 shadow-xl z-50 hover:bg-emerald-400 transition-all"
+        className="fixed top-6 right-6 bg-white text-black px-6 py-3 rounded-3xl font-semibold flex items-center gap-2 shadow-2xl z-[99999] hover:bg-emerald-400 transition-all"
       >
         📖 My Trips
       </button>
