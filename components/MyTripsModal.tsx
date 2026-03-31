@@ -14,8 +14,7 @@ export default function MyTripsModal({ isOpen, onClose }: { isOpen: boolean; onC
   }, [isOpen]);
 
   const openTrip = (trip: any) => {
-    // For now we just alert — we can reopen the full panel later
-    alert(`Opened saved trip: ${trip.placeName}\n\n${trip.summary}\n\nDeparture: ${trip.departureDate}`);
+    alert(`📍 ${trip.placeName}\n\n${trip.summary}\n\nFlights: ${trip.flights}\nHotels: ${trip.hotels?.join(' • ')}\n\nDay-by-day plan:\n${trip.itinerary?.map((d: any) => `Day ${d.day}: ${d.title} - ${d.desc}`).join('\n')}`);
     onClose();
   };
 
