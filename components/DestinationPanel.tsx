@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Bookmark } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useState } from 'react';
 
 interface DestinationPanelProps {
@@ -14,11 +14,14 @@ interface DestinationPanelProps {
 export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName }: DestinationPanelProps) {
   const [itinerary, setItinerary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [homeCity, setHomeCity] = useState('');
-  const [departureDate, setDepartureDate] = useState('');
-  const [returnDate, setReturnDate] = useState('');
 
-  const isFormValid = homeCity.trim() !== '' && departureDate !== '' && returnDate !== '';
+  // Multi-city form
+  const [stops, setStops] = useState([
+    { city: placeName, departure: '', return: '' },   // Stop 1 (the map click)
+    { city: '', departure: '', return: '' }           // Stop 2 (user can add)
+  ]);
+
+  const isFormValid = stops.every(stop => stop.city.trim() !== '' && stop.departure !== '' && stop.return !== '');
 
   const generateItinerary = async () => {
     if (!isFormValid) return;
@@ -27,7 +30,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
       const res = await fetch('/api/grok-itinerary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ placeName, homeCity, lat, lng, departureDate, returnDate }),
+        body: JSON.stringify({ stops }),
       });
 
       if (!res.ok) throw new Error('Grok error');
@@ -39,143 +42,71 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
     setLoading(false);
   };
 
-  const saveTrip = () => {
-    if (!itinerary) return;
-
-    const savedTrips = JSON.parse(localStorage.getItem('savedTrips') || '[]');
-    const newTrip = {
-      id: Date.now(),
-      placeName,
-      homeCity,
-      departureDate,
-      returnDate,
-      lat,
-      lng,
-      ...itinerary,
-      savedAt: new Date().toISOString(),
-    };
-
-    savedTrips.push(newTrip);
-    localStorage.setItem('savedTrips', JSON.stringify(savedTrips));
-
-    alert('✅ Trip saved! You can view it later from the "My Trips" button.');
-  };
-
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-zinc-950 z-[9999] flex items-center justify-center p-4">
       <div className="bg-zinc-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-5 border-b border-zinc-700 flex items-center justify-between">
-          <h2 className="text-3xl font-bold">🌍 {placeName}</h2>
+          <h2 className="text-3xl font-bold">🌍 Multi-City Trip</h2>
           <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-2xl">
             <X size={32} />
           </button>
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Home city */}
-          <div className="mb-6">
-            <label className="block text-sm text-zinc-400 mb-2">✈️ Where are you flying from? <span className="text-red-400">*</span></label>
-            <input
-              type="text"
-              placeholder="e.g. London, New York..."
-              value={homeCity}
-              onChange={(e) => setHomeCity(e.target.value)}
-              className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-            />
-          </div>
-
-          {/* Dates */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            <div>
-              <label className="block text-sm text-zinc-400 mb-2">Departure date <span className="text-red-400">*</span></label>
+          {stops.map((stop, index) => (
+            <div key={index} className="mb-8 border-b border-zinc-700 pb-8 last:border-none">
+              <h3 className="font-semibold mb-3">Stop {index + 1}</h3>
               <input
-                type="date"
-                value={departureDate}
-                onChange={(e) => setDepartureDate(e.target.value)}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                type="text"
+                placeholder={`City ${index + 1} (e.g. Paris)`}
+                value={stop.city}
+                onChange={(e) => {
+                  const newStops = [...stops];
+                  newStops[index].city = e.target.value;
+                  setStops(newStops);
+                }}
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 mb-3"
               />
-            </div>
-            <div>
-              <label className="block text-sm text-zinc-400 mb-2">Return date <span className="text-red-400">*</span></label>
-              <input
-                type="date"
-                value={returnDate}
-                onChange={(e) => setReturnDate(e.target.value)}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              />
-            </div>
-          </div>
-
-          <div className="text-xs font-mono text-zinc-400 mb-8">
-            {lat.toFixed(4)}° N, {lng.toFixed(4)}° E
-          </div>
-
-          {!itinerary ? (
-            <button 
-              type="button"
-              onClick={generateItinerary}
-              disabled={!isFormValid || loading}
-              className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "🤖 Asking Grok..." : "✨ Get full AI itinerary"}
-            </button>
-          ) : (
-            <div className="space-y-8">
-              <p className="text-emerald-400 text-xl">{itinerary.summary}</p>
-
-              {/* Flights */}
-              <div>
-                <h3 className="font-semibold mb-2">✈️ Flights</h3>
-                <div className="bg-zinc-800 rounded-3xl p-5 text-sm mb-3">{itinerary.flights}</div>
-                <a href={`https://www.kiwi.com/en/search/results/${encodeURIComponent(homeCity || 'LON')}/${encodeURIComponent(placeName.replace(/^Near .*?°[NE], /, '').trim())}/${departureDate.replace(/-/g, '')}/${returnDate.replace(/-/g, '')}`} target="_blank" rel="noopener noreferrer" className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold text-lg">
-                  🔎 Search real flights on Kiwi.com →
-                </a>
-              </div>
-
-              {/* Hotels */}
-              <div>
-                <h3 className="font-semibold mb-2">🏨 Hotels</h3>
-                <div className="space-y-3">
-                  {itinerary.hotels?.map((hotel: string, i: number) => (
-                    <div key={i} className="bg-zinc-800 rounded-3xl p-5 text-sm">{hotel}</div>
-                  ))}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">Departure</label>
+                  <input
+                    type="date"
+                    value={stop.departure}
+                    onChange={(e) => {
+                      const newStops = [...stops];
+                      newStops[index].departure = e.target.value;
+                      setStops(newStops);
+                    }}
+                    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white"
+                  />
                 </div>
-                <a href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(placeName)}&checkin=${departureDate}&checkout=${returnDate}&group_adults=2&no_rooms=1`} target="_blank" rel="noopener noreferrer" className="block w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white text-center rounded-3xl font-semibold mt-4">
-                  🔎 Search real hotels on Booking.com →
-                </a>
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">Return</label>
+                  <input
+                    type="date"
+                    value={stop.return}
+                    onChange={(e) => {
+                      const newStops = [...stops];
+                      newStops[index].return = e.target.value;
+                      setStops(newStops);
+                    }}
+                    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white"
+                  />
+                </div>
               </div>
-
-              <div className="bg-zinc-800 rounded-3xl p-6 text-sm">
-                <strong>☀️ Weather:</strong> {itinerary.weather}
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-4">📅 Day-by-day plan</h3>
-                {itinerary.itinerary?.map((day: any, i: number) => (
-                  <div key={i} className="mb-6">
-                    <div className="flex items-center gap-3 mb-1">
-                      <div className="bg-emerald-400 text-black text-xs font-bold w-6 h-6 rounded-2xl flex items-center justify-center">D{day.day}</div>
-                      <div className="font-medium">{day.title}</div>
-                    </div>
-                    <div className="text-zinc-400 pl-9">{day.desc}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* SAVE BUTTON */}
-              <button 
-                onClick={saveTrip}
-                className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-3xl font-semibold flex items-center justify-center gap-2"
-              >
-                <Bookmark size={20} />
-                Save this trip
-              </button>
-
-              <button onClick={() => setItinerary(null)} className="text-zinc-400 hover:text-white">← Generate another trip</button>
             </div>
-          )}
+          ))}
+
+          <button 
+            onClick={generateItinerary}
+            disabled={!isFormValid || loading}
+            className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50"
+          >
+            {loading ? "🤖 Asking Grok..." : "✨ Generate multi-city AI itinerary"}
+          </button>
         </div>
       </div>
     </div>
