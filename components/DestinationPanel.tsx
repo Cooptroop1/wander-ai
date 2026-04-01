@@ -21,9 +21,9 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   const [homeDeparture, setHomeDeparture] = useState('');
   const [homeReturn, setHomeReturn] = useState('');
 
-  // Multi-city
-  const [isMultiCity, setIsMultiCity] = useState(false);
+  // Stops (Stop 1 is the clicked place)
   const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]);
+  const [isMultiCity, setIsMultiCity] = useState(false);
 
   const addStop = () => {
     onPickNextStop((newLat, newLng, newPlaceName) => {
@@ -106,12 +106,16 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             <input
               type="checkbox"
               checked={isMultiCity}
-              onChange={(e) => setIsMultiCity(e.target.checked)}
+              onChange={(e) => {
+                setIsMultiCity(e.target.checked);
+                if (e.target.checked) addStop(); // immediately open map when ticked
+              }}
               className="w-5 h-5 accent-emerald-500"
             />
             <label className="text-sm font-medium">I want a multi-city trip</label>
           </div>
 
+          {/* Stops */}
           {isMultiCity && (
             <div className="mb-8">
               {stops.map((stop, index) => (
@@ -136,15 +140,6 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
                   </div>
                 </div>
               ))}
-
-              {stops.length < 5 && (
-                <button
-                  onClick={addStop}
-                  className="w-full py-4 border border-dashed border-zinc-600 text-zinc-400 hover:text-white rounded-3xl"
-                >
-                  + Pick next stop on map
-                </button>
-              )}
             </div>
           )}
 
