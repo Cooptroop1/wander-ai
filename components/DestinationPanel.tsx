@@ -15,14 +15,42 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
   const [itinerary, setItinerary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  // Always visible: Home
+  // Home
   const [homeCity, setHomeCity] = useState('');
   const [homeDeparture, setHomeDeparture] = useState('');
   const [homeReturn, setHomeReturn] = useState('');
 
   // Multi-city
   const [isMultiCity, setIsMultiCity] = useState(false);
-  const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]); // first stop = clicked place
+  const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]);
+
+  const MAX_DAYS = 28;
+
+  // Calculate total days
+  const calculateTotalDays = () => {
+    let total = 0;
+    // Home stay
+    if (homeDeparture && homeReturn) {
+      const start = new Date(homeDeparture);
+      const end = new Date(homeReturn);
+      total += Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
+    }
+    // All stops
+    stops.forEach(stop => {
+      if (stop.departure && stop.return) {
+        const start = new Date(stop.departure);
+        const end = new Date(stop.return);
+        total += Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
+      }
+    });
+    return total;
+  };
+
+  const totalDays = calculateTotalDays();
+  const isOverLimit = totalDays > MAX_DAYS;
+  const isFormValid = homeCity.trim() !== '' && homeDeparture !== '' && homeReturn !== '' &&
+                      (!isMultiCity || stops.every(s => s.city.trim() !== '' && s.departure !== '' && s.return !== '')) &&
+                      !isOverLimit;
 
   const addStop = () => {
     if (stops.length >= 5) return;
@@ -34,9 +62,6 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
     newStops[index] = { ...newStops[index], [field]: value };
     setStops(newStops);
   };
-
-  const isFormValid = homeCity.trim() !== '' && homeDeparture !== '' && homeReturn !== '' &&
-                      (!isMultiCity || stops.every(s => s.city.trim() !== '' && s.departure !== '' && s.return !== ''));
 
   const generateItinerary = async () => {
     if (!isFormValid) return;
@@ -75,7 +100,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Home city + dates - always visible */}
+          {/* Home */}
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Starting city (home) <span className="text-red-400">*</span></label>
             <input
@@ -108,7 +133,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             <label className="text-sm font-medium">I want a multi-city trip (add extra stops)</label>
           </div>
 
-          {/* Extra stops - only shown when checkbox is ticked */}
+          {/* Extra stops */}
           {isMultiCity && (
             <div className="mb-8">
               {stops.map((stop, index) => (
@@ -135,13 +160,17 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
               ))}
 
               {stops.length < 5 && (
-                <button
-                  onClick={addStop}
-                  className="w-full py-4 border border-dashed border-zinc-600 text-zinc-400 hover:text-white rounded-3xl"
-                >
+                <button onClick={addStop} className="w-full py-4 border border-dashed border-zinc-600 text-zinc-400 hover:text-white rounded-3xl">
                   + Add another stop
                 </button>
               )}
+            </div>
+          )}
+
+          {/* Limit warning */}
+          {isOverLimit && (
+            <div className="bg-red-900/30 text-red-400 text-sm p-4 rounded-3xl mb-6">
+              Trip is too long ({totalDays} days). Maximum allowed is {MAX_DAYS} days to protect Grok credits.
             </div>
           )}
 
