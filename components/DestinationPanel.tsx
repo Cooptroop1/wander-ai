@@ -15,15 +15,14 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
   const [itinerary, setItinerary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  // Home city
+  // Always visible: Home
   const [homeCity, setHomeCity] = useState('');
   const [homeDeparture, setHomeDeparture] = useState('');
   const [homeReturn, setHomeReturn] = useState('');
 
-  // Stops (Stop 1 is pre-filled with the clicked place)
-  const [stops, setStops] = useState([
-    { city: placeName, departure: '', return: '' }   // Stop 1
-  ]);
+  // Multi-city
+  const [isMultiCity, setIsMultiCity] = useState(false);
+  const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]); // first stop = clicked place
 
   const addStop = () => {
     if (stops.length >= 5) return;
@@ -37,7 +36,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
   };
 
   const isFormValid = homeCity.trim() !== '' && homeDeparture !== '' && homeReturn !== '' &&
-                      stops.every(s => s.city.trim() !== '' && s.departure !== '' && s.return !== '');
+                      (!isMultiCity || stops.every(s => s.city.trim() !== '' && s.departure !== '' && s.return !== ''));
 
   const generateItinerary = async () => {
     if (!isFormValid) return;
@@ -50,7 +49,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
           homeCity,
           homeDeparture,
           homeReturn,
-          stops
+          stops: isMultiCity ? stops : []
         }),
       });
 
@@ -76,7 +75,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Home city */}
+          {/* Home city + dates - always visible */}
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Starting city (home) <span className="text-red-400">*</span></label>
             <input
@@ -98,41 +97,53 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             </div>
           </div>
 
-          {/* Stops */}
-          <div className="mb-8">
-            <h3 className="font-semibold mb-4">Stops</h3>
-            {stops.map((stop, index) => (
-              <div key={index} className="mb-6 border border-zinc-700 rounded-3xl p-6">
-                <h4 className="font-medium mb-3">Stop {index + 1}</h4>
-                <input
-                  type="text"
-                  placeholder="City name"
-                  value={stop.city}
-                  onChange={(e) => updateStop(index, 'city', e.target.value)}
-                  className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 mb-4"
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm text-zinc-400 mb-2">Departure</label>
-                    <input type="date" value={stop.departure} onChange={(e) => updateStop(index, 'departure', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-zinc-400 mb-2">Return</label>
-                    <input type="date" value={stop.return} onChange={(e) => updateStop(index, 'return', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
+          {/* Multi-city checkbox */}
+          <div className="flex items-center gap-3 mb-6">
+            <input
+              type="checkbox"
+              checked={isMultiCity}
+              onChange={(e) => setIsMultiCity(e.target.checked)}
+              className="w-5 h-5 accent-emerald-500"
+            />
+            <label className="text-sm font-medium">I want a multi-city trip (add extra stops)</label>
+          </div>
+
+          {/* Extra stops - only shown when checkbox is ticked */}
+          {isMultiCity && (
+            <div className="mb-8">
+              {stops.map((stop, index) => (
+                <div key={index} className="mb-6 border border-zinc-700 rounded-3xl p-6">
+                  <h4 className="font-medium mb-3">Stop {index + 1}</h4>
+                  <input
+                    type="text"
+                    placeholder="City name"
+                    value={stop.city}
+                    onChange={(e) => updateStop(index, 'city', e.target.value)}
+                    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 mb-4"
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-zinc-400 mb-2">Departure</label>
+                      <input type="date" value={stop.departure} onChange={(e) => updateStop(index, 'departure', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-zinc-400 mb-2">Return</label>
+                      <input type="date" value={stop.return} onChange={(e) => updateStop(index, 'return', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            {stops.length < 5 && (
-              <button
-                onClick={addStop}
-                className="w-full py-4 border border-dashed border-zinc-600 text-zinc-400 hover:text-white rounded-3xl"
-              >
-                + Add another stop
-              </button>
-            )}
-          </div>
+              {stops.length < 5 && (
+                <button
+                  onClick={addStop}
+                  className="w-full py-4 border border-dashed border-zinc-600 text-zinc-400 hover:text-white rounded-3xl"
+                >
+                  + Add another stop
+                </button>
+              )}
+            </div>
+          )}
 
           <button 
             type="button"
@@ -140,7 +151,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
             disabled={!isFormValid || loading}
             className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "🤖 Asking Grok..." : "✨ Generate multi-city AI itinerary"}
+            {loading ? "🤖 Asking Grok..." : "✨ Generate AI itinerary"}
           </button>
         </div>
       </div>
