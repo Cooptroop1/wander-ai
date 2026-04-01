@@ -17,8 +17,8 @@ function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void
 
 export default function WorldMap() {
   const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
-  const [addingExtraStop, setAddingExtraStop] = useState(false);
-  const [extraStopCallback, setExtraStopCallback] = useState<((lat: number, lng: number, placeName: string) => void) | null>(null);
+  const [pickingNextStop, setPickingNextStop] = useState(false);
+  const [nextStopCallback, setNextStopCallback] = useState<((lat: number, lng: number, placeName: string) => void) | null>(null);
 
   const handleMapClick = async (lat: number, lng: number) => {
     let placeName = `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`;
@@ -28,23 +28,23 @@ export default function WorldMap() {
       placeName = data.city || data.locality || data.principalSubdivision || data.countryName || placeName;
     } catch (e) {}
 
-    if (addingExtraStop && extraStopCallback) {
-      extraStopCallback(lat, lng, placeName);
-      setAddingExtraStop(false);
-      setExtraStopCallback(null);
+    if (pickingNextStop && nextStopCallback) {
+      nextStopCallback(lat, lng, placeName);
+      setPickingNextStop(false);
+      setNextStopCallback(null);
       return;
     }
 
     setPanelData({ lat, lng, placeName });
   };
 
-  const closePanel = () => setPanelData(null);
-
-  const startExtraStopPick = (callback: (lat: number, lng: number, placeName: string) => void) => {
-    setAddingExtraStop(true);
-    setExtraStopCallback(() => callback);
-    closePanel();   // close current panel so user can click the map
+  const startPickingNextStop = (callback: (lat: number, lng: number, placeName: string) => void) => {
+    setPickingNextStop(true);
+    setNextStopCallback(() => callback);
+    setPanelData(null); // close panel so user can click the map
   };
+
+  const closePanel = () => setPanelData(null);
 
   return (
     <>
@@ -79,7 +79,7 @@ export default function WorldMap() {
           lat={panelData.lat}
           lng={panelData.lng}
           placeName={panelData.placeName}
-          onPickNextStop={startExtraStopPick}   // pass the callback
+          onPickNextStop={startPickingNextStop}
         />
       )}
     </>
