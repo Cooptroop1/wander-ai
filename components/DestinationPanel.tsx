@@ -9,9 +9,10 @@ interface DestinationPanelProps {
   lat: number;
   lng: number;
   placeName: string;
+  onPickNextStop: (callback: (lat: number, lng: number, placeName: string) => void) => void;
 }
 
-export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName }: DestinationPanelProps) {
+export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName, onPickNextStop }: DestinationPanelProps) {
   const [itinerary, setItinerary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -24,37 +25,12 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
   const [isMultiCity, setIsMultiCity] = useState(false);
   const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]);
 
-  const MAX_DAYS = 28;
-
-  // Calculate total days
-  const calculateTotalDays = () => {
-    let total = 0;
-    // Home stay
-    if (homeDeparture && homeReturn) {
-      const start = new Date(homeDeparture);
-      const end = new Date(homeReturn);
-      total += Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
-    }
-    // All stops
-    stops.forEach(stop => {
-      if (stop.departure && stop.return) {
-        const start = new Date(stop.departure);
-        const end = new Date(stop.return);
-        total += Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
-      }
-    });
-    return total;
-  };
-
-  const totalDays = calculateTotalDays();
-  const isOverLimit = totalDays > MAX_DAYS;
-  const isFormValid = homeCity.trim() !== '' && homeDeparture !== '' && homeReturn !== '' &&
-                      (!isMultiCity || stops.every(s => s.city.trim() !== '' && s.departure !== '' && s.return !== '')) &&
-                      !isOverLimit;
-
   const addStop = () => {
-    if (stops.length >= 5) return;
-    setStops([...stops, { city: '', departure: '', return: '' }]);
+    onPickNextStop((newLat, newLng, newPlaceName) => {
+      const newStops = [...stops];
+      newStops.push({ city: newPlaceName, departure: '', return: '' });
+      setStops(newStops);
+    });
   };
 
   const updateStop = (index: number, field: string, value: string) => {
@@ -62,6 +38,9 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
     newStops[index] = { ...newStops[index], [field]: value };
     setStops(newStops);
   };
+
+  const isFormValid = homeCity.trim() !== '' && homeDeparture !== '' && homeReturn !== '' &&
+                      stops.every(s => s.city.trim() !== '' && s.departure !== '' && s.return !== '');
 
   const generateItinerary = async () => {
     if (!isFormValid) return;
@@ -74,7 +53,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
           homeCity,
           homeDeparture,
           homeReturn,
-          stops: isMultiCity ? stops : []
+          stops
         }),
       });
 
@@ -130,10 +109,9 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
               onChange={(e) => setIsMultiCity(e.target.checked)}
               className="w-5 h-5 accent-emerald-500"
             />
-            <label className="text-sm font-medium">I want a multi-city trip (add extra stops)</label>
+            <label className="text-sm font-medium">I want a multi-city trip</label>
           </div>
 
-          {/* Extra stops */}
           {isMultiCity && (
             <div className="mb-8">
               {stops.map((stop, index) => (
@@ -160,17 +138,13 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName 
               ))}
 
               {stops.length < 5 && (
-                <button onClick={addStop} className="w-full py-4 border border-dashed border-zinc-600 text-zinc-400 hover:text-white rounded-3xl">
-                  + Add another stop
+                <button
+                  onClick={addStop}
+                  className="w-full py-4 border border-dashed border-zinc-600 text-zinc-400 hover:text-white rounded-3xl"
+                >
+                  + Pick next stop on map
                 </button>
               )}
-            </div>
-          )}
-
-          {/* Limit warning */}
-          {isOverLimit && (
-            <div className="bg-red-900/30 text-red-400 text-sm p-4 rounded-3xl mb-6">
-              Trip is too long ({totalDays} days). Maximum allowed is {MAX_DAYS} days to protect Grok credits.
             </div>
           )}
 
