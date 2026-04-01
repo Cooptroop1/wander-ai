@@ -5,7 +5,6 @@ import { useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import DestinationPanel from './DestinationPanel';
-import MyTripsModal from './MyTripsModal';
 
 function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void }) {
   useMapEvents({
@@ -18,7 +17,8 @@ function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void
 
 export default function WorldMap() {
   const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
-  const [showMyTrips, setShowMyTrips] = useState(false);
+  const [addingExtraStop, setAddingExtraStop] = useState(false);
+  const [extraStopCallback, setExtraStopCallback] = useState<((lat: number, lng: number, placeName: string) => void) | null>(null);
 
   const handleMapClick = async (lat: number, lng: number) => {
     let placeName = `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`;
@@ -28,10 +28,23 @@ export default function WorldMap() {
       placeName = data.city || data.locality || data.principalSubdivision || data.countryName || placeName;
     } catch (e) {}
 
+    if (addingExtraStop && extraStopCallback) {
+      extraStopCallback(lat, lng, placeName);
+      setAddingExtraStop(false);
+      setExtraStopCallback(null);
+      return;
+    }
+
     setPanelData({ lat, lng, placeName });
   };
 
   const closePanel = () => setPanelData(null);
+
+  const startExtraStopPick = (callback: (lat: number, lng: number, placeName: string) => void) => {
+    setAddingExtraStop(true);
+    setExtraStopCallback(() => callback);
+    closePanel();   // close current panel so user can click the map
+  };
 
   return (
     <>
@@ -59,15 +72,6 @@ export default function WorldMap() {
         </Marker>
       </MapContainer>
 
-      {/* My Trips Button - always visible */}
-      <button
-        onClick={() => setShowMyTrips(true)}
-        className="fixed top-6 right-6 bg-white text-black px-6 py-3 rounded-3xl font-semibold flex items-center gap-2 shadow-2xl z-[99999] hover:bg-emerald-400 transition-all"
-      >
-        📖 My Trips
-      </button>
-
-      {/* Destination Panel */}
       {panelData && (
         <DestinationPanel
           isOpen={true}
@@ -75,11 +79,9 @@ export default function WorldMap() {
           lat={panelData.lat}
           lng={panelData.lng}
           placeName={panelData.placeName}
+          onPickNextStop={startExtraStopPick}   // pass the callback
         />
       )}
-
-      {/* My Trips Modal */}
-      <MyTripsModal isOpen={showMyTrips} onClose={() => setShowMyTrips(false)} />
     </>
   );
 }
