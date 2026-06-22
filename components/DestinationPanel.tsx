@@ -282,25 +282,31 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             </button>
 
             {flights.length > 0 && (
-              <div className="max-h-64 overflow-y-auto space-y-3">
-                <p className="text-sm text-emerald-400">Top options found:</p>
-                {flights.slice(0, 6).map((offer: any, i: number) => (
-                  <div 
-                    key={i} 
-                    onClick={() => setSelectedFlights(offer)}
-                    className={`bg-zinc-800 p-4 rounded-2xl text-sm cursor-pointer hover:bg-zinc-700 transition-all ${selectedFlights?.id === offer.id ? 'ring-2 ring-emerald-500' : ''}`}
-                  >
-                    <div className="font-medium">{offer.total_amount} {offer.total_currency}</div>
-                    <div className="text-zinc-400 text-xs">
-                      {offer.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'Airline'} • {offer.slices?.[0]?.duration}
-                    </div>
-                    {selectedFlights?.id === offer.id && (
-                      <div className="text-emerald-400 text-xs mt-1">✓ Selected for itinerary</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+  <div className="max-h-80 overflow-y-auto space-y-3">
+    <p className="font-semibold text-emerald-400">🛫 {flights.length} real cheap flight options found:</p>
+    {flights.slice(0, 8).map((offer: any, i: number) => (
+      <div 
+        key={i} 
+        onClick={() => setSelectedFlights(offer)}
+        className={`bg-zinc-800 p-4 rounded-2xl cursor-pointer hover:bg-zinc-700 border border-zinc-700 hover:border-emerald-500 transition-all ${selectedFlights?.id === offer.id ? 'ring-2 ring-emerald-500' : ''}`}
+      >
+        <div className="flex justify-between items-center">
+          <div className="font-bold text-xl text-white">{offer.total_amount} {offer.total_currency}</div>
+          <button className="text-xs bg-emerald-600 px-3 py-1 rounded-full">Select</button>
+        </div>
+        <div className="text-sm text-zinc-400 mt-1">
+          {offer.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'Airline'} • 
+          {offer.slices?.[0]?.duration || '—'} • 
+          {offer.slices?.[0]?.segments?.length || 1} stop(s)
+        </div>
+        <div className="text-xs text-zinc-500 mt-1">
+          {offer.slices?.[0]?.departure_date} • Dep {offer.slices?.[0]?.segments?.[0]?.departing_at?.slice(11,16) || '??'} → Arr {offer.slices?.[0]?.segments?.[0]?.arriving_at?.slice(11,16) || '??'}
+        </div>
+        {selectedFlights?.id === offer.id && <div className="text-emerald-400 text-xs mt-2">✅ Selected for Grok itinerary</div>}
+      </div>
+    ))}
+  </div>
+)}
           </div>
 
           {/* Generate Itinerary Button */}
