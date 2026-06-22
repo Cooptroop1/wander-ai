@@ -188,7 +188,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     setLoading(false);
   };
 
-  if (!isOpen) return null;
+    if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-zinc-950 z-[9999] flex items-center justify-center p-4">
@@ -199,37 +199,36 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             <X size={32} />
           </button>
         </div>
-
         <div className="flex-1 p-6 overflow-y-auto">
           {/* Home Airport IATA */}
-<div className="mb-8">
-  <label className="block text-sm text-zinc-400 mb-2">✈️ Home airport IATA code (e.g. LHR STN NWI) <span className="text-red-400">*</span></label>
-  <input
-    type="text"
-    placeholder="LHR"
-    value={homeCity}
-    onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())}
-    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest"
-  />
-</div>
+          <div className="mb-8">
+            <label className="block text-sm text-zinc-400 mb-2">✈️ Home airport IATA code (e.g. LHR STN NWI) <span className="text-red-400">*</span></label>
+            <input
+              type="text"
+              placeholder="LHR"
+              value={homeCity}
+              onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())}
+              className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest"
+            />
+          </div>
 
-{/* Destination Airport IATA */}
-<div className="mb-8">
-  <label className="block text-sm text-zinc-400 mb-2">✈️ Destination airport IATA code (e.g. NWI STN LGW) <span className="text-red-400">*</span></label>
-  <input
-    type="text"
-    placeholder="NWI"
-    value={destIATA}
-    onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())}
-    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest"
-  />
-  <p className="text-xs text-zinc-500 mt-1">Edit this to match the place you clicked on the map</p>
-</div>
+          {/* Destination Airport IATA */}
+          <div className="mb-8">
+            <label className="block text-sm text-zinc-400 mb-2">✈️ Destination airport IATA code (e.g. NWI STN LGW) <span className="text-red-400">*</span></label>
+            <input
+              type="text"
+              placeholder="NWI"
+              value={destIATA}
+              onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())}
+              className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest"
+            />
+            <p className="text-xs text-zinc-500 mt-1">Edit this to match the place you clicked on the map</p>
+          </div>
 
-<div className="grid grid-cols-2 gap-4 mb-8">
-  <input type="date" value={homeDeparture} onChange={(e) => setHomeDeparture(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
-  <input type="date" value={homeReturn} onChange={(e) => setHomeReturn(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
-</div>
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <input type="date" value={homeDeparture} onChange={(e) => setHomeDeparture(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
+            <input type="date" value={homeReturn} onChange={(e) => setHomeReturn(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
+          </div>
 
           {/* Multi-city checkbox */}
           <div className="flex items-center gap-3 mb-6">
@@ -273,13 +272,12 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             </div>
           )}
 
-          {/* === FLIGHT SEARCH SECTION === */}
+          {/* Flight Search Section */}
           <div className="mb-8 p-6 border border-emerald-500/30 bg-zinc-900/50 rounded-3xl">
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
               ✈️ Cheap Flights Search (Duffel)
             </h3>
-            
-            <button 
+            <button
               onClick={searchFlights}
               disabled={searchingFlights || !homeCity || !homeDeparture}
               className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 rounded-3xl font-semibold mb-6 transition-all"
@@ -288,113 +286,101 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             </button>
 
             {flights.length > 0 && (
-  <div className="max-h-80 overflow-y-auto space-y-3">
-    <p className="font-semibold text-emerald-400">🛫 {flights.length} real cheap flight options found:</p>
-    {flights.slice(0, 8).map((offer: any, i: number) => (
-      <div 
-        key={i} 
-        onClick={() => setSelectedFlights(selectedFlights?.id === offer.id ? null : offer)}
-        className={`bg-zinc-800 p-4 rounded-2xl cursor-pointer hover:bg-zinc-700 border border-zinc-700 hover:border-emerald-500 transition-all ${selectedFlights?.id === offer.id ? 'ring-2 ring-emerald-500' : ''}`}
-      >
-        <div className="flex justify-between items-center">
-          <div className="font-bold text-xl text-white">{offer.total_amount} {offer.total_currency}</div>
-          <button className="text-xs bg-emerald-600 px-3 py-1 rounded-full">Select</button>
-        </div>
-        <div className="text-sm text-zinc-400 mt-1">
-          {offer.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'Airline'} • 
-          {offer.slices?.[0]?.duration || '—'} • 
-          {offer.slices?.[0]?.segments?.length || 1} stop(s)
-        </div>
-                <button 
-  onClick={() => {
-    if (selectedFlights?.id) {
-      // Opens Duffel checkout with the offer (real link in production)
-      window.open(`https://app.duffel.com/book/${selectedFlights.id}`, '_blank');
-    } else {
-      alert("Select a flight first");
-    }
-  }}
-  className="mt-3 w-full py-2 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-medium"
->
-  🛫 Open Duffel Checkout
-</button>
-        <div className="text-xs text-zinc-500 mt-1">
-          {offer.slices?.[0]?.departure_date} • Dep {offer.slices?.[0]?.segments?.[0]?.departing_at?.slice(11,16) || '??'} → Arr {offer.slices?.[0]?.segments?.[0]?.arriving_at?.slice(11,16) || '??'}
-        </div>
-        {selectedFlights?.id === offer.id && <div className="text-emerald-400 text-xs mt-2">✅ Selected for Grok itinerary</div>}
-      </div>
-    ))}
-  </div>
-)}
-
+              <div className="max-h-80 overflow-y-auto space-y-3">
+                <p className="font-semibold text-emerald-400">🛫 {flights.length} real cheap flight options found:</p>
+                {flights.slice(0, 8).map((offer: any, i: number) => (
+                  <div
+                    key={i}
+                    onClick={() => setSelectedFlights(selectedFlights?.id === offer.id ? null : offer)}
+                    className={`bg-zinc-800 p-4 rounded-2xl cursor-pointer hover:bg-zinc-700 border border-zinc-700 hover:border-emerald-500 transition-all ${selectedFlights?.id === offer.id ? 'ring-2 ring-emerald-500' : ''}`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="font-bold text-xl text-white">{offer.total_amount} {offer.total_currency}</div>
+                      <button className="text-xs bg-emerald-600 px-3 py-1 rounded-full">Select</button>
+                    </div>
+                    <div className="text-sm text-zinc-400 mt-1">
+                      {offer.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'Airline'} •
+                      {offer.slices?.[0]?.duration || '—'} •
+                      {offer.slices?.[0]?.segments?.length || 1} stop(s)
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (selectedFlights?.id) {
+                          window.open(`https://app.duffel.com/book/${selectedFlights.id}`, '_blank');
+                        } else {
+                          alert("Select a flight first");
+                        }
+                      }}
+                      className="mt-3 w-full py-2 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-medium"
+                    >
+                      🛫 Open Duffel Checkout
+                    </button>
+                    <div className="text-xs text-zinc-500 mt-1">
+                      {offer.slices?.[0]?.departure_date} • Dep {offer.slices?.[0]?.segments?.[0]?.departing_at?.slice(11,16) || '??'} → Arr {offer.slices?.[0]?.segments?.[0]?.arriving_at?.slice(11,16) || '??'}
+                    </div>
+                    {selectedFlights?.id === offer.id && <div className="text-emerald-400 text-xs mt-2">✅ Selected for Grok itinerary</div>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-{/* Passenger Details - appears after selecting a flight */}
-{selectedFlights && (
-  <div className="mb-8 p-6 bg-zinc-900/50 border border-zinc-700 rounded-3xl">
-    <h3 className="font-semibold mb-4">Passenger Details for Booking</h3>
-    <input type="text" placeholder="First Name" className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
-    <input type="text" placeholder="Last Name" className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
-    <input type="date" placeholder="Date of Birth" className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
-    <input type="email" placeholder="Email" className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
-    <input type="tel" placeholder="Phone" className="w-full bg-zinc-800 rounded-3xl px-5 py-4" />
-  </div>
-)}
-          
-          {/* Use Selected Flight in Itinerary */}
-<button 
-  type="button"
-  onClick={generateItinerary}
-  {/* Passenger Details for Booking */}
-{selectedFlights && (
-  <div className="mb-8 p-6 bg-zinc-900/50 border border-zinc-700 rounded-3xl">
-    <h3 className="font-semibold mb-4">Passenger Details for Booking</h3>
-    <input
-      type="text"
-      placeholder="First Name"
-      value={passenger.firstName}
-      onChange={(e) => setPassenger({...passenger, firstName: e.target.value})}
-      className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
-    />
-    <input
-      type="text"
-      placeholder="Last Name"
-      value={passenger.lastName}
-      onChange={(e) => setPassenger({...passenger, lastName: e.target.value})}
-      className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
-    />
-    <input
-      type="date"
-      value={passenger.dob}
-      onChange={(e) => setPassenger({...passenger, dob: e.target.value})}
-      className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
-    />
-    <input
-      type="email"
-      placeholder="Email"
-      value={passenger.email}
-      onChange={(e) => setPassenger({...passenger, email: e.target.value})}
-      className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
-    />
-    <input
-      type="tel"
-      placeholder="Phone"
-      value={passenger.phone}
-      onChange={(e) => setPassenger({...passenger, phone: e.target.value})}
-      className="w-full bg-zinc-800 rounded-3xl px-5 py-4"
-    />
-    <button
-      onClick={createBooking}
-      className="w-full mt-6 py-4 bg-green-600 hover:bg-green-500 rounded-3xl font-semibold"
-    >
-      Confirm Booking on Duffel
-    </button>
-  </div>
-)}
-  disabled={loading || !isFormValid}
-  className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
->
-  {loading ? "🤖 Asking Grok..." : "✨ Use selected flight + Generate full itinerary"}
-</button>
+
+          {/* Passenger Details for Booking */}
+          {selectedFlights && (
+            <div className="mb-8 p-6 bg-zinc-900/50 border border-zinc-700 rounded-3xl">
+              <h3 className="font-semibold mb-4">Passenger Details for Booking</h3>
+              <input
+                type="text"
+                placeholder="First Name"
+                value={passenger.firstName}
+                onChange={(e) => setPassenger({...passenger, firstName: e.target.value})}
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
+              />
+              <input
+                type="text"
+                placeholder="Last Name"
+                value={passenger.lastName}
+                onChange={(e) => setPassenger({...passenger, lastName: e.target.value})}
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
+              />
+              <input
+                type="date"
+                value={passenger.dob}
+                onChange={(e) => setPassenger({...passenger, dob: e.target.value})}
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={passenger.email}
+                onChange={(e) => setPassenger({...passenger, email: e.target.value})}
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
+              />
+              <input
+                type="tel"
+                placeholder="Phone"
+                value={passenger.phone}
+                onChange={(e) => setPassenger({...passenger, phone: e.target.value})}
+                className="w-full bg-zinc-800 rounded-3xl px-5 py-4"
+              />
+              <button
+                onClick={createBooking}
+                className="w-full mt-6 py-4 bg-green-600 hover:bg-green-500 rounded-3xl font-semibold"
+              >
+                Confirm Booking on Duffel
+              </button>
+            </div>
+          )}
+
+          {/* Generate Itinerary Button */}
+          <button 
+            type="button"
+            onClick={generateItinerary}
+            disabled={!isFormValid || loading}
+            className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "🤖 Asking Grok..." : "✨ Use selected flight + Generate full itinerary"}
+          </button>
 
           {/* Itinerary Results */}
           {itinerary && (
