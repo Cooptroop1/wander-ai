@@ -4,23 +4,26 @@ export async function POST(request: NextRequest) {
   try {
     const { placeName, homeCity, lat, lng, departureDate, returnDate } = await request.json();
 
-    const prompt = `Create a realistic itinerary for ${placeName}.
+        const prompt = `Create a rich, fun day-by-day itinerary for a trip to ${placeName}.
 
-User is flying from: ${homeCity || 'their home city'}
-Departure date: ${departureDate || 'any date'}
-Return date: ${returnDate || 'any date'}
+User is flying from: ${homeCity || 'their home city'} 
+Selected flight: ${selectedFlights ? selectedFlights.total_amount + selectedFlights.total_currency + ' with ' + (selectedFlights.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'airline') : 'budget flight'}
+Departure: ${departureDate || 'soon'}, Return: ${returnDate || 'a few days later'}.
 
-IMPORTANT: Calculate the EXACT number of nights = (return date - departure date). 
-Do NOT default to 4 days. Use the real dates and make the trip length match exactly.
+IMPORTANT:
+- Make it 4-7 days long matching the exact dates.
+- Include realistic local activities near ${placeName} (food, sights, markets, parks, walks, evening plans).
+- Day 1 = arrival + easy activities.
+- Make it practical and exciting for a normal traveller.
 
-Return ONLY valid JSON in this exact format:
+Return ONLY valid JSON like this:
 {
   "summary": "short exciting one-liner",
-  "flights": "realistic price range",
+  "flights": "the real selected flight details",
   "hotels": ["Hotel 1 – $price/night", "Hotel 2 – $price/night"],
   "weather": "weather summary",
   "itinerary": [
-    { "day": 1, "title": "...", "desc": "..." },
+    { "day": 1, "title": "Arrival day", "desc": "detailed paragraph with activities" },
     { "day": 2, "title": "...", "desc": "..." }
   ]
 }`;
