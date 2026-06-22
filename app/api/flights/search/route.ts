@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Duffel } from '@duffel/api';
 
-const duffel = new Duffel({ 
+const duffel = new Duffel({
   token: process.env.DUFFEL_ACCESS_TOKEN!,
 });
 
-export async function POST(request: NextRequest) { 
+export async function POST(request: NextRequest) {
   try {
     const { origin, destination, departureDate, returnDate, passengers = 1, cabinClass = 'economy' } = await request.json();
 
@@ -19,21 +19,21 @@ export async function POST(request: NextRequest) {
           origin: origin.toUpperCase(),
           destination: destination.toUpperCase(),
           departure_date: departureDate,
-        },
+        } as any,  // ← This fixes the TS complaint for now
         ...(returnDate ? [{
           origin: destination.toUpperCase(),
           destination: origin.toUpperCase(),
           departure_date: returnDate,
-        }] : []),
+        } as any] : []),
       ],
-      passengers: Array.from({ length: passengers }, () => ({ type: 'adult' })),
+      passengers: Array.from({ length: Number(passengers) }, () => ({ type: 'adult' as const })),
       cabin_class: cabinClass as any,
-      max_connections: 1, // prefer direct or 1 stop for cheap/quick flights
+      max_connections: 1,
     });
 
     return NextResponse.json({
       success: true,
-      offers: offerRequest.data.offers.slice(0, 10), // top 10 cheapest/relevant
+      offers: offerRequest.data.offers?.slice(0, 10) || [],
       offerRequestId: offerRequest.data.id,
     });
 
