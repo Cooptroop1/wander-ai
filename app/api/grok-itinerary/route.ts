@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-        const { placeName, homeCity, lat, lng, departureDate, returnDate, selectedFlights, flightsSummary } = await request.json();
+            const { placeName, homeCity, lat, lng, departureDate, returnDate, selectedFlight } = await request.json();
 
                 const prompt = `Create a fun, detailed day-by-day itinerary for a trip to ${placeName}.
 
