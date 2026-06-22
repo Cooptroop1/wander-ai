@@ -298,6 +298,16 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
           {offer.slices?.[0]?.duration || '—'} • 
           {offer.slices?.[0]?.segments?.length || 1} stop(s)
         </div>
+                <button 
+          onClick={async () => {
+            if (selectedFlights?.id) {
+              alert(`Booking offer ${selectedFlights.id} — opening Duffel checkout soon!\n\nPrice: ${selectedFlights.total_amount} ${selectedFlights.total_currency}`);
+            }
+          }}
+          className="mt-3 w-full py-2 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-medium"
+        >
+          🛫 Book this flight on Duffel
+        </button>
         <div className="text-xs text-zinc-500 mt-1">
           {offer.slices?.[0]?.departure_date} • Dep {offer.slices?.[0]?.segments?.[0]?.departing_at?.slice(11,16) || '??'} → Arr {offer.slices?.[0]?.segments?.[0]?.arriving_at?.slice(11,16) || '??'}
         </div>
