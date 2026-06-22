@@ -24,6 +24,13 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   // Home
   const [homeCity, setHomeCity] = useState('');
   const [homeDeparture, setHomeDeparture] = useState('');
+    const [passenger, setPassenger] = useState({
+    firstName: '',
+    lastName: '',
+    dob: '',
+    email: '',
+    phone: ''
+  });
   const [homeReturn, setHomeReturn] = useState('');
 
   // Stops (Stop 1 is the clicked place)
@@ -319,6 +326,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     ))}
   </div>
 )}
+
           </div>
 {/* Passenger Details - appears after selecting a flight */}
 {selectedFlights && (
@@ -336,6 +344,52 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
 <button 
   type="button"
   onClick={generateItinerary}
+  {/* Passenger Details for Booking */}
+{selectedFlights && (
+  <div className="mb-8 p-6 bg-zinc-900/50 border border-zinc-700 rounded-3xl">
+    <h3 className="font-semibold mb-4">Passenger Details for Booking</h3>
+    <input
+      type="text"
+      placeholder="First Name"
+      value={passenger.firstName}
+      onChange={(e) => setPassenger({...passenger, firstName: e.target.value})}
+      className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
+    />
+    <input
+      type="text"
+      placeholder="Last Name"
+      value={passenger.lastName}
+      onChange={(e) => setPassenger({...passenger, lastName: e.target.value})}
+      className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
+    />
+    <input
+      type="date"
+      value={passenger.dob}
+      onChange={(e) => setPassenger({...passenger, dob: e.target.value})}
+      className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
+    />
+    <input
+      type="email"
+      placeholder="Email"
+      value={passenger.email}
+      onChange={(e) => setPassenger({...passenger, email: e.target.value})}
+      className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
+    />
+    <input
+      type="tel"
+      placeholder="Phone"
+      value={passenger.phone}
+      onChange={(e) => setPassenger({...passenger, phone: e.target.value})}
+      className="w-full bg-zinc-800 rounded-3xl px-5 py-4"
+    />
+    <button
+      onClick={createBooking}
+      className="w-full mt-6 py-4 bg-green-600 hover:bg-green-500 rounded-3xl font-semibold"
+    >
+      Confirm Booking on Duffel
+    </button>
+  </div>
+)}
   disabled={loading || !isFormValid}
   className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 >
