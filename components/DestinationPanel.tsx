@@ -16,32 +16,30 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   const [itinerary, setItinerary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  // Flight search states
   const [flights, setFlights] = useState<any[]>([]);
   const [searchingFlights, setSearchingFlights] = useState(false);
   const [selectedFlights, setSelectedFlights] = useState<any>(null);
   const [destIATA, setDestIATA] = useState('');
-  // Home
+
   const [homeCity, setHomeCity] = useState('');
   const [homeDeparture, setHomeDeparture] = useState('');
-    const [passenger, setPassenger] = useState({
+  const [homeReturn, setHomeReturn] = useState('');
+
+  const [passenger, setPassenger] = useState({
     firstName: '',
     lastName: '',
     dob: '',
     email: '',
     phone: ''
   });
-  const [homeReturn, setHomeReturn] = useState('');
 
-  // Stops (Stop 1 is the clicked place)
   const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]);
   const [isMultiCity, setIsMultiCity] = useState(false);
 
-  // Auto-fill destination airport when you click the map
   useEffect(() => {
     if (placeName) {
       const lower = placeName.toLowerCase();
-      let guess = 'STN'; // default for London area
+      let guess = 'STN';
       if (lower.includes('norwich') || lower.includes('dereham') || lower.includes('toftwood') || lower.includes('swaffham')) guess = 'NWI';
       else if (lower.includes('paris')) guess = 'CDG';
       else if (lower.includes('london')) guess = 'STN';
@@ -66,99 +64,50 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     setStops(newStops);
   };
 
-    const isFormValid = homeCity.trim() !== '' && destIATA.trim() !== '' && homeDeparture !== '';
+  const isFormValid = homeCity.trim() !== '' && destIATA.trim() !== '' && homeDeparture !== '';
 
   const searchFlights = async () => {
-  if (!homeCity || !destIATA || !homeDeparture) {
-    alert("Enter BOTH Home IATA and Destination IATA + departure date");
-    return;
-  }
- 
-  setSearchingFlights(true);
-  setFlights([]);
- 
-  try {
-    const res = await fetch('/api/flights/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        origin: homeCity.toUpperCase().trim(),
-        destination: destIATA.toUpperCase().trim(),
-        departureDate: homeDeparture,
-        returnDate: homeReturn || undefined,
-        passengers: 1,
-        cabinClass: 'economy'
-      }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setFlights(data.offers || []);
-      if (data.offers?.length === 0) {
-        alert("No flights found. Try different dates or airports.");
-      } else {
-        alert(`✅ Found ${data.offers.length} real flight options!`);
-      }
-    } else {
-      alert("Duffel: " + (data.error || "Unknown"));
+    if (!homeCity || !destIATA || !homeDeparture) {
+      alert("Enter BOTH Home IATA and Destination IATA + departure date");
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    alert("Failed — check F12 console");
-  }
-  setSearchingFlights(false);
-};
+    setSearchingFlights(true);
+    setFlights([]);
+    try {
+      const res = await fetch('/api/flights/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          origin: homeCity.toUpperCase().trim(),
+          destination: destIATA.toUpperCase().trim(),
+          departureDate: homeDeparture,
+          returnDate: homeReturn || undefined,
+          passengers: 1,
+          cabinClass: 'economy'
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFlights(data.offers || []);
+        alert(`✅ Found ${data.offers.length} real flight options!`);
+      } else {
+        alert("Duffel: " + (data.error || "Unknown"));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed — check F12 console");
+    }
+    setSearchingFlights(false);
+  };
 
-{/* Smart Destination Airport Helper */}
-<div className="mb-8">
-  <label className="block text-sm text-zinc-400 mb-2">✈️ Destination airport (type city or choose)</label>
-  <div className="flex gap-2">
-    <input
-      type="text"
-      placeholder="Paris, London, Norwich..."
-      value={placeName}
-      className="flex-1 bg-zinc-800 rounded-3xl px-5 py-4 text-white"
-      readOnly
-    />
-    <select 
-      onChange={(e) => setDestIATA(e.target.value)}
-      className="bg-zinc-800 rounded-3xl px-4 text-white border border-zinc-700"
-    >
-      <option value="">Choose airport</option>
-      <option value="CDG">Paris (CDG)</option>
-      <option value="ORY">Paris (ORY)</option>
-      <option value="LHR">London Heathrow (LHR)</option>
-      <option value="STN">London Stansted (STN)</option>
-      <option value="LGW">London Gatwick (LGW)</option>
-      <option value="NWI">Norwich (NWI)</option>
-      <option value="LTN">Luton (LTN)</option>
-    </select>
-    <button 
-  onClick={() => {
-    let guess = 'STN'; // default London area
-    const lower = placeName.toLowerCase();
-    if (lower.includes('norwich') || lower.includes('dereham') || lower.includes('toftwood') || lower.includes('swaffham')) guess = 'NWI';
-    else if (lower.includes('paris')) guess = 'CDG';
-    else if (lower.includes('london') || lower.includes('stansted')) guess = 'STN';
-    else if (lower.includes('gatwick')) guess = 'LGW';
-    else if (lower.includes('heathrow')) guess = 'LHR';
-    else if (lower.includes('luton')) guess = 'LTN';
-    
-    setDestIATA(guess);
-    alert(`✅ Auto-detected nearest airport for "${placeName}": ${guess}\nChange if you want a different airport`);
-  }}
-  className="px-6 bg-emerald-600 hover:bg-emerald-500 rounded-3xl font-semibold"
->
-  🚀 Auto nearest airport
-</button>
-  </div>
-  <input 
-    type="text" 
-    placeholder="or type IATA code manually (e.g. CDG)"
-    value={destIATA}
-    onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())}
-    className="w-full mt-2 bg-zinc-800 rounded-3xl px-5 py-3 text-white font-mono"
-  />
-</div>
+  const createBooking = async () => {
+    if (!selectedFlights || !passenger.firstName || !passenger.email) {
+      alert("Fill all passenger details first");
+      return;
+    }
+    alert(`Creating booking for offer ${selectedFlights.id}...\nPassenger: ${passenger.firstName} ${passenger.lastName}`);
+    // Next: Call backend API
+  };
 
   const generateItinerary = async () => {
     if (!isFormValid) return;
@@ -172,12 +121,11 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
           homeDeparture,
           homeReturn,
           placeName,
-          flightsSummary: flights.length > 0 
-            ? `Real flights found via Duffel (${flights.length} options)` 
+          flightsSummary: flights.length > 0
+            ? `Real flights found via Duffel (${flights.length} options)`
             : "No real flights searched yet"
         }),
       });
-
       if (!res.ok) throw new Error('Grok error');
       const data = await res.json();
       setItinerary(data);
@@ -188,7 +136,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     setLoading(false);
   };
 
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-zinc-950 z-[9999] flex items-center justify-center p-4">
@@ -284,7 +232,6 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             >
               {searchingFlights ? "Searching real flights..." : "🔍 Search Cheap Flights"}
             </button>
-
             {flights.length > 0 && (
               <div className="max-h-80 overflow-y-auto space-y-3">
                 <p className="font-semibold text-emerald-400">🛫 {flights.length} real cheap flight options found:</p>
@@ -299,9 +246,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
                       <button className="text-xs bg-emerald-600 px-3 py-1 rounded-full">Select</button>
                     </div>
                     <div className="text-sm text-zinc-400 mt-1">
-                      {offer.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'Airline'} •
-                      {offer.slices?.[0]?.duration || '—'} •
-                      {offer.slices?.[0]?.segments?.length || 1} stop(s)
+                      {offer.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'Airline'} • {offer.slices?.[0]?.duration || '—'} • {offer.slices?.[0]?.segments?.length || 1} stop(s)
                     </div>
                     <button
                       onClick={() => {
@@ -373,7 +318,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
           )}
 
           {/* Generate Itinerary Button */}
-          <button 
+          <button
             type="button"
             onClick={generateItinerary}
             disabled={!isFormValid || loading}
