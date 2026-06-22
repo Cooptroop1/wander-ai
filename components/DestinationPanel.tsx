@@ -87,17 +87,49 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   setSearchingFlights(false);
 };
 
-{/* Destination Airport IATA */}
+{/* Smart Destination Airport Helper */}
 <div className="mb-8">
-  <label className="block text-sm text-zinc-400 mb-2">✈️ Destination airport IATA code (e.g. NWI STN LGW) <span className="text-red-400">*</span></label>
-  <input
-    type="text"
-    placeholder="NWI"
+  <label className="block text-sm text-zinc-400 mb-2">✈️ Destination airport (type city or choose)</label>
+  <div className="flex gap-2">
+    <input
+      type="text"
+      placeholder="Paris, London, Norwich..."
+      value={placeName}
+      className="flex-1 bg-zinc-800 rounded-3xl px-5 py-4 text-white"
+      readOnly
+    />
+    <select 
+      onChange={(e) => setDestIATA(e.target.value)}
+      className="bg-zinc-800 rounded-3xl px-4 text-white border border-zinc-700"
+    >
+      <option value="">Choose airport</option>
+      <option value="CDG">Paris (CDG)</option>
+      <option value="ORY">Paris (ORY)</option>
+      <option value="LHR">London Heathrow (LHR)</option>
+      <option value="STN">London Stansted (STN)</option>
+      <option value="LGW">London Gatwick (LGW)</option>
+      <option value="NWI">Norwich (NWI)</option>
+      <option value="LTN">Luton (LTN)</option>
+    </select>
+    <button 
+      onClick={() => {
+        const guesses = { 'norwich': 'NWI', 'london': 'STN', 'paris': 'CDG', 'derham': 'NWI', 'swaffham': 'NWI' };
+        const guess = guesses[placeName.toLowerCase()] || 'LHR';
+        setDestIATA(guess);
+        alert("Auto-filled " + guess + " — change if needed");
+      }}
+      className="px-4 bg-emerald-600 hover:bg-emerald-500 rounded-3xl"
+    >
+      Auto-fill
+    </button>
+  </div>
+  <input 
+    type="text" 
+    placeholder="or type IATA code manually (e.g. CDG)"
     value={destIATA}
     onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())}
-    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest"
+    className="w-full mt-2 bg-zinc-800 rounded-3xl px-5 py-3 text-white font-mono"
   />
-  <p className="text-xs text-zinc-500 mt-1">Type the airport code for the place you clicked (e.g. NWI for Norwich)</p>
 </div>
 
   const generateItinerary = async () => {
