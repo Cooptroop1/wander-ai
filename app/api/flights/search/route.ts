@@ -1,34 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Duffel } from '@duffel/api';
 
+console.log("Duffel token loaded?", !!process.env.DUFFEL_ACCESS_TOKEN); // debug line
+
 const duffel = new Duffel({
-  token: process.env.DUFFEL_ACCESS_TOKEN!,
+  token: process.env.DUFFEL_ACCESS_TOKEN || '',
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const { origin, destination, departureDate, returnDate, passengers = 1, cabinClass = 'economy' } = await request.json();
+    const body = await request.json();
+    console.log("Received request body:", body);
 
-    if (!origin || !destination || !departureDate) {
-      return NextResponse.json({ error: 'Origin, destination and departure date are required' }, { status: 400 });
+    const { origin, destination, departureDate } = body;
+
+    if (!process.env.DUFFEL_ACCESS_TOKEN) {
+      throw new Error("DUFFEL_ACCESS_TOKEN is missing on server");
     }
 
     const offerRequest = await duffel.offerRequests.create({
       slices: [
         {
-          origin: origin.toUpperCase(),
-          destination: destination.toUpperCase(),
+          origin: (origin || '').toUpperCase(),
+          destination: (destination || '').toUpperCase(),
           departure_date: departureDate,
-        } as any,  // ← This fixes the TS complaint for now
-        ...(returnDate ? [{
-          origin: destination.toUpperCase(),
-          destination: origin.toUpperCase(),
-          departure_date: returnDate,
-        } as any] : []),
+        } as any,
       ],
-      passengers: Array.from({ length: Number(passengers) }, () => ({ type: 'adult' as const })),
-      cabin_class: cabinClass as any,
-      max_connections: 1,
+      passengers: [{ type: 'adult' as const }],
+      cabin_class: 'economy' as any,
     });
 
     return NextResponse.json({
@@ -38,9 +37,10 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Duffel error:', error);
+    console.error("FULL ERROR:", error.message);
     return NextResponse.json({ 
-      error: error.message || 'Failed to search flights' 
+      error: error.message,
+      hint: "Check if token is set on Vercel + redeployed"
     }, { status: 500 });
   }
 }
