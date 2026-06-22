@@ -20,7 +20,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   const [flights, setFlights] = useState<any[]>([]);
   const [searchingFlights, setSearchingFlights] = useState(false);
   const [selectedFlights, setSelectedFlights] = useState<any>(null);
-
+  const [destIATA, setDestIATA] = useState('');
   // Home
   const [homeCity, setHomeCity] = useState('');
   const [homeDeparture, setHomeDeparture] = useState('');
@@ -48,44 +48,57 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
                       stops.every(s => s.city.trim() !== '' && s.departure !== '' && s.return !== '');
 
   const searchFlights = async () => {
-    if (!homeCity || !homeDeparture) {
-      alert("Please enter home airport IATA code and departure date");
-      return;
-    }
-    
-    setSearchingFlights(true);
-    setFlights([]);
-    
-    try {
-      const res = await fetch('/api/flights/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          origin: homeCity.toUpperCase().trim(),
-          destination: placeName.toUpperCase().trim(),
-          departureDate: homeDeparture,
-          returnDate: homeReturn || undefined,
-          passengers: 1,
-          cabinClass: 'economy'
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setFlights(data.offers || []);
-        if (data.offers?.length === 0) {
-          alert("No flights found for these dates. Try different dates or airports.");
-        }
+  if (!homeCity || !destIATA || !homeDeparture) {
+    alert("Enter BOTH Home IATA and Destination IATA + departure date");
+    return;
+  }
+ 
+  setSearchingFlights(true);
+  setFlights([]);
+ 
+  try {
+    const res = await fetch('/api/flights/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        origin: homeCity.toUpperCase().trim(),
+        destination: destIATA.toUpperCase().trim(),
+        departureDate: homeDeparture,
+        returnDate: homeReturn || undefined,
+        passengers: 1,
+        cabinClass: 'economy'
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setFlights(data.offers || []);
+      if (data.offers?.length === 0) {
+        alert("No flights found. Try different dates or airports.");
       } else {
-        alert("Search error: " + (data.error || "Unknown error from Duffel"));
+        alert(`✅ Found ${data.offers.length} real flight options!`);
       }
-    } catch (err) {
-      console.error(err);
-      alert("Flight search failed — check F12 console");
+    } else {
+      alert("Duffel: " + (data.error || "Unknown"));
     }
-    setSearchingFlights(false);
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Failed — check F12 console");
+  }
+  setSearchingFlights(false);
+};
+
+{/* Destination Airport IATA */}
+<div className="mb-8">
+  <label className="block text-sm text-zinc-400 mb-2">✈️ Destination airport IATA code (e.g. NWI STN LGW) <span className="text-red-400">*</span></label>
+  <input
+    type="text"
+    placeholder="NWI"
+    value={destIATA}
+    onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())}
+    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest"
+  />
+  <p className="text-xs text-zinc-500 mt-1">Type the airport code for the place you clicked (e.g. NWI for Norwich)</p>
+</div>
 
   const generateItinerary = async () => {
     if (!isFormValid) return;
@@ -128,33 +141,35 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Home Airport - IATA focused */}
-          <div className="mb-8">
-            <label className="block text-sm text-zinc-400 mb-2">
-              ✈️ Home airport IATA code <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. LHR, STN, NWI, LGW, LTN"
-              value={homeCity}
-              onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())}
-              className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 mb-2 font-mono tracking-widest text-lg"
-            />
-            <p className="text-xs text-zinc-500 mb-4">
-              Common: <span className="font-mono">LHR</span> (Heathrow) • <span className="font-mono">STN</span> (Stansted) • <span className="font-mono">NWI</span> (Norwich) • <span className="font-mono">LGW</span> (Gatwick) • <span className="font-mono">LTN</span> (Luton)
-            </p>
+          {/* Home Airport IATA */}
+<div className="mb-8">
+  <label className="block text-sm text-zinc-400 mb-2">✈️ Home airport IATA code (e.g. LHR STN NWI) <span className="text-red-400">*</span></label>
+  <input
+    type="text"
+    placeholder="LHR"
+    value={homeCity}
+    onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())}
+    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest"
+  />
+</div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">Departure <span className="text-red-400">*</span></label>
-                <input type="date" value={homeDeparture} onChange={(e) => setHomeDeparture(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
-              </div>
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">Return</label>
-                <input type="date" value={homeReturn} onChange={(e) => setHomeReturn(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
-              </div>
-            </div>
-          </div>
+{/* Destination Airport IATA */}
+<div className="mb-8">
+  <label className="block text-sm text-zinc-400 mb-2">✈️ Destination airport IATA code (e.g. NWI STN LGW) <span className="text-red-400">*</span></label>
+  <input
+    type="text"
+    placeholder="NWI"
+    value={destIATA}
+    onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())}
+    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest"
+  />
+  <p className="text-xs text-zinc-500 mt-1">Edit this to match the place you clicked on the map</p>
+</div>
+
+<div className="grid grid-cols-2 gap-4 mb-8">
+  <input type="date" value={homeDeparture} onChange={(e) => setHomeDeparture(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
+  <input type="date" value={homeReturn} onChange={(e) => setHomeReturn(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
+</div>
 
           {/* Multi-city checkbox */}
           <div className="flex items-center gap-3 mb-6">
