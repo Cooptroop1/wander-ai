@@ -59,8 +59,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     setStops(newStops);
   };
 
-  const isFormValid = homeCity.trim() !== '' && homeDeparture !== '' && homeReturn !== '' &&
-                      stops.every(s => s.city.trim() !== '' && s.departure !== '' && s.return !== '');
+    const isFormValid = homeCity.trim() !== '' && destIATA.trim() !== '' && homeDeparture !== '';
 
   const searchFlights = async () => {
   if (!homeCity || !destIATA || !homeDeparture) {
