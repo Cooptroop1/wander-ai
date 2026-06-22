@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface DestinationPanelProps {
   isOpen: boolean;
@@ -29,6 +29,21 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   // Stops (Stop 1 is the clicked place)
   const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]);
   const [isMultiCity, setIsMultiCity] = useState(false);
+
+  // Auto-fill destination airport when you click the map
+  useEffect(() => {
+    if (placeName) {
+      const lower = placeName.toLowerCase();
+      let guess = 'STN'; // default for London area
+      if (lower.includes('norwich') || lower.includes('dereham') || lower.includes('toftwood') || lower.includes('swaffham')) guess = 'NWI';
+      else if (lower.includes('paris')) guess = 'CDG';
+      else if (lower.includes('london')) guess = 'STN';
+      else if (lower.includes('gatwick')) guess = 'LGW';
+      else if (lower.includes('heathrow')) guess = 'LHR';
+      else if (lower.includes('luton')) guess = 'LTN';
+      setDestIATA(guess);
+    }
+  }, [placeName]);
 
   const addStop = () => {
     onPickNextStop((newLat, newLng, newPlaceName) => {
