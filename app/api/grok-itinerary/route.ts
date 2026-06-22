@@ -2,19 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { placeName, homeCity, lat, lng, departureDate, returnDate } = await request.json();
+        const { placeName, homeCity, lat, lng, departureDate, returnDate, selectedFlights, flightsSummary } = await request.json();
 
-        const prompt = `Create a rich, fun day-by-day itinerary for a trip to ${placeName}.
+            const prompt = `Create a rich day-by-day itinerary for a trip to ${placeName}.
 
-User is flying from: ${homeCity || 'their home city'} 
-Selected flight: ${selectedFlights ? selectedFlights.total_amount + selectedFlights.total_currency + ' with ' + (selectedFlights.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'airline') : 'budget flight'}
+User flies from ${homeCity || 'their home city'}.
+Flight info: ${selectedFlights ? selectedFlights.total_amount + selectedFlights.total_currency + ' with ' + (selectedFlights.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'airline') : (flightsSummary || 'budget flight')}.
 Departure: ${departureDate || 'soon'}, Return: ${returnDate || 'a few days later'}.
 
-IMPORTANT:
-- Make it 4-7 days long matching the exact dates.
-- Include realistic local activities near ${placeName} (food, sights, markets, parks, walks, evening plans).
-- Day 1 = arrival + easy activities.
-- Make it practical and exciting for a normal traveller.
+Make it 4-7 days long. Include local activities, food, sights, walks, markets, evening plans near ${placeName}.
+Day 1 = arrival + easy activities.
 
 Return ONLY valid JSON like this:
 {
