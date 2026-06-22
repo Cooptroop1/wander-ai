@@ -5,7 +5,7 @@ const duffel = new Duffel({
   token: process.env.DUFFEL_ACCESS_TOKEN!,
 });
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest) { 
   try {
     const { origin, destination, departureDate, returnDate, passengers = 1, cabinClass = 'economy' } = await request.json();
 
