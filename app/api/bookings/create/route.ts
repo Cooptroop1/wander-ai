@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
       selected_offers: [offerId],
       payments: [{
         type: "balance",
-        currency: "GBP", // change to the currency of the offer
-        amount: "0" // in real version you would charge the customer first
+        currency: "GBP",
+        amount: "0" // in real version you charge the customer first
       }],
       passengers: [{
         phone_number: passenger.phone || "+441234567890",
@@ -28,8 +28,9 @@ export async function POST(request: NextRequest) {
       }]
     });
 
-    return NextResponse.json({ success: true, order });
+    return NextResponse.json({ success: true, orderId: order.data.id, message: "Booking created!" });
   } catch (error: any) {
+    console.error(error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
