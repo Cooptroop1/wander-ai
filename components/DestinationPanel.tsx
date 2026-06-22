@@ -14,12 +14,17 @@ interface DestinationPanelProps {
 
 export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName, onPickNextStop }: DestinationPanelProps) {
   const [itinerary, setItinerary] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+const [loading, setLoading] = useState(false);
 
-  // Home
-  const [homeCity, setHomeCity] = useState('');
-  const [homeDeparture, setHomeDeparture] = useState('');
-  const [homeReturn, setHomeReturn] = useState('');
+// New states for flights
+const [flights, setFlights] = useState<any[]>([]);
+const [searchingFlights, setSearchingFlights] = useState(false);
+const [selectedFlights, setSelectedFlights] = useState<any>(null);
+
+// Home
+const [homeCity, setHomeCity] = useState('');
+const [homeDeparture, setHomeDeparture] = useState('');
+const [homeReturn, setHomeReturn] = useState('');
 
   // Stops (Stop 1 is the clicked place)
   const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]);
@@ -42,29 +47,66 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   const isFormValid = homeCity.trim() !== '' && homeDeparture !== '' && homeReturn !== '' &&
                       stops.every(s => s.city.trim() !== '' && s.departure !== '' && s.return !== '');
 
-  const generateItinerary = async () => {
-    if (!isFormValid) return;
-    setLoading(true);
-    try {
-      const res = await fetch('/api/grok-itinerary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          homeCity,
-          homeDeparture,
-          homeReturn,
-          stops
-        }),
-      });
+  const searchFlights = async () => {
+  if (!homeCity || !homeDeparture) {
+    alert("Please enter home city and departure date");
+    return;
+  }
+  
+  setSearchingFlights(true);
+  try {
+    const res = await fetch('/api/flights/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        origin: homeCity,
+        destination: placeName,
+        departureDate: homeDeparture,
+        returnDate: homeReturn || undefined,
+        passengers: 1,
+        cabinClass: 'economy'
+      }),
+    });
 
-      if (!res.ok) throw new Error('Grok error');
-      const data = await res.json();
-      setItinerary(data);
-    } catch (err) {
-      alert('Error — check F12 console');
+    const data = await res.json();
+    if (data.success) {
+      setFlights(data.offers || []);
+      alert(`Found ${data.offers?.length || 0} flight options!`);
+    } else {
+      alert(data.error || "No flights found");
     }
-    setLoading(false);
-  };
+  } catch (err) {
+    alert("Flight search failed — check console (F12)");
+    console.error(err);
+  }
+  setSearchingFlights(false);
+};
+
+const generateItinerary = async () => {
+  if (!isFormValid) return;
+  setLoading(true);
+  try {
+    const res = await fetch('/api/grok-itinerary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        homeCity,
+        homeDeparture,
+        homeReturn,
+        placeName,
+        flightsSummary: flights.length > 0 ? `Real Duffel flights found (${flights.length} options)` : "No real flights searched yet"
+      }),
+    });
+
+    if (!res.ok) throw new Error('Grok error');
+    const data = await res.json();
+    setItinerary(data);
+  } catch (err) {
+    alert('Error generating itinerary — check console');
+    console.error(err);
+  }
+  setLoading(false);
+};
 
   if (!isOpen) return null;
 
