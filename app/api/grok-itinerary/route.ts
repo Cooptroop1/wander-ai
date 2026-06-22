@@ -4,24 +4,25 @@ export async function POST(request: NextRequest) {
   try {
         const { placeName, homeCity, lat, lng, departureDate, returnDate, selectedFlights, flightsSummary } = await request.json();
 
-            const prompt = `Create a rich day-by-day itinerary for a trip to ${placeName}.
+                const prompt = `Create a fun, detailed day-by-day itinerary for a trip to ${placeName}.
 
-User flies from ${homeCity || 'their home city'}.
-Flight info: ${selectedFlights ? selectedFlights.total_amount + selectedFlights.total_currency + ' with ' + (selectedFlights.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'airline') : (flightsSummary || 'budget flight')}.
-Departure: ${departureDate || 'soon'}, Return: ${returnDate || 'a few days later'}.
+Flight info: ${selectedFlight ? selectedFlight.price + ' with ' + selectedFlight.airline + ' (' + selectedFlight.duration + ')' : 'budget flight'}.
+Departure from ${homeCity} on ${departureDate || 'soon'}, return ${returnDate || 'a few days later'}.
 
-Make it 4-7 days long. Include local activities, food, sights, walks, markets, evening plans near ${placeName}.
-Day 1 = arrival + easy activities.
+Make it 5-7 full days. 
+Day 1 = arrival + easy local activities.
+Include real things to do near ${placeName} (markets, food, walks, sights, evening plans).
+Make it practical and exciting.
 
-Return ONLY valid JSON like this:
+Return ONLY valid JSON in this format:
 {
   "summary": "short exciting one-liner",
-  "flights": "the real selected flight details",
+  "flights": "the real flight details",
   "hotels": ["Hotel 1 – $price/night", "Hotel 2 – $price/night"],
   "weather": "weather summary",
   "itinerary": [
-    { "day": 1, "title": "Arrival day", "desc": "detailed paragraph with activities" },
-    { "day": 2, "title": "...", "desc": "..." }
+    { "day": 1, "title": "Arrival day", "desc": "long detailed paragraph with activities" },
+    { "day": 2, "title": "Full day of exploration", "desc": "long detailed paragraph" }
   ]
 }`;
 
