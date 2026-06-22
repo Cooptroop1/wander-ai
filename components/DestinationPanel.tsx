@@ -287,7 +287,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     {flights.slice(0, 8).map((offer: any, i: number) => (
       <div 
         key={i} 
-        onClick={() => setSelectedFlights(offer)}
+        onClick={() => setSelectedFlights(selectedFlights?.id === offer.id ? null : offer)}
         className={`bg-zinc-800 p-4 rounded-2xl cursor-pointer hover:bg-zinc-700 border border-zinc-700 hover:border-emerald-500 transition-all ${selectedFlights?.id === offer.id ? 'ring-2 ring-emerald-500' : ''}`}
       >
         <div className="flex justify-between items-center">
@@ -309,15 +309,15 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
 )}
           </div>
 
-          {/* Generate Itinerary Button */}
-          <button 
-            type="button"
-            onClick={generateItinerary}
-            disabled={!isFormValid || loading}
-            className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "🤖 Asking Grok..." : "✨ Generate AI itinerary"}
-          </button>
+          {/* Use Selected Flight in Itinerary */}
+<button 
+  type="button"
+  onClick={generateItinerary}
+  disabled={loading || !isFormValid}
+  className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  {loading ? "🤖 Asking Grok..." : "✨ Use selected flight + Generate full itinerary"}
+</button>
 
           {/* Itinerary Results */}
           {itinerary && (
