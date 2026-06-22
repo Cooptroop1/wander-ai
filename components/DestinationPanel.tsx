@@ -144,55 +144,90 @@ const generateItinerary = async () => {
           </div>
 
           {/* Multi-city checkbox */}
-          <div className="flex items-center gap-3 mb-6">
-            <input
-              type="checkbox"
-              checked={isMultiCity}
-              onChange={(e) => {
-                setIsMultiCity(e.target.checked);
-                if (e.target.checked) addStop(); // immediately open map when ticked
-              }}
-              className="w-5 h-5 accent-emerald-500"
-            />
-            <label className="text-sm font-medium">I want a multi-city trip</label>
+<div className="flex items-center gap-3 mb-6">
+  <input
+    type="checkbox"
+    checked={isMultiCity}
+    onChange={(e) => {
+      setIsMultiCity(e.target.checked);
+      if (e.target.checked) addStop();
+    }}
+    className="w-5 h-5 accent-emerald-500"
+  />
+  <label className="text-sm font-medium">I want a multi-city trip</label>
+</div>
+
+{/* Stops */}
+{isMultiCity && (
+  <div className="mb-8">
+    {stops.map((stop, index) => (
+      <div key={index} className="mb-6 border border-zinc-700 rounded-3xl p-6">
+        <h4 className="font-medium mb-3">Stop {index + 1}</h4>
+        <input
+          type="text"
+          placeholder="City name"
+          value={stop.city}
+          onChange={(e) => updateStop(index, 'city', e.target.value)}
+          className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 mb-4"
+        />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">Departure</label>
+            <input type="date" value={stop.departure} onChange={(e) => updateStop(index, 'departure', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
           </div>
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">Return</label>
+            <input type="date" value={stop.return} onChange={(e) => updateStop(index, 'return', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
 
-          {/* Stops */}
-          {isMultiCity && (
-            <div className="mb-8">
-              {stops.map((stop, index) => (
-                <div key={index} className="mb-6 border border-zinc-700 rounded-3xl p-6">
-                  <h4 className="font-medium mb-3">Stop {index + 1}</h4>
-                  <input
-                    type="text"
-                    placeholder="City name"
-                    value={stop.city}
-                    onChange={(e) => updateStop(index, 'city', e.target.value)}
-                    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 mb-4"
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">Departure</label>
-                      <input type="date" value={stop.departure} onChange={(e) => updateStop(index, 'departure', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">Return</label>
-                      <input type="date" value={stop.return} onChange={(e) => updateStop(index, 'return', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+{/* === NEW: FLIGHT SEARCH SECTION === */}
+<div className="mb-8 p-6 border border-emerald-500/30 bg-zinc-900/50 rounded-3xl">
+  <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+    ✈️ Cheap Flights Search
+  </h3>
+  <button 
+    onClick={searchFlights}
+    disabled={searchingFlights || !homeCity || !homeDeparture}
+    className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 rounded-3xl font-semibold mb-6 transition-all"
+  >
+    {searchingFlights ? "Searching real flights..." : "🔍 Search Cheap Flights with Duffel"}
+  </button>
 
-          <button 
-            type="button"
-            onClick={generateItinerary}
-            disabled={!isFormValid || loading}
-            className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "🤖 Asking Grok..." : "✨ Generate AI itinerary"}
-          </button>
+  {flights.length > 0 && (
+  <div className="max-h-64 overflow-y-auto space-y-3">
+    <p className="text-sm text-emerald-400">Top options found:</p>
+    {flights.slice(0, 5).map((offer: any, i: number) => (
+      <div 
+        key={i} 
+        onClick={() => setSelectedFlights(offer)}
+        className={`bg-zinc-800 p-4 rounded-2xl text-sm cursor-pointer hover:bg-zinc-700 transition-all ${selectedFlights?.id === offer.id ? 'ring-2 ring-emerald-500' : ''}`}
+      >
+        <div className="font-medium">{offer.total_amount} {offer.total_currency}</div>
+        <div className="text-zinc-400 text-xs">
+          {offer.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'Airline'} • 
+          {offer.slices?.[0]?.duration}
+        </div>
+        {selectedFlights?.id === offer.id && <div className="text-emerald-400 text-xs mt-1">✓ Selected for itinerary</div>}
+      </div>
+    ))}
+  </div>
+)}
+</div>
+
+{/* Generate Itinerary Button */}
+<button 
+  type="button"
+  onClick={generateItinerary}
+  disabled={!isFormValid || loading}
+  className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  {loading ? "🤖 Asking Grok..." : "✨ Generate AI itinerary"}
+</button>
         </div>
       </div>
     </div>
