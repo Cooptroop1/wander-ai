@@ -112,16 +112,23 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
       <option value="LTN">Luton (LTN)</option>
     </select>
     <button 
-      onClick={() => {
-        const guesses = { 'norwich': 'NWI', 'london': 'STN', 'paris': 'CDG', 'derham': 'NWI', 'swaffham': 'NWI' };
-        const guess = guesses[placeName.toLowerCase()] || 'LHR';
-        setDestIATA(guess);
-        alert("Auto-filled " + guess + " — change if needed");
-      }}
-      className="px-4 bg-emerald-600 hover:bg-emerald-500 rounded-3xl"
-    >
-      Auto-fill
-    </button>
+  onClick={() => {
+    let guess = 'STN'; // default London area
+    const lower = placeName.toLowerCase();
+    if (lower.includes('norwich') || lower.includes('dereham') || lower.includes('toftwood') || lower.includes('swaffham')) guess = 'NWI';
+    else if (lower.includes('paris')) guess = 'CDG';
+    else if (lower.includes('london') || lower.includes('stansted')) guess = 'STN';
+    else if (lower.includes('gatwick')) guess = 'LGW';
+    else if (lower.includes('heathrow')) guess = 'LHR';
+    else if (lower.includes('luton')) guess = 'LTN';
+    
+    setDestIATA(guess);
+    alert(`✅ Auto-detected nearest airport for "${placeName}": ${guess}\nChange if you want a different airport`);
+  }}
+  className="px-6 bg-emerald-600 hover:bg-emerald-500 rounded-3xl font-semibold"
+>
+  🚀 Auto nearest airport
+</button>
   </div>
   <input 
     type="text" 
