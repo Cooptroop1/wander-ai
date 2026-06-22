@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+// app/api/bookings/create/route.ts
 import { Duffel } from '@duffel/api';
+import { NextRequest } from 'next/server';
 
 const duffel = new Duffel({
   token: process.env.DUFFEL_ACCESS_TOKEN!,
@@ -7,30 +8,49 @@ const duffel = new Duffel({
 
 export async function POST(request: NextRequest) {
   try {
-    const { offerId, passenger } = await request.json();
+    const body = await request.json();
+    const { offerId, passengers, totalAmount, totalCurrency } = body;
+
+    if (!offerId) {
+      return Response.json({ success: false, error: "offerId is required" }, { status: 400 });
+    }
 
     const order = await duffel.orders.create({
+      type: "instant",                                      // ← THIS FIXES THE TS ERROR
       selected_offers: [offerId],
       payments: [{
         type: "balance",
-        currency: "GBP",
-        amount: "0" // in real version you charge the customer first
+        currency: totalCurrency || "GBP",
+        amount: totalAmount || "123.45",                   // must match offer total exactly
       }],
-      passengers: [{
-        phone_number: passenger.phone || "+441234567890",
-        email: passenger.email,
-        born_on: passenger.dob || "1990-01-01",
-        title: "mr",
-        gender: "m",
-        family_name: passenger.lastName,
-        given_name: passenger.firstName,
-        id: "passenger_1"
-      }]
+      passengers: Array.isArray(passengers) 
+        ? passengers 
+        : [ {                                              // handle single object from form
+            id: "pas_1",                                   // optional - helps Duffel match
+            title: "mr",
+            given_name: passengers?.given_name || passengers?.firstName || "Test",
+            family_name: passengers?.family_name || passengers?.lastName || "Passenger",
+            born_on: passengers?.born_on || "1995-01-01",
+            gender: "m",
+            email: passengers?.email || "test@example.com",
+            phone_number: passengers?.phone_number || "+442080160508",
+          }],
     });
 
-    return NextResponse.json({ success: true, orderId: order.data.id, message: "Booking created on Duffel!" });
+    console.log("✅ Duffel order created:", order.data.id);
+
+    return Response.json({
+      success: true,
+      order: order.data,          // full order with id, segments, booking reference, etc.
+      message: "Booking confirmed! 🎉",
+    });
+
   } catch (error: any) {
-    console.error(error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Duffel order error:", error?.body || error);
+    return Response.json({
+      success: false,
+      error: error?.message || "Failed to create booking",
+      details: error?.body || null,
+    }, { status: 400 });
   }
 }
