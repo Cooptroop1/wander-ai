@@ -320,7 +320,18 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   </div>
 )}
           </div>
-
+{/* Passenger Details - appears after selecting a flight */}
+{selectedFlights && (
+  <div className="mb-8 p-6 bg-zinc-900/50 border border-zinc-700 rounded-3xl">
+    <h3 className="font-semibold mb-4">Passenger Details for Booking</h3>
+    <input type="text" placeholder="First Name" className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
+    <input type="text" placeholder="Last Name" className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
+    <input type="date" placeholder="Date of Birth" className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
+    <input type="email" placeholder="Email" className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
+    <input type="tel" placeholder="Phone" className="w-full bg-zinc-800 rounded-3xl px-5 py-4" />
+  </div>
+)}
+          
           {/* Use Selected Flight in Itinerary */}
 <button 
   type="button"
