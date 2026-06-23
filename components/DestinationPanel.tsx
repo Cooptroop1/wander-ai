@@ -27,11 +27,11 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   const [homeDeparture, setHomeDeparture] = useState('');
   const [homeReturn, setHomeReturn] = useState('');
   const [passenger, setPassenger] = useState({
-    firstName: 'Alex',
-    lastName: 'Cooper',
-    dob: '1995-05-15',
-    email: 'alex@cooptroop.eth',
-    phone: '+447700900123'
+    firstName: '',
+    lastName: '',
+    dob: '',
+    email: '',
+    phone: ''
   });
   const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]);
   const [isMultiCity, setIsMultiCity] = useState(false);
@@ -89,6 +89,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
       const data = await res.json();
       if (data.success) {
         setFlights(data.offers || []);
+        alert(`✅ Found ${data.offers.length} real flight options!`);
       } else {
         alert("Duffel: " + (data.error || "Unknown"));
       }
@@ -100,8 +101,8 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   };
 
   const createBooking = async () => {
-    if (!selectedFlights) {
-      alert("Please select a flight first");
+    if (!selectedFlights || !passenger.firstName || !passenger.email) {
+      alert("Select a flight + fill passenger details first");
       return;
     }
     setStep('loading');
@@ -118,7 +119,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             email: passenger.email,
             phone_number: passenger.phone,
           },
-          totalAmount: selectedFlights.total_amount || "32.24",
+          totalAmount: selectedFlights.total_amount || "249.00",
           totalCurrency: selectedFlights.total_currency || "GBP",
         }),
       });
@@ -132,7 +133,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         setStep('normal');
       }
     } catch (err: any) {
-      console.error(err);
+      setError(err.message || "Network error");
       alert("Network error — check console");
       setStep('normal');
     }
@@ -169,15 +170,14 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     <div className="fixed inset-0 bg-zinc-950 z-[9999] flex items-center justify-center p-4">
       <div className="bg-zinc-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-5 border-b border-zinc-700 flex items-center justify-between">
-          <h2 className="text-3xl font-bold">🌍 {placeName} • Booking</h2>
-          <button onClick={() => window.location.href = "/my-trips"} className="px-5 py-1 bg-white text-black rounded-xl">My Trips</button>
-          <button onClick={onClose}><X size={32} /></button>
+          <h2 className="text-3xl font-bold">🌍 {placeName} • Full Booking Flow</h2>
+          <div className="flex gap-3">
+            <button onClick={() => window.location.href = "/my-trips"} className="px-5 py-1 bg-white text-black rounded-xl font-semibold">📍 My Trips</button>
+            <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-2xl"><X size={32} /></button>
+          </div>
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* All your original sections kept */}
-          {/* (Home IATA, Destination, Dates, Multi-city, Stops, Flight Search, Passenger Details - all unchanged) */}
-
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Home airport IATA code <span className="text-red-400">*</span></label>
             <input type="text" placeholder="LHR" value={homeCity} onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
@@ -211,14 +211,14 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
           ))}
 
           <div className="mb-8 p-6 border border-emerald-500/30 bg-zinc-900/50 rounded-3xl">
-            <h3 className="text-xl font-semibold mb-4">✈️ Cheap Flights Search (Duffel)</h3>
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">✈️ Cheap Flights Search (Duffel)</h3>
             <button onClick={searchFlights} disabled={searchingFlights || !homeCity || !homeDeparture} className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 rounded-3xl font-semibold mb-6">
               {searchingFlights ? "Searching real flights..." : "🔍 Search Cheap Flights"}
             </button>
             {flights.length > 0 && (
               <div className="max-h-80 overflow-y-auto space-y-3">
                 {flights.slice(0, 8).map((offer: any, i: number) => (
-                  <div key={i} onClick={() => setSelectedFlights(offer)} className="bg-zinc-800 p-4 rounded-2xl cursor-pointer hover:bg-zinc-700 border border-zinc-700">
+                  <div key={i} onClick={() => setSelectedFlights(selectedFlights?.id === offer.id ? null : offer)} className={`bg-zinc-800 p-4 rounded-2xl cursor-pointer hover:bg-zinc-700 border ${selectedFlights?.id === offer.id ? 'ring-2 ring-emerald-500' : 'border-zinc-700'}`}>
                     <div className="flex justify-between items-center">
                       <div className="font-bold text-xl text-white">{offer.total_amount} {offer.total_currency}</div>
                       <button className="text-xs bg-emerald-600 px-3 py-1 rounded-full">Select</button>
@@ -244,17 +244,17 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             </div>
           )}
 
-          {step === 'loading' && <div className="text-center py-12 text-xl">⏳ Creating real booking...</div>}
+          {step === 'loading' && <div className="text-center py-12 text-xl">⏳ Creating real booking with Duffel...</div>}
 
           {step === 'confirmed' && (
             <div className="p-8 bg-emerald-950 border border-emerald-500 rounded-3xl text-center">
               <div className="text-6xl mb-4">🎉</div>
               <h2 className="text-3xl font-bold">Booking Confirmed!</h2>
-              <p className="font-mono">Order: {order?.id}</p>
-              <p className="text-2xl font-bold">PNR: {order?.booking_reference || "RZPNX8"}</p>
+              <p className="font-mono text-xl mt-2">Order: {order?.id}</p>
+              <p className="text-2xl font-bold mt-2">PNR: {order?.booking_reference || "RZPNX8"}</p>
               <div className="flex flex-col gap-3 mt-8">
                 <button onClick={() => window.location.href = "/my-trips"} className="w-full py-4 bg-white text-black rounded-3xl font-semibold text-lg">→ My Trips</button>
-                <button onClick={onClose} className="w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl">Close</button>
+                <button onClick={onClose} className="w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl">Close Panel</button>
               </div>
             </div>
           )}
