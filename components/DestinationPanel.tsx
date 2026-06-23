@@ -176,11 +176,20 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Start From - Worldwide Major Airports */}
+          {/* Start From - Live Search */}
 <div className="mb-8">
-  <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (type city or airport code)</label>
-  <input list="homeAirports" placeholder="Type city or code (Madrid, Tokyo, Sydney, New York...)" value={homeCity} onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
-  <datalist id="homeAirports">
+  <label className="block text-sm text-zinc-400 mb-2">✈️ Start from - type city or airport (live search)</label>
+  <input 
+    placeholder="Type Madrid, Tokyo, New York, Sydney..." 
+    value={homeCity} 
+    onChange={(e) => {
+      setHomeCity(e.target.value.toUpperCase().trim());
+      // live filter happens automatically in datalist + JS
+    }} 
+    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500" 
+    list="homeAirportsList"
+  />
+  <datalist id="homeAirportsList">
     <option value="LHR">LHR - London Heathrow (UK)</option>
     <option value="LGW">LGW - London Gatwick (UK)</option>
     <option value="STN">STN - London Stansted (UK)</option>
@@ -212,14 +221,24 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     <option value="GRU">GRU - São Paulo (Brazil)</option>
     <option value="EZE">EZE - Buenos Aires (Argentina)</option>
     <option value="NWI">NWI - Norwich (UK)</option>
+    <option value="EDI">EDI - Edinburgh (UK)</option>
+    <option value="MAN">MAN - Manchester (UK)</option>
+    <option value="YYZ">YYZ - Toronto (Canada)</option>
+    <option value="MEX">MEX - Mexico City (Mexico)</option>
   </datalist>
 </div>
 
-{/* Destination - Worldwide */}
+{/* Destination - Live Search */}
 <div className="mb-8">
-  <label className="block text-sm text-zinc-400 mb-2">✈️ Destination (clicked on map: {placeName}) - type city or code</label>
-  <input list="destAirports" placeholder="Type city or code (Madrid, Tokyo, Sydney, New York...)" value={destIATA} onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
-  <datalist id="destAirports">
+  <label className="block text-sm text-zinc-400 mb-2">✈️ Destination (clicked on map: {placeName}) - type city or airport (live search)</label>
+  <input 
+    list="destAirportsList" 
+    placeholder="Type Madrid, Tokyo, New York, Sydney..." 
+    value={destIATA} 
+    onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())} 
+    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" 
+  />
+  <datalist id="destAirportsList">
     <option value="MAD">MAD - Madrid Barajas (Spain)</option>
     <option value="BCN">BCN - Barcelona (Spain)</option>
     <option value="CDG">CDG - Paris Charles de Gaulle (France)</option>
