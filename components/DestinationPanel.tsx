@@ -168,6 +168,17 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     <div className="fixed inset-0 bg-zinc-950 z-[9999] flex items-center justify-center p-4">
       <div className="bg-zinc-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-5 border-b border-zinc-700 flex items-center justify-between">
+  <h2 className="text-3xl font-bold">🌍 {placeName} • Full Booking Flow</h2>
+  <div className="flex gap-3">
+    <button 
+      onClick={() => window.location.href = "/my-trips"}
+      className="px-4 py-2 bg-white text-black rounded-2xl text-sm font-semibold hover:bg-zinc-100"
+    >
+      📍 My Trips
+    </button>
+    <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-2xl"><X size={32} /></button>
+  </div>
+</div>
           <h2 className="text-3xl font-bold">🌍 {placeName} • Full Booking Flow</h2>
           <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-2xl"><X size={32} /></button>
         </div>
