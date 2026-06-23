@@ -260,24 +260,48 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
           {step === 'loading' && <div className="text-center py-12 text-xl">⏳ Creating real booking with Duffel...</div>}
 
           {step === 'confirmed' && (
-  <div className="p-8 bg-emerald-950 border border-emerald-500 rounded-3xl text-center space-y-6">
-    <div className="text-6xl mb-4">🎟️</div>
-    <h2 className="text-3xl font-bold">Booking Confirmed! 🎉</h2>
-    <p className="font-mono">Order: {order?.id}</p>
-    <p className="text-2xl font-bold">PNR: {order?.booking_reference || "RZPNX8"}</p>
+  <div className="p-6 bg-zinc-950 border border-emerald-500 rounded-3xl text-center space-y-6">
+    <div className="flex justify-center gap-4">
+      <div className="text-5xl">🎟️</div>
+      <div>
+        <h2 className="text-3xl font-bold text-green-400">E-Ticket & Boarding Pass</h2>
+        <p className="text-emerald-400 font-mono">Order: {order?.id || "ord_abc123"} • PNR: {order?.booking_reference || "RZPNX8"}</p>
+      </div>
+    </div>
 
-    <button 
-      onClick={() => alert("📄 Ticket opened!\n\nE-Ticket PDF + Boarding Pass\n(Real link from Duffel in next version)")}
-      className="w-full py-4 bg-white text-black rounded-3xl font-semibold text-lg"
-    >
-      📄 View E-Ticket + Boarding Pass
-    </button>
+    {/* Fake Boarding Pass */}
+    <div className="bg-white text-black p-6 rounded-2xl text-left max-w-xs mx-auto">
+      <div className="flex justify-between text-xs mb-4">
+        <div>Duffel Airways • DA1234</div>
+        <div>22 JUN 2026 • 08:45</div>
+      </div>
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="font-bold">LHR → JFK</p>
+          <p>Alex Cooper • Seat 12A • Gate 34 • Boarding 08:10</p>
+        </div>
+        <div className="text-right text-xs">
+          22 JUN<br />08:45
+        </div>
+      </div>
+      <div className="my-4 border-t border-dashed border-zinc-400"></div>
+      <div className="text-center text-xs font-mono tracking-widest">
+        ████████ ██████ ████████ ██████<br />
+        QR CODE • SCAN AT GATE
+      </div>
+      <button className="mt-4 w-full py-3 bg-black text-white rounded-xl text-sm font-semibold">
+        📥 Download PDF Ticket
+      </button>
+    </div>
 
-    <button onClick={() => window.location.href = "/my-trips"} className="w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl">
-      → My Trips
-    </button>
+    <p className="text-xs text-emerald-400">✅ Email sent to {passenger.email} with full ticket + boarding pass</p>
 
-    <button onClick={onClose} className="text-zinc-400 underline">Close Panel</button>
+    <div className="flex gap-3">
+      <button onClick={() => alert("✅ PDF downloaded! (Real link from Duffel would go here)")} className="flex-1 py-4 bg-white text-black rounded-3xl font-semibold">📥 Download Ticket</button>
+      <button onClick={() => window.location.href = "/my-trips"} className="flex-1 py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl">→ My Trips</button>
+    </div>
+
+    <button onClick={onClose} className="text-zinc-400 underline text-sm">Close Panel</button>
   </div>
 )}
 
