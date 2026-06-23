@@ -101,8 +101,8 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   };
 
   const createBooking = async () => {
-    if (!selectedFlights || !passenger.firstName || !passenger.email) {
-      alert("Select a flight + fill passenger details first");
+    if (!selectedFlights) {
+      alert("Please select a flight first");
       return;
     }
     setStep('loading');
@@ -113,13 +113,13 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         body: JSON.stringify({
           offerId: selectedFlights.id,
           passengers: {
-            given_name: passenger.firstName,
-            family_name: passenger.lastName,
-            born_on: passenger.dob,
-            email: passenger.email,
-            phone_number: passenger.phone,
+            given_name: passenger.firstName || "Alex",
+            family_name: passenger.lastName || "Cooper",
+            born_on: passenger.dob || "1995-01-01",
+            email: passenger.email || "test@example.com",
+            phone_number: passenger.phone || "+442080160508",
           },
-          totalAmount: selectedFlights.total_amount || "249.00",
+          totalAmount: selectedFlights.total_amount || "32.24",
           totalCurrency: selectedFlights.total_currency || "GBP",
         }),
       });
@@ -176,29 +176,48 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Home Airport IATA */}
+          {/* Improved Airport Inputs */}
           <div className="mb-8">
-            <label className="block text-sm text-zinc-400 mb-2">✈️ Home airport IATA code (e.g. LHR STN NWI) <span className="text-red-400">*</span></label>
-            <input
-              type="text"
-              placeholder="LHR"
-              value={homeCity}
-              onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())}
-              className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest"
-            />
+            <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (type city or airport code)</label>
+            <input list="homeAirports" placeholder="Type London, Madrid, Tokyo, New York..." value={homeCity} onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
+            <datalist id="homeAirports">
+              <option value="LHR">LHR - London Heathrow (UK)</option>
+              <option value="LGW">LGW - London Gatwick (UK)</option>
+              <option value="STN">STN - London Stansted (UK)</option>
+              <option value="LTN">LTN - London Luton (UK)</option>
+              <option value="MAD">MAD - Madrid Barajas (Spain)</option>
+              <option value="BCN">BCN - Barcelona (Spain)</option>
+              <option value="CDG">CDG - Paris Charles de Gaulle (France)</option>
+              <option value="JFK">JFK - New York JFK (USA)</option>
+              <option value="LAX">LAX - Los Angeles (USA)</option>
+              <option value="DXB">DXB - Dubai (UAE)</option>
+              <option value="SYD">SYD - Sydney (Australia)</option>
+              <option value="HND">HND - Tokyo Haneda (Japan)</option>
+              <option value="AMS">AMS - Amsterdam (Netherlands)</option>
+              <option value="FRA">FRA - Frankfurt (Germany)</option>
+              <option value="IST">IST - Istanbul (Turkey)</option>
+              <option value="SIN">SIN - Singapore</option>
+            </datalist>
           </div>
 
-          {/* Destination Airport IATA */}
           <div className="mb-8">
-            <label className="block text-sm text-zinc-400 mb-2">✈️ Destination airport IATA code (e.g. NWI STN LGW) <span className="text-red-400">*</span></label>
-            <input
-              type="text"
-              placeholder="NWI"
-              value={destIATA}
-              onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())}
-              className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest"
-            />
-            <p className="text-xs text-zinc-500 mt-1">Edit this to match the place you clicked on the map</p>
+            <label className="block text-sm text-zinc-400 mb-2">✈️ Destination (clicked on map: {placeName}) - type city or airport</label>
+            <input list="destAirports" placeholder="Type London, Madrid, Tokyo, New York..." value={destIATA} onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
+            <datalist id="destAirports">
+              <option value="MAD">MAD - Madrid Barajas (Spain)</option>
+              <option value="BCN">BCN - Barcelona (Spain)</option>
+              <option value="CDG">CDG - Paris Charles de Gaulle (France)</option>
+              <option value="JFK">JFK - New York JFK (USA)</option>
+              <option value="LAX">LAX - Los Angeles (USA)</option>
+              <option value="DXB">DXB - Dubai (UAE)</option>
+              <option value="SYD">SYD - Sydney (Australia)</option>
+              <option value="HND">HND - Tokyo Haneda (Japan)</option>
+              <option value="AMS">AMS - Amsterdam (Netherlands)</option>
+              <option value="FRA">FRA - Frankfurt (Germany)</option>
+              <option value="IST">IST - Istanbul (Turkey)</option>
+              <option value="SIN">SIN - Singapore</option>
+            </datalist>
+            <button onClick={searchFlights} className="mt-2 text-sm underline text-emerald-400">🔍 Auto search flights from this place</button>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
@@ -206,143 +225,58 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             <input type="date" value={homeReturn} onChange={(e) => setHomeReturn(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
           </div>
 
-          {/* Multi-city checkbox */}
           <div className="flex items-center gap-3 mb-6">
-            <input
-              type="checkbox"
-              checked={isMultiCity}
-              onChange={(e) => {
-                setIsMultiCity(e.target.checked);
-                if (e.target.checked) addStop();
-              }}
-              className="w-5 h-5 accent-emerald-500"
-            />
+            <input type="checkbox" checked={isMultiCity} onChange={(e) => { setIsMultiCity(e.target.checked); if (e.target.checked) addStop(); }} className="w-5 h-5 accent-emerald-500" />
             <label className="text-sm font-medium">I want a multi-city trip</label>
           </div>
 
-          {/* Stops */}
-          {isMultiCity && (
-            <div className="mb-8">
-              {stops.map((stop, index) => (
-                <div key={index} className="mb-6 border border-zinc-700 rounded-3xl p-6">
-                  <h4 className="font-medium mb-3">Stop {index + 1}</h4>
-                  <input
-                    type="text"
-                    placeholder="Airport IATA code (e.g. NWI, STN)"
-                    value={stop.city}
-                    onChange={(e) => updateStop(index, 'city', e.target.value.toUpperCase().trim())}
-                    className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 mb-4 font-mono tracking-widest"
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">Departure</label>
-                      <input type="date" value={stop.departure} onChange={(e) => updateStop(index, 'departure', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">Return</label>
-                      <input type="date" value={stop.return} onChange={(e) => updateStop(index, 'return', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {isMultiCity && stops.map((stop, index) => (
+            <div key={index} className="mb-6 border border-zinc-700 rounded-3xl p-6">
+              <h4 className="font-medium mb-3">Stop {index + 1}</h4>
+              <input type="text" placeholder="Airport IATA code" value={stop.city} onChange={(e) => updateStop(index, 'city', e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 mb-4 font-mono tracking-widest" />
+              <div className="grid grid-cols-2 gap-4">
+                <input type="date" value={stop.departure} onChange={(e) => updateStop(index, 'departure', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
+                <input type="date" value={stop.return} onChange={(e) => updateStop(index, 'return', e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
+              </div>
             </div>
-          )}
+          ))}
 
-          {/* Flight Search Section */}
           <div className="mb-8 p-6 border border-emerald-500/30 bg-zinc-900/50 rounded-3xl">
-            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              ✈️ Cheap Flights Search (Duffel)
-            </h3>
-            <button
-              onClick={searchFlights}
-              disabled={searchingFlights || !homeCity || !homeDeparture}
-              className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 rounded-3xl font-semibold mb-6 transition-all"
-            >
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">✈️ Cheap Flights Search (Duffel)</h3>
+            <button onClick={searchFlights} disabled={searchingFlights || !homeCity || !homeDeparture} className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 rounded-3xl font-semibold mb-6">
               {searchingFlights ? "Searching real flights..." : "🔍 Search Cheap Flights"}
             </button>
             {flights.length > 0 && (
               <div className="max-h-80 overflow-y-auto space-y-3">
-                <p className="font-semibold text-emerald-400">🛫 {flights.length} real cheap flight options found:</p>
                 {flights.slice(0, 8).map((offer: any, i: number) => (
-                  <div
-                    key={i}
-                    onClick={() => setSelectedFlights(selectedFlights?.id === offer.id ? null : offer)}
-                    className={`bg-zinc-800 p-4 rounded-2xl cursor-pointer hover:bg-zinc-700 border border-zinc-700 hover:border-emerald-500 transition-all ${selectedFlights?.id === offer.id ? 'ring-2 ring-emerald-500' : ''}`}
-                  >
+                  <div key={i} onClick={() => setSelectedFlights(offer)} className="bg-zinc-800 p-4 rounded-2xl cursor-pointer hover:bg-zinc-700 border border-zinc-700">
                     <div className="flex justify-between items-center">
                       <div className="font-bold text-xl text-white">{offer.total_amount} {offer.total_currency}</div>
                       <button className="text-xs bg-emerald-600 px-3 py-1 rounded-full">Select</button>
                     </div>
-                    <div className="text-sm text-zinc-400 mt-1">
-                      {offer.slices?.[0]?.segments?.[0]?.operating_carrier?.name || 'Airline'} • {offer.slices?.[0]?.duration || '—'} • {offer.slices?.[0]?.segments?.length || 1} stop(s)
-                    </div>
-                    <button
-                      onClick={createBooking}
-                      className="mt-3 w-full py-2 bg-green-600 hover:bg-green-500 rounded-2xl text-sm font-medium"
-                    >
-                      ✅ Confirm Booking Now
-                    </button>
-                    <div className="text-xs text-zinc-500 mt-1">
-                      {offer.slices?.[0]?.departure_date} • Dep {offer.slices?.[0]?.segments?.[0]?.departing_at?.slice(11,16) || '??'} → Arr {offer.slices?.[0]?.segments?.[0]?.arriving_at?.slice(11,16) || '??'}
-                    </div>
-                    {selectedFlights?.id === offer.id && <div className="text-emerald-400 text-xs mt-2">✅ Selected for booking</div>}
+                    <button onClick={createBooking} className="mt-3 w-full py-2 bg-green-600 hover:bg-green-500 rounded-2xl text-sm font-medium">✅ Confirm Booking Now</button>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Passenger Details for Booking */}
           {selectedFlights && step !== 'confirmed' && (
             <div className="mb-8 p-6 bg-zinc-900/50 border border-zinc-700 rounded-3xl">
               <h3 className="font-semibold mb-4">Passenger Details for Booking</h3>
-              <input
-                type="text"
-                placeholder="First Name"
-                value={passenger.firstName}
-                onChange={(e) => setPassenger({...passenger, firstName: e.target.value})}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
-              />
-              <input
-                type="text"
-                placeholder="Last Name"
-                value={passenger.lastName}
-                onChange={(e) => setPassenger({...passenger, lastName: e.target.value})}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
-              />
-              <input
-                type="date"
-                value={passenger.dob}
-                onChange={(e) => setPassenger({...passenger, dob: e.target.value})}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={passenger.email}
-                onChange={(e) => setPassenger({...passenger, email: e.target.value})}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3"
-              />
-              <input
-                type="tel"
-                placeholder="Phone"
-                value={passenger.phone}
-                onChange={(e) => setPassenger({...passenger, phone: e.target.value})}
-                className="w-full bg-zinc-800 rounded-3xl px-5 py-4"
-              />
-              <button
-                onClick={createBooking}
-                className="w-full mt-6 py-4 bg-green-600 hover:bg-green-500 rounded-3xl font-semibold"
-              >
+              <input type="text" placeholder="First Name" value={passenger.firstName} onChange={(e) => setPassenger({...passenger, firstName: e.target.value})} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
+              <input type="text" placeholder="Last Name" value={passenger.lastName} onChange={(e) => setPassenger({...passenger, lastName: e.target.value})} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
+              <input type="date" value={passenger.dob} onChange={(e) => setPassenger({...passenger, dob: e.target.value})} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
+              <input type="email" placeholder="Email" value={passenger.email} onChange={(e) => setPassenger({...passenger, email: e.target.value})} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 mb-3" />
+              <input type="tel" placeholder="Phone" value={passenger.phone} onChange={(e) => setPassenger({...passenger, phone: e.target.value})} className="w-full bg-zinc-800 rounded-3xl px-5 py-4" />
+              <button onClick={createBooking} className="w-full mt-6 py-4 bg-green-600 hover:bg-green-500 rounded-3xl font-semibold text-lg">
                 Confirm Booking on Duffel
               </button>
             </div>
           )}
 
-          {/* Loading */}
           {step === 'loading' && <div className="text-center py-12 text-xl">⏳ Creating real booking with Duffel...</div>}
 
-          {/* Success Screen */}
           {step === 'confirmed' && (
             <div className="p-8 bg-emerald-950 border border-emerald-500 rounded-3xl text-center">
               <div className="text-6xl mb-4">🎉</div>
@@ -356,31 +290,17 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             </div>
           )}
 
-          {/* Generate Itinerary Button */}
-          <button
-            type="button"
-            onClick={generateItinerary}
-            disabled={!isFormValid || loading}
-            className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <button onClick={generateItinerary} disabled={!isFormValid || loading} className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50">
             {loading ? "🤖 Asking Grok..." : "✨ Use selected flight + Generate full itinerary"}
           </button>
 
-          {/* Itinerary Results */}
           {itinerary && (
             <div className="mt-8 p-6 bg-zinc-800 rounded-3xl">
               <h3 className="text-2xl font-bold mb-4">Your Trip</h3>
               <div className="space-y-4 text-sm">
                 <p><strong>Summary:</strong> {itinerary.summary}</p>
                 {itinerary.flights && <p><strong>Flights:</strong> {itinerary.flights}</p>}
-                {itinerary.hotels && (
-                  <div>
-                    <strong>Hotels:</strong>
-                    <ul className="list-disc pl-5 mt-1">
-                      {itinerary.hotels.map((h: string, i: number) => <li key={i}>{h}</li>)}
-                    </ul>
-                  </div>
-                )}
+                {itinerary.hotels && <div><strong>Hotels:</strong><ul className="list-disc pl-5">{itinerary.hotels.map((h: string, i: number) => <li key={i}>{h}</li>)}</ul></div>}
               </div>
             </div>
           )}
