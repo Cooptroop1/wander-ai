@@ -250,19 +250,30 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             </div>
           )}
 
-          {/* Loading + Confirmation */}
-          {step === 'loading' && <div className="text-center py-12 text-xl">⏳ Creating real booking with Duffel...</div>}
+         {/* Success Screen */}
+{step === 'confirmed' && (
+  <div className="text-center space-y-6 py-8">
+    <div className="text-7xl">🎉</div>
+    <h2 className="text-3xl font-bold text-green-500">Booking Confirmed!</h2>
+    <p className="font-mono">Order ID: {order?.id}</p>
+    <p className="text-xl font-bold">PNR: {order?.booking_reference || "RZPNX8"}</p>
 
-          {step === 'confirmed' && (
-            <div className="p-8 bg-emerald-950 border border-emerald-500 rounded-3xl text-center">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-3xl font-bold">Booking Confirmed!</h2>
-              <p className="font-mono text-xl mt-2">Order: {order?.id}</p>
-              <p className="text-2xl font-bold mt-2">PNR: {order?.booking_reference || "RZPNX8"}</p>
-              <button className="mt-6 w-full py-4 bg-white text-black rounded-3xl font-semibold">View Ticket + Boarding Pass</button>
-              <button className="mt-3 w-full py-4 bg-zinc-700 rounded-3xl" onClick={() => window.location.href = "/my-trips"}>→ My Trips</button>
-            </div>
-          )}
+    <div className="flex flex-col gap-3">
+      <button 
+        onClick={() => window.location.href = "/my-trips"}
+        className="w-full py-4 bg-white text-black rounded-3xl font-semibold text-lg"
+      >
+        → Go to My Trips
+      </button>
+      <button 
+        onClick={onClose}
+        className="w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl"
+      >
+        Close Panel
+      </button>
+    </div>
+  </div>
+)}
 
           {/* Generate Itinerary - kept exactly */}
           <button onClick={generateItinerary} disabled={!isFormValid || loading} className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50">
