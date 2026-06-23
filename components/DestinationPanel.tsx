@@ -260,17 +260,26 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
           {step === 'loading' && <div className="text-center py-12 text-xl">⏳ Creating real booking with Duffel...</div>}
 
           {step === 'confirmed' && (
-            <div className="p-8 bg-emerald-950 border border-emerald-500 rounded-3xl text-center">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-3xl font-bold">Booking Confirmed!</h2>
-              <p className="font-mono text-xl mt-2">Order: {order?.id}</p>
-              <p className="text-2xl font-bold mt-2">PNR: {order?.booking_reference || "RZPNX8"}</p>
-              <div className="flex flex-col gap-3 mt-8">
-                <button onClick={() => window.location.href = "/my-trips"} className="w-full py-4 bg-white text-black rounded-3xl font-semibold text-lg">→ Go to My Trips</button>
-                <button onClick={onClose} className="w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl">Close Panel</button>
-              </div>
-            </div>
-          )}
+  <div className="p-8 bg-emerald-950 border border-emerald-500 rounded-3xl text-center space-y-6">
+    <div className="text-6xl mb-4">🎟️</div>
+    <h2 className="text-3xl font-bold">Booking Confirmed! 🎉</h2>
+    <p className="font-mono">Order: {order?.id}</p>
+    <p className="text-2xl font-bold">PNR: {order?.booking_reference || "RZPNX8"}</p>
+
+    <button 
+      onClick={() => alert("📄 Ticket opened!\n\nE-Ticket PDF + Boarding Pass\n(Real link from Duffel in next version)")}
+      className="w-full py-4 bg-white text-black rounded-3xl font-semibold text-lg"
+    >
+      📄 View E-Ticket + Boarding Pass
+    </button>
+
+    <button onClick={() => window.location.href = "/my-trips"} className="w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl">
+      → My Trips
+    </button>
+
+    <button onClick={onClose} className="text-zinc-400 underline">Close Panel</button>
+  </div>
+)}
 
           <button onClick={generateItinerary} disabled={!isFormValid || loading} className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50">
             {loading ? "🤖 Asking Grok..." : "✨ Use selected flight + Generate full itinerary"}
