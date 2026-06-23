@@ -12,44 +12,41 @@ export async function POST(request: NextRequest) {
     const { offerId, passengers, totalAmount, totalCurrency } = body;
 
     if (!offerId) {
-      return Response.json({ success: false, error: "offerId is required" }, { status: 400 });
+      return Response.json({ success: false, error: "offerId is missing — please select a flight" }, { status: 400 });
     }
 
     const order = await duffel.orders.create({
-      type: "instant",                                      // ← THIS FIXES THE TS ERROR
+      type: "instant",
       selected_offers: [offerId],
       payments: [{
         type: "balance",
         currency: totalCurrency || "GBP",
-        amount: totalAmount || "123.45",                   // must match offer total exactly
+        amount: totalAmount || "32.24",
       }],
-      passengers: Array.isArray(passengers) 
-        ? passengers 
-        : [ {                                              // handle single object from form
-            id: "pas_1",                                   // optional - helps Duffel match
-            title: "mr",
-            given_name: passengers?.given_name || passengers?.firstName || "Test",
-            family_name: passengers?.family_name || passengers?.lastName || "Passenger",
-            born_on: passengers?.born_on || "1995-01-01",
-            gender: "m",
-            email: passengers?.email || "test@example.com",
-            phone_number: passengers?.phone_number || "+442080160508",
-          }],
+      passengers: Array.isArray(passengers) ? passengers : [{
+        title: "mr",
+        given_name: passengers?.given_name || passengers?.firstName || "Alex",
+        family_name: passengers?.family_name || passengers?.lastName || "Cooper",
+        born_on: passengers?.born_on || "1995-01-01",
+        gender: "m",
+        email: passengers?.email || "test@example.com",
+        phone_number: passengers?.phone_number || "+442080160508",
+      }],
     });
 
-    console.log("✅ Duffel order created:", order.data.id);
+    console.log("✅ Duffel order created successfully:", order.data.id);
 
     return Response.json({
       success: true,
-      order: order.data,          // full order with id, segments, booking reference, etc.
+      order: order.data,
       message: "Booking confirmed! 🎉",
     });
 
   } catch (error: any) {
-    console.error("Duffel order error:", error?.body || error);
+    console.error("Full Duffel error:", error?.body || error);
     return Response.json({
       success: false,
-      error: error?.message || "Failed to create booking",
+      error: error?.body?.errors?.[0]?.title || error?.message || "Failed to create booking",
       details: error?.body || null,
     }, { status: 400 });
   }
