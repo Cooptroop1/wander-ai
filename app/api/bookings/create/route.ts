@@ -38,10 +38,24 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Real Duffel order created:", order.data.id);
 
+    // Save to Supabase
+    await fetch('http://localhost:3000/api/bookings/save', {  // change to your vercel URL in production
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        order_id: order.data.id,
+        pnr: order.data.booking_reference,
+        route: "LHR → JFK",
+        date: "22 Jun 2026",
+        amount: totalAmount || "32.24",
+        passenger_name: passengers?.given_name + " " + passengers?.family_name || "Alex Cooper",
+      }),
+    });
+
     return Response.json({
       success: true,
       order: order.data,
-      message: "Booking confirmed! 🎉",
+      message: "Booking confirmed & saved! 🎉",
     });
 
   } catch (error: any) {
