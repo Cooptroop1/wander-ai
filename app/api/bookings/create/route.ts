@@ -1,33 +1,55 @@
 // app/api/bookings/create/route.ts
+import { Duffel } from '@duffel/api';
 import { NextRequest } from 'next/server';
+
+const duffel = new Duffel({
+  token: process.env.DUFFEL_ACCESS_TOKEN!,
+});
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log("Received:", body);
+    const { offerId, passengers, totalAmount, totalCurrency } = body;
 
-    // Mock success so the full flow works
-    const mockOrder = {
-      id: "ord_" + Date.now(),
-      booking_reference: "RZPNX8",
-      total_amount: body.totalAmount || "32.24",
-      total_currency: body.totalCurrency || "GBP",
-      passengers: body.passengers,
-    };
+    if (!offerId) {
+      return Response.json({ success: false, error: "offerId is required — select a flight" }, { status: 400 });
+    }
 
-    console.log("✅ Mock booking created (real Duffel call can be added later)");
+    console.log("📤 Sending to Duffel:", { offerId, totalAmount, totalCurrency });
+
+    const order = await duffel.orders.create({
+      type: "instant",
+      selected_offers: [offerId],
+      payments: [{
+        type: "balance",
+        currency: totalCurrency || "GBP",
+        amount: totalAmount || "32.24",
+      }],
+      passengers: Array.isArray(passengers) ? passengers : [{
+        title: "mr",
+        given_name: passengers?.given_name || passengers?.firstName || "Alex",
+        family_name: passengers?.family_name || passengers?.lastName || "Cooper",
+        born_on: passengers?.born_on || "1995-01-01",
+        gender: "m",
+        email: passengers?.email || "test@example.com",
+        phone_number: passengers?.phone_number || "+442080160508",
+      }],
+    });
+
+    console.log("✅ Real Duffel order created:", order.data.id);
 
     return Response.json({
       success: true,
-      order: mockOrder,
-      message: "Booking confirmed! 🎉 (Mock for testing)",
+      order: order.data,
+      message: "Booking confirmed! 🎉",
     });
 
   } catch (error: any) {
-    console.error(error);
+    console.error("Duffel error details:", error?.body || error);
     return Response.json({
       success: false,
-      error: error.message || "Failed to create booking",
+      error: error?.body?.errors?.[0]?.title || error?.message || "Failed to create booking",
+      details: error?.body || null,
     }, { status: 400 });
   }
 }
