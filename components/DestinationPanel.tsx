@@ -176,33 +176,49 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Improved Airport Inputs */}
-          <div className="mb-8">
-            <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (Home airport)</label>
-            <select value={homeCity} onChange={(e) => setHomeCity(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white">
-              <option value="">Select or type...</option>
-              <option value="LHR">LHR - London Heathrow</option>
-              <option value="LGW">LGW - London Gatwick</option>
-              <option value="STN">STN - London Stansted</option>
-              <option value="LTN">LTN - London Luton</option>
-              <option value="NWI">NWI - Norwich</option>
-            </select>
-          </div>
+          {/* Start From - Worldwide */}
+<div className="mb-8">
+  <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (Home airport) - type or select any city</label>
+  <input list="homeAirports" placeholder="Type city or airport (e.g. London, Madrid, New York, Tokyo)" value={homeCity} onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
+  <datalist id="homeAirports">
+    <option value="LHR">LHR - London Heathrow (UK)</option>
+    <option value="LGW">LGW - London Gatwick (UK)</option>
+    <option value="STN">STN - London Stansted (UK)</option>
+    <option value="LTN">LTN - London Luton (UK)</option>
+    <option value="MAD">MAD - Madrid Barajas (Spain)</option>
+    <option value="BCN">BCN - Barcelona (Spain)</option>
+    <option value="CDG">CDG - Paris Charles de Gaulle (France)</option>
+    <option value="ORY">ORY - Paris Orly (France)</option>
+    <option value="JFK">JFK - New York JFK (USA)</option>
+    <option value="LAX">LAX - Los Angeles (USA)</option>
+    <option value="DXB">DXB - Dubai (UAE)</option>
+    <option value="NWI">NWI - Norwich (UK)</option>
+    <option value="AMS">AMS - Amsterdam (Netherlands)</option>
+    <option value="FRA">FRA - Frankfurt (Germany)</option>
+    <option value="SYD">SYD - Sydney (Australia)</option>
+    <option value="HND">HND - Tokyo Haneda (Japan)</option>
+  </datalist>
+</div>
 
-          <div className="mb-8">
-            <label className="block text-sm text-zinc-400 mb-2">✈️ Destination (clicked on map: {placeName})</label>
-            <input list="destAirports" placeholder="Type or select airport (e.g. NWI, CDG, JFK)" value={destIATA} onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
-            <datalist id="destAirports">
-              <option value="NWI">NWI - Norwich Airport</option>
-              <option value="STN">STN - London Stansted</option>
-              <option value="LGW">LGW - London Gatwick</option>
-              <option value="LHR">LHR - London Heathrow</option>
-              <option value="LTN">LTN - London Luton</option>
-              <option value="CDG">CDG - Paris Charles de Gaulle</option>
-              <option value="JFK">JFK - New York JFK</option>
-            </datalist>
-            <button onClick={searchFlights} className="mt-2 text-sm underline text-emerald-400">🔍 Auto search flights from this place</button>
-          </div>
+{/* Destination - Worldwide */}
+<div className="mb-8">
+  <label className="block text-sm text-zinc-400 mb-2">✈️ Destination (clicked on map: {placeName}) - type any city/airport</label>
+  <input list="destAirports" placeholder="Type city or airport (e.g. Madrid, Paris, Tokyo, Sydney)" value={destIATA} onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
+  <datalist id="destAirports">
+    <option value="MAD">MAD - Madrid Barajas (Spain)</option>
+    <option value="BCN">BCN - Barcelona (Spain)</option>
+    <option value="CDG">CDG - Paris Charles de Gaulle (France)</option>
+    <option value="JFK">JFK - New York JFK (USA)</option>
+    <option value="LAX">LAX - Los Angeles (USA)</option>
+    <option value="DXB">DXB - Dubai (UAE)</option>
+    <option value="SYD">SYD - Sydney (Australia)</option>
+    <option value="HND">HND - Tokyo Haneda (Japan)</option>
+    <option value="NWI">NWI - Norwich (UK)</option>
+    <option value="AMS">AMS - Amsterdam (Netherlands)</option>
+    <option value="FRA">FRA - Frankfurt (Germany)</option>
+  </datalist>
+  <button onClick={searchFlights} className="mt-2 text-sm underline text-emerald-400">🔍 Auto search flights from this place</button>
+</div>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
             <input type="date" value={homeDeparture} onChange={(e) => setHomeDeparture(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
