@@ -168,42 +168,28 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     <div className="fixed inset-0 bg-zinc-950 z-[9999] flex items-center justify-center p-4">
       <div className="bg-zinc-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-5 border-b border-zinc-700 flex items-center justify-between">
-  <h2 className="text-3xl font-bold">🌍 {placeName} • Full Booking Flow</h2>
-  <div className="flex gap-3">
-    <button 
-      onClick={() => window.location.href = "/my-trips"}
-      className="px-4 py-2 bg-white text-black rounded-2xl text-sm font-semibold hover:bg-zinc-100"
-    >
-      📍 My Trips
-    </button>
-    <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-2xl"><X size={32} /></button>
-  </div>
-</div>
           <h2 className="text-3xl font-bold">🌍 {placeName} • Full Booking Flow</h2>
           <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-2xl"><X size={32} /></button>
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* Home Airport */}
+          {/* All your original sections */}
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Home airport IATA code <span className="text-red-400">*</span></label>
             <input type="text" placeholder="LHR" value={homeCity} onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
           </div>
 
-          {/* Destination Airport */}
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Destination airport IATA code <span className="text-red-400">*</span></label>
             <input type="text" placeholder="NWI" value={destIATA} onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
             <p className="text-xs text-zinc-500 mt-1">Edit this to match the place you clicked on the map</p>
           </div>
 
-          {/* Dates */}
           <div className="grid grid-cols-2 gap-4 mb-8">
             <input type="date" value={homeDeparture} onChange={(e) => setHomeDeparture(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
             <input type="date" value={homeReturn} onChange={(e) => setHomeReturn(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white" />
           </div>
 
-          {/* Multi-city */}
           <div className="flex items-center gap-3 mb-6">
             <input type="checkbox" checked={isMultiCity} onChange={(e) => { setIsMultiCity(e.target.checked); if (e.target.checked) addStop(); }} className="w-5 h-5 accent-emerald-500" />
             <label className="text-sm font-medium">I want a multi-city trip</label>
@@ -220,13 +206,11 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             </div>
           ))}
 
-          {/* Flight Search */}
           <div className="mb-8 p-6 border border-emerald-500/30 bg-zinc-900/50 rounded-3xl">
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">✈️ Cheap Flights Search (Duffel)</h3>
             <button onClick={searchFlights} disabled={searchingFlights || !homeCity || !homeDeparture} className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 rounded-3xl font-semibold mb-6">
               {searchingFlights ? "Searching real flights..." : "🔍 Search Cheap Flights"}
             </button>
-
             {flights.length > 0 && (
               <div className="max-h-80 overflow-y-auto space-y-3">
                 {flights.slice(0, 8).map((offer: any, i: number) => (
@@ -242,7 +226,6 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             )}
           </div>
 
-          {/* Passenger Details */}
           {selectedFlights && step !== 'confirmed' && (
             <div className="mb-8 p-6 bg-zinc-900/50 border border-zinc-700 rounded-3xl">
               <h3 className="font-semibold mb-4">Passenger Details for Booking</h3>
@@ -257,10 +240,8 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             </div>
           )}
 
-          {/* Loading */}
           {step === 'loading' && <div className="text-center py-12 text-xl">⏳ Creating real booking with Duffel...</div>}
 
-          {/* Success Screen - FIXED */}
           {step === 'confirmed' && (
             <div className="p-8 bg-emerald-950 border border-emerald-500 rounded-3xl text-center">
               <div className="text-6xl mb-4">🎉</div>
@@ -268,23 +249,16 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
               <p className="font-mono text-xl mt-2">Order: {order?.id}</p>
               <p className="text-2xl font-bold mt-2">PNR: {order?.booking_reference || "RZPNX8"}</p>
               <div className="flex flex-col gap-3 mt-8">
-                <button 
-                  onClick={() => window.location.href = "/my-trips"}
-                  className="w-full py-4 bg-white text-black rounded-3xl font-semibold text-lg"
-                >
+                <button onClick={() => window.location.href = "/my-trips"} className="w-full py-4 bg-white text-black rounded-3xl font-semibold text-lg">
                   → Go to My Trips
                 </button>
-                <button 
-                  onClick={onClose}
-                  className="w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl"
-                >
+                <button onClick={onClose} className="w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl">
                   Close Panel
                 </button>
               </div>
             </div>
           )}
 
-          {/* Generate Itinerary */}
           <button onClick={generateItinerary} disabled={!isFormValid || loading} className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50">
             {loading ? "🤖 Asking Grok..." : "✨ Use selected flight + Generate full itinerary"}
           </button>
