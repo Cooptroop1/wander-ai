@@ -5,71 +5,68 @@ import { useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import DestinationPanel from './DestinationPanel';
+import { getNearestAirport } from '@/lib/airports';
 
-function ClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void }) {
+function ClickHandler({ onClick }: { onClick: (lat: number, lng: number, placeName: string, airport: any) => void }) {
   useMapEvents({
     click(e) {
-      onClick(e.latlng.lat, e.latlng.lng);
+      onClick(e.latlng.lat, e.latlng.lng, '', null);
     },
   });
   return null;
 }
 
 export default function WorldMap() {
-  const [panelData, setPanelData] = useState<{ lat: number; lng: number; placeName: string } | null>(null);
+  const [panelData, setPanelData] = useState<any>(null);
   const [pickingNextStop, setPickingNextStop] = useState(false);
-  const [nextStopCallback, setNextStopCallback] = useState<((lat: number, lng: number, placeName: string) => void) | null>(null);
+  const [nextStopCallback, setNextStopCallback] = useState<any>(null);
 
   const handleMapClick = async (lat: number, lng: number) => {
-    let placeName = `Near ${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`;
+    // Get city name (keeps your original nice reverse geocode)
+    let placeName = `Near ${lat.toFixed(1)}°N, ${lng.toFixed(1)}°E`;
     try {
       const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
       const data = await res.json();
-      placeName = data.city || data.locality || data.principalSubdivision || data.countryName || placeName;
-    } catch (e) {}
+      placeName = data.city || data.locality || placeName;
+    } catch {}
+
+    // 🔥 NEW: Find nearest real airport
+    const nearestAirport = getNearestAirport(lat, lng);
+    const displayName = `${nearestAirport.city} ${nearestAirport.full}`;
 
     if (pickingNextStop && nextStopCallback) {
-      nextStopCallback(lat, lng, placeName);
+      nextStopCallback(lat, lng, displayName);
       setPickingNextStop(false);
       setNextStopCallback(null);
       return;
     }
 
-    setPanelData({ lat, lng, placeName });
+    setPanelData({
+      lat,
+      lng,
+      placeName: displayName,        // ← now shows "London Heathrow (LHR)"
+      airport: nearestAirport,
+    });
   };
 
-  const startPickingNextStop = (callback: (lat: number, lng: number, placeName: string) => void) => {
+  const startPickingNextStop = (callback: any) => {
     setPickingNextStop(true);
     setNextStopCallback(() => callback);
-    setPanelData(null); // close panel so user can click the map
+    setPanelData(null);
   };
 
   const closePanel = () => setPanelData(null);
 
   return (
     <>
-      <MapContainer
-        center={[20, 0]}
-        zoom={2}
-        style={{ height: '600px', width: '100%' }}
-        className="rounded-3xl"
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; OpenStreetMap contributors'
-        />
+      <MapContainer center={[20, 0]} zoom={2} style={{ height: '600px', width: '100%' }} className="rounded-3xl">
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <ClickHandler onClick={handleMapClick} />
 
-        {/* Demo markers */}
-        <Marker position={[40.7128, -74.0060]}>
-          <Popup>New York</Popup>
-        </Marker>
-        <Marker position={[-33.8688, 151.2093]}>
-          <Popup>Sydney</Popup>
-        </Marker>
-        <Marker position={[35.6762, 139.6503]}>
-          <Popup>Tokyo</Popup>
-        </Marker>
+        {/* Example markers */}
+        <Marker position={[51.47, -0.45]}><Popup>✈️ LHR London</Popup></Marker>
+        <Marker position={[40.64, -73.78]}><Popup>✈️ JFK New York</Popup></Marker>
+        <Marker position={[35.55, 139.77]}><Popup>✈️ HND Tokyo</Popup></Marker>
       </MapContainer>
 
       {panelData && (
@@ -78,7 +75,9 @@ export default function WorldMap() {
           onClose={closePanel}
           lat={panelData.lat}
           lng={panelData.lng}
-          placeName={panelData.placeName}
+          placeName={panelData.placeName}           // ← now realistic!
+          airportCode={panelData.airport.code}
+          airportFull={panelData.airport.full}
           onPickNextStop={startPickingNextStop}
         />
       )}
