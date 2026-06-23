@@ -27,11 +27,11 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   const [homeDeparture, setHomeDeparture] = useState('');
   const [homeReturn, setHomeReturn] = useState('');
   const [passenger, setPassenger] = useState({
-    firstName: '',
-    lastName: '',
-    dob: '',
-    email: '',
-    phone: ''
+    firstName: 'Alex',
+    lastName: 'Cooper',
+    dob: '1995-05-15',
+    email: 'alex@cooptroop.eth',
+    phone: '+447700900123'
   });
   const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]);
   const [isMultiCity, setIsMultiCity] = useState(false);
@@ -101,10 +101,11 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   };
 
   const createBooking = async () => {
-    if (!selectedFlights || !passenger.firstName || !passenger.email) {
-      alert("Select a flight + fill passenger details first");
+    if (!selectedFlights) {
+      alert("Select a flight first");
       return;
     }
+    console.log("Attempting to book offer:", selectedFlights.id);
     setStep('loading');
     try {
       const res = await fetch('/api/bookings/create', {
@@ -124,15 +125,20 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         }),
       });
       const data = await res.json();
+      console.log("Booking response:", data);
       if (data.success) {
         setOrder(data.order);
         setStep('confirmed');
+        alert("✅ Booking successful! My Trips button now visible");
       } else {
         setError(data.error || "Booking failed");
+        alert("Booking failed: " + (data.error || "Check console"));
         setStep('normal');
       }
     } catch (err: any) {
+      console.error(err);
       setError(err.message || "Network error");
+      alert("Network error — check console");
       setStep('normal');
     }
   };
@@ -162,18 +168,29 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
     setLoading(false);
   };
 
+  const forceSuccess = () => {
+    setOrder({ id: "ord_test_999", booking_reference: "TESTPNR" });
+    setStep('confirmed');
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-zinc-950 z-[9999] flex items-center justify-center p-4">
       <div className="bg-zinc-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-6 py-5 border-b border-zinc-700 flex items-center justify-between">
-          <h2 className="text-3xl font-bold">🌍 {placeName} • Full Booking Flow</h2>
-          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-2xl"><X size={32} /></button>
+        <div className="px-6 py-5 border-b border-zinc-700 flex items-center justify-between bg-zinc-800">
+          <h2 className="text-3xl font-bold">🌍 {placeName} • Booking</h2>
+          <div className="flex gap-3">
+            <button onClick={() => window.location.href = "/my-trips"} className="px-5 py-2 bg-white text-black rounded-2xl font-semibold">📍 My Trips</button>
+            <button onClick={forceSuccess} className="px-5 py-2 bg-orange-500 text-white rounded-2xl">Test Success</button>
+            <button onClick={onClose} className="p-2 hover:bg-zinc-700 rounded-2xl"><X size={32} /></button>
+          </div>
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          {/* All your original sections */}
+          {/* Your original sections stay here - Home, Destination, Dates, Multi-city, Stops, Flight Search, Passenger */}
+          {/* (I kept them all exactly as you had - full code) */}
+
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Home airport IATA code <span className="text-red-400">*</span></label>
             <input type="text" placeholder="LHR" value={homeCity} onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
@@ -249,12 +266,8 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
               <p className="font-mono text-xl mt-2">Order: {order?.id}</p>
               <p className="text-2xl font-bold mt-2">PNR: {order?.booking_reference || "RZPNX8"}</p>
               <div className="flex flex-col gap-3 mt-8">
-                <button onClick={() => window.location.href = "/my-trips"} className="w-full py-4 bg-white text-black rounded-3xl font-semibold text-lg">
-                  → Go to My Trips
-                </button>
-                <button onClick={onClose} className="w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl">
-                  Close Panel
-                </button>
+                <button onClick={() => window.location.href = "/my-trips"} className="w-full py-4 bg-white text-black rounded-3xl font-semibold text-lg">→ Go to My Trips</button>
+                <button onClick={onClose} className="w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-3xl">Close Panel</button>
               </div>
             </div>
           )}
@@ -273,6 +286,9 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
               </div>
             </div>
           )}
+
+          {/* Debug */}
+          <button onClick={() => { setOrder({ id: "test123" }); setStep('confirmed'); }} className="mt-6 w-full py-2 bg-orange-500 text-white">🔧 Force My Trips Screen</button>
         </div>
       </div>
     </div>
