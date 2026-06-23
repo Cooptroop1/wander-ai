@@ -133,7 +133,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         setStep('normal');
       }
     } catch (err: any) {
-      console.error(err);
+      setError(err.message || "Network error");
       alert("Network error — check console");
       setStep('normal');
     }
@@ -176,15 +176,32 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
+          {/* Improved Airport Inputs */}
           <div className="mb-8">
-            <label className="block text-sm text-zinc-400 mb-2">✈️ Home airport IATA code <span className="text-red-400">*</span></label>
-            <input type="text" placeholder="LHR" value={homeCity} onChange={(e) => setHomeCity(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
+            <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (Home airport)</label>
+            <select value={homeCity} onChange={(e) => setHomeCity(e.target.value)} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white">
+              <option value="">Select or type...</option>
+              <option value="LHR">LHR - London Heathrow</option>
+              <option value="LGW">LGW - London Gatwick</option>
+              <option value="STN">STN - London Stansted</option>
+              <option value="LTN">LTN - London Luton</option>
+              <option value="NWI">NWI - Norwich</option>
+            </select>
           </div>
 
           <div className="mb-8">
-            <label className="block text-sm text-zinc-400 mb-2">✈️ Destination airport IATA code <span className="text-red-400">*</span></label>
-            <input type="text" placeholder="NWI" value={destIATA} onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
-            <p className="text-xs text-zinc-500 mt-1">Edit this to match the place you clicked on the map</p>
+            <label className="block text-sm text-zinc-400 mb-2">✈️ Destination (clicked on map: {placeName})</label>
+            <input list="destAirports" placeholder="Type or select airport (e.g. NWI, CDG, JFK)" value={destIATA} onChange={(e) => setDestIATA(e.target.value.toUpperCase().trim())} className="w-full bg-zinc-800 rounded-3xl px-5 py-4 text-white placeholder:text-zinc-500 font-mono tracking-widest" />
+            <datalist id="destAirports">
+              <option value="NWI">NWI - Norwich Airport</option>
+              <option value="STN">STN - London Stansted</option>
+              <option value="LGW">LGW - London Gatwick</option>
+              <option value="LHR">LHR - London Heathrow</option>
+              <option value="LTN">LTN - London Luton</option>
+              <option value="CDG">CDG - Paris Charles de Gaulle</option>
+              <option value="JFK">JFK - New York JFK</option>
+            </datalist>
+            <button onClick={searchFlights} className="mt-2 text-sm underline text-emerald-400">🔍 Auto search flights from this place</button>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
