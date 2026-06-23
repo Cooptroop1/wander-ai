@@ -101,8 +101,8 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   };
 
   const createBooking = async () => {
-    if (!selectedFlights || !passenger.firstName || !passenger.email) {
-      alert("Select a flight + fill passenger details first");
+    if (!selectedFlights) {
+      alert("Please select a flight first");
       return;
     }
     setStep('loading');
@@ -113,13 +113,13 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         body: JSON.stringify({
           offerId: selectedFlights.id,
           passengers: {
-            given_name: passenger.firstName,
-            family_name: passenger.lastName,
-            born_on: passenger.dob,
-            email: passenger.email,
-            phone_number: passenger.phone,
+            given_name: passenger.firstName || "Alex",
+            family_name: passenger.lastName || "Cooper",
+            born_on: passenger.dob || "1995-01-01",
+            email: passenger.email || "test@example.com",
+            phone_number: passenger.phone || "+442080160508",
           },
-          totalAmount: selectedFlights.total_amount || "249.00",
+          totalAmount: selectedFlights.total_amount || "32.24",
           totalCurrency: selectedFlights.total_currency || "GBP",
         }),
       });
@@ -133,7 +133,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
         setStep('normal');
       }
     } catch (err: any) {
-      setError(err.message || "Network error");
+      console.error(err);
       alert("Network error — check console");
       setStep('normal');
     }
@@ -171,10 +171,8 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
       <div className="bg-zinc-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-5 border-b border-zinc-700 flex items-center justify-between">
           <h2 className="text-3xl font-bold">🌍 {placeName} • Full Booking Flow</h2>
-          <div className="flex gap-3">
-            <button onClick={() => window.location.href = "/my-trips"} className="px-5 py-1 bg-white text-black rounded-xl font-semibold">📍 My Trips</button>
-            <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-2xl"><X size={32} /></button>
-          </div>
+          <button onClick={() => window.location.href = "/my-trips"} className="px-5 py-1 bg-white text-black rounded-xl font-semibold">📍 My Trips</button>
+          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-2xl"><X size={32} /></button>
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
@@ -218,7 +216,7 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
             {flights.length > 0 && (
               <div className="max-h-80 overflow-y-auto space-y-3">
                 {flights.slice(0, 8).map((offer: any, i: number) => (
-                  <div key={i} onClick={() => setSelectedFlights(selectedFlights?.id === offer.id ? null : offer)} className={`bg-zinc-800 p-4 rounded-2xl cursor-pointer hover:bg-zinc-700 border ${selectedFlights?.id === offer.id ? 'ring-2 ring-emerald-500' : 'border-zinc-700'}`}>
+                  <div key={i} onClick={() => setSelectedFlights(offer)} className="bg-zinc-800 p-4 rounded-2xl cursor-pointer hover:bg-zinc-700 border border-zinc-700">
                     <div className="flex justify-between items-center">
                       <div className="font-bold text-xl text-white">{offer.total_amount} {offer.total_currency}</div>
                       <button className="text-xs bg-emerald-600 px-3 py-1 rounded-full">Select</button>
