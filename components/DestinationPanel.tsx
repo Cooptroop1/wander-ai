@@ -101,47 +101,49 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   };
 
   const createBooking = async () => {
-    if (!selectedFlights) {
-      alert("Select a flight first");
-      return;
-    }
-    console.log("Attempting to book offer:", selectedFlights.id);
-    setStep('loading');
-    try {
-      const res = await fetch('/api/bookings/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          offerId: selectedFlights.id,
-          passengers: {
-            given_name: passenger.firstName,
-            family_name: passenger.lastName,
-            born_on: passenger.dob,
-            email: passenger.email,
-            phone_number: passenger.phone,
-          },
-          totalAmount: selectedFlights.total_amount || "249.00",
-          totalCurrency: selectedFlights.total_currency || "GBP",
-        }),
-      });
-      const data = await res.json();
-      console.log("Booking response:", data);
-      if (data.success) {
-        setOrder(data.order);
-        setStep('confirmed');
-        alert("✅ Booking successful! My Trips button now visible");
-      } else {
-        setError(data.error || "Booking failed");
-        alert("Booking failed: " + (data.error || "Check console"));
-        setStep('normal');
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Network error");
-      alert("Network error — check console");
+  if (!selectedFlights) {
+    alert("Please select a flight first");
+    return;
+  }
+  console.log("📤 Sending to backend:", { offerId: selectedFlights.id, passenger, total: selectedFlights.total_amount });
+
+  setStep('loading');
+  try {
+    const res = await fetch('/api/bookings/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        offerId: selectedFlights.id,
+        passengers: {
+          given_name: passenger.firstName,
+          family_name: passenger.lastName,
+          born_on: passenger.dob || "1995-01-01",
+          email: passenger.email,
+          phone_number: passenger.phone,
+        },
+        totalAmount: selectedFlights.total_amount || "32.24",
+        totalCurrency: selectedFlights.total_currency || "GBP",
+      }),
+    });
+
+    const data = await res.json();
+    console.log("📥 Backend response:", data);
+
+    if (data.success) {
+      setOrder(data.order);
+      setStep('confirmed');
+      alert("✅ Booking successful!");
+    } else {
+      setError(data.error || "Unknown error");
+      alert("❌ Booking failed: " + (data.error || "Check console for details"));
       setStep('normal');
     }
-  };
+  } catch (err: any) {
+    console.error("❌ Network error:", err);
+    alert("Network error — open F12 console for details");
+    setStep('normal');
+  }
+};
 
   const generateItinerary = async () => {
     if (!isFormValid) return;
@@ -305,6 +307,15 @@ export default function DestinationPanel({ isOpen, onClose, lat, lng, placeName,
   </div>
 )}
 
+
+          <button onClick={() => {
+  setSelectedFlights({ id: "off_test_success", total_amount: "32.24", total_currency: "GBP" });
+  setStep('confirmed');
+  setOrder({ id: "ord_test_999", booking_reference: "TEST123" });
+  alert("✅ Test booking success! Success screen now shown");
+}} className="w-full py-3 bg-orange-600 hover:bg-orange-500 rounded-3xl font-semibold">
+  🔧 Test Booking (always works)
+</button>
           <button onClick={generateItinerary} disabled={!isFormValid || loading} className="w-full py-8 bg-white text-black rounded-3xl font-semibold text-2xl hover:bg-emerald-400 transition-all disabled:opacity-50">
             {loading ? "🤖 Asking Grok..." : "✨ Use selected flight + Generate full itinerary"}
           </button>
