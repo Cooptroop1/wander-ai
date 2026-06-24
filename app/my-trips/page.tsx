@@ -36,9 +36,15 @@ export default function MyTrips() {
   const openTicket = (booking: Booking) => setSelectedBooking(booking);
 
   return (
-    <div className="min-h-screen bg-zinc-50 py-8">
+    <div className="min-h-screen bg-zinc-950 text-white py-8">
       <div className="max-w-5xl mx-auto px-4">
         <h1 className="text-4xl font-semibold mb-2">My Trips</h1>
+        <button 
+  onClick={() => window.location.href = '/'}
+  className="mb-6 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-2xl flex items-center gap-2"
+>
+  ← Back to World Map / Book New Flight
+</button>
         <p className="text-zinc-600 mb-8">All bookings • Powered by Duffel • Real DB sync</p>
 
         {loading ? (
@@ -48,7 +54,7 @@ export default function MyTrips() {
         ) : (
           <div className="grid gap-4">
             {bookings.map((b) => (
-              <Card key={b.id} className="flex items-center justify-between p-6">
+              <Card className="flex items-center justify-between p-6 bg-zinc-900 border border-zinc-700">
                 <div className="flex gap-6 items-center">
                   <div className="text-4xl">✈️</div>
                   <div>
