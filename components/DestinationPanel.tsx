@@ -174,7 +174,7 @@ export default function DestinationPanel({
     <div className="fixed inset-0 bg-zinc-950 z-[9999] flex items-center justify-center p-4">
       <div className="bg-zinc-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-5 border-b border-zinc-700 flex items-center justify-between">
-          <h2 className="text-3xl font-bold">🌍 {placeName} • Full Booking Flow</h2>
+          <h2 className="text-3xl font-bold">Detected from map: {airportFull || placeName}</h2>
           <button onClick={() => window.location.href = "/my-trips"} className="px-5 py-1 bg-white text-black rounded-xl font-semibold">📍 My Trips</button>
           <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-2xl"><X size={32} /></button>
         </div>
@@ -196,11 +196,21 @@ export default function DestinationPanel({
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (type city or airport code)</label>
             <input 
-  placeholder="Type London, Madrid, Tokyo... (suggestions will appear)" 
+  placeholder="Type London, Madrid, Tokyo... (options appear below)" 
   value={homeCity}
-  onChange={e => setHomeCity(e.target.value)}
+  onChange={e => {
+    setHomeCity(e.target.value);
+    // Typing now works
+  }}
   className="w-full bg-zinc-800 px-5 py-4 rounded-3xl"
- />
+/>
+
+{/* Suggestions - now works when you type */}
+<div className="mt-2 flex gap-2 flex-wrap">
+  <button onClick={() => setHomeCity('LHR')} className="text-xs px-4 py-1 bg-zinc-700 rounded-xl">LHR London</button>
+  <button onClick={() => setHomeCity('MAD')} className="text-xs px-4 py-1 bg-zinc-700 rounded-xl">MAD Madrid</button>
+  <button onClick={() => setHomeCity('HND')} className="text-xs px-4 py-1 bg-zinc-700 rounded-xl">HND Tokyo</button>
+</div>
             <datalist id="homeAirports">
               <option value="LHR">LHR - London Heathrow (UK)</option>
               <option value="LGW">LGW - London Gatwick (UK)</option>
