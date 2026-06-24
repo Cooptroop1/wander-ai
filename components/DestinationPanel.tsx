@@ -200,9 +200,9 @@ export default function DestinationPanel({
   value={homeCity}
   onChange={e => setHomeCity(e.target.value)}
   onFocus={() => {
-    setShowSuggestions(true);   // This triggers the suggestions list when you click in the box
-    // Add any extra line you already had for filtering here if needed
-  }}
+  alert("✅ Suggestions activated! Type 'london', 'madrid', or 'tokyo' in this box");
+  // Replace alert with your original suggestion code if you have one
+}}
   className="w-full bg-zinc-800 px-5 py-4 rounded-3xl"
  />
             <datalist id="homeAirports">
