@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       token: process.env.DUFFEL_ACCESS_TOKEN!,
     });
 
-    const order = await duffel.orders.create({
+    const orderResponse = await duffel.orders.create({
       selected_offers: [offerId],
       type: 'instant',
       passengers: [
@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      orderId: order.id,
-      bookingReference: order.booking_reference,
+      orderId: orderResponse.data.id,
+      bookingReference: orderResponse.data.booking_reference,
       message: '✅ Booked and paid with markup! (real Duffel order created)'
     });
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error.message,
-      tip: 'Use real offerId from search'
+      tip: 'Use real offerId from search and make sure token is valid'
     }, { status: 500 });
   }
 }
