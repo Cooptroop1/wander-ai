@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { searchAirports, popularAirports } from '@/lib/airports';
 import dynamic from 'next/dynamic';
 
-const DuffelAncillaries = dynamic(() => import('@duffel/components').then(mod => mod.DuffelAncillaries), { ssr: false });
+const SeatSelection = dynamic(() => import('@duffel/components').then(mod => mod.SeatSelection), { ssr: false });
 
 interface DestinationPanelProps {
   isOpen: boolean;
@@ -123,7 +123,7 @@ export default function DestinationPanel({
             </div>
           )}
 
-                    {selectedFlights && (
+                              {selectedFlights && (
             <div className="p-5 bg-zinc-800 rounded-3xl space-y-4">
               <h3 className="font-semibold mb-3">Passenger details + extras (bags & seats)</h3>
               <input placeholder="First name" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl mb-2" />
@@ -131,16 +131,29 @@ export default function DestinationPanel({
               <input type="date" placeholder="Birthdate" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl mb-2" />
               <input placeholder="Email" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl" />
 
-                            {/* Duffel Ancillaries widget - bags + seats selection */}
-              <DuffelAncillaries
-                offer={selectedFlights}
-                passengers={[{ given_name: "Alex", family_name: "Cooper", type: "adult" }]}
-                services={['bags', 'seats']}
-                onPayloadReady={(payload) => {
-                  alert("✅ Bags and seats added! Ready for final booking");
-                  console.log("Ancillaries payload:", payload);
-                }}
-              />
+              {/* Duffel Seat Selection */}
+              <div>
+                <p className="text-sm font-medium mb-2 text-emerald-400">Choose your seats</p>
+                <SeatSelection
+                  offer={selectedFlights}
+                  passengers={[{ given_name: "Alex", family_name: "Cooper", type: "adult" }]}
+                  onPayloadReady={(payload) => {
+                    alert("✅ Seats selected! Ready for final booking");
+                    console.log("Seat selection payload:", payload);
+                  }}
+                />
+              </div>
+
+              {/* Simple but clean Extra Bags selector */}
+              <div>
+                <p className="text-sm font-medium mb-2 text-emerald-400">Extra bags</p>
+                <select className="w-full bg-zinc-900 px-5 py-3 rounded-2xl text-white">
+                  <option value="0">No extra bags — £0</option>
+                  <option value="1">1 extra bag (23kg) — £35</option>
+                  <option value="2">2 extra bags (23kg each) — £65</option>
+                </select>
+                <p className="text-xs text-zinc-400 mt-1">Bags added at booking • final price shown at checkout</p>
+              </div>
 
               <button onClick={createBooking} className="w-full py-4 bg-green-600 hover:bg-green-500 rounded-2xl font-bold">✅ Confirm Full Booking with Duffel (including extras)</button>
             </div>
