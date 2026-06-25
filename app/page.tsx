@@ -1,78 +1,40 @@
-'use client';
-
-import React, { useState } from 'react';
-import { DuffelAncillaries } from '@duffel/components';  // official React version
-
-export default function DuffelCloneHome() {
-  const [from, setFrom] = useState('LHR');
-  const [to, setTo] = useState('JFK');
-  const [depart, setDepart] = useState('2026-07-15');
-  const [offers, setOffers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedOfferId, setSelectedOfferId] = useState('fixture_off_1');
-
-  const handleRealSearch = async () => {
-    setLoading(true);
-    const res = await fetch('/api/flights/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from, to, departDate: depart }),
-    });
-    const data = await res.json();
-    setOffers(data.offers || []);
-    setLoading(false);
-  };
-
-  const selectOffer = (id: string) => {
-    setSelectedOfferId(id);
-    alert('Offer selected — ancillaries card shown below');
-  };
-
-  return (
-    <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (real everything)</h1>
-
-      {/* Form */}
-      <div className="grid grid-cols-5 gap-3 my-6">
-        <select value={from} onChange={e => setFrom(e.target.value)} className="p-3 bg-zinc-800 rounded-xl">
-          <option value="LHR">LHR London</option><option value="LGW">LGW Gatwick</option>
-        </select>
-        <select value={to} onChange={e => setTo(e.target.value)} className="p-3 bg-zinc-800 rounded-xl">
-          <option value="JFK">JFK New York</option><option value="DXB">DXB Dubai</option>
-        </select>
-        <input type="date" value={depart} onChange={e => setDepart(e.target.value)} className="p-3 bg-zinc-800 rounded-xl" />
-        <button onClick={handleRealSearch} className="bg-sky-500 py-3 rounded-xl font-bold">SEARCH REAL</button>
-        <button onClick={() => { setFrom('LGW'); setTo('CDG'); }}>Test Swap ↔️</button>
-      </div>
-
-      <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2">Get Live Offers</button>
-
-      {/* Real offers */}
-      <div className="mt-8 space-y-2">
-        {offers.map((o, i) => (
-          <button key={i} onClick={() => selectOffer(o.id || 'fixture_off_1')} className="block w-full text-left bg-zinc-900 p-4 rounded-xl">
-            Offer {i+1} — Select to see bags/seats
-          </button>
-        ))}
-      </div>
-
-      {/* Duffel Ancillaries */}
-      {selectedOfferId && (
-        <div className="mt-8 border border-zinc-600 p-6 rounded-2xl">
-          <h2>Bags • Seats • Cancel for any reason (official component)</h2>
-          <DuffelAncillaries 
-            offer_id={selectedOfferId}
-            services={["bags", "seats", "cancel_for_any_reason"]}
-            passengers={[
-              { id: '1', given_name: "John", family_name: "Doe", gender: "M", title: "mr", born_on: "1990-01-01" }
-            ]}
-            onPayloadReady={(payload) => console.log("Payload ready for booking:", payload)}
-          />
-          <button className="mt-4 bg-white text-black px-8 py-3">Proceed to Payment (your PaymentStep)</button>
-        </div>
-      )}
-
-      <p className="text-center mt-12 text-xs">✅ Real search + real ancillaries! Test the form, get offers, select one, see the bags/seats card. Reply with next or "DONE".</p>
-    </div>
-  );
-}
+21:31:38.445 Running build in Washington, D.C., USA (East) – iad1
+21:31:38.445 Build machine configuration: 2 cores, 8 GB
+21:31:38.553 Cloning github.com/Cooptroop1/wander-ai (Branch: main, Commit: 2821544)
+21:31:38.844 Cloning completed: 290.000ms
+21:31:40.023 Restored build cache from previous deployment (3ajgdFmbQeYENZjhno4YJrouZtos)
+21:31:40.352 Running "vercel build"
+21:31:40.372 Vercel CLI 54.17.2
+21:31:40.706 Installing dependencies...
+21:31:46.666 
+21:31:46.667 up to date in 6s
+21:31:46.668 
+21:31:46.668 154 packages are looking for funding
+21:31:46.668   run `npm fund` for details
+21:31:46.699 Detected Next.js version: 16.2.9
+21:31:46.706 Running "npm run build"
+21:31:46.806 
+21:31:46.806 > build
+21:31:46.807 > next build
+21:31:46.807 
+21:31:47.511   Applying modifyConfig from Vercel
+21:31:47.528 ▲ Next.js 16.2.9 (Turbopack)
+21:31:47.529 - Cache Components enabled
+21:31:47.529 
+21:31:47.574   Creating an optimized production build ...
+21:31:59.119 ✓ Compiled successfully in 11.2s
+21:31:59.129   Running TypeScript ...
+21:32:04.291 Failed to type check.
+21:32:04.292 
+21:32:04.292 ./app/page.tsx:67:66
+21:32:04.293 Type error: Type '"M"' is not assignable to type 'DuffelPassengerGender'. Did you mean '"m"'?
+21:32:04.293 
+21:32:04.293   65 | ...["bags", "seats", "cancel_for_any_reason"]}
+21:32:04.293   66 | ...={[
+21:32:04.293 > 67 | ...', given_name: "John", family_name: "Doe", gender: "M", title: "mr", born_on: "1990-01-...
+21:32:04.294      |                                               ^
+21:32:04.294   68 | ...
+21:32:04.294   69 | ...eady={(payload) => console.log("Payload ready for booking:", payload)}
+21:32:04.294   70 | ...
+21:32:04.327 Next.js build worker exited with code: 1 and signal: null
+21:32:04.376 Error: Command "npm run build" exited with 1
