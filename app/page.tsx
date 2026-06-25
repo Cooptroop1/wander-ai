@@ -132,18 +132,9 @@ export default function DuffelCloneHome() {
 
   const bookNow = () => {
     let finalTotal = parseFloat(selectedOffer?.total_amount || '118');
-    let services: any[] = [];
 
-    if (selectedBags > 0) {
-      const bagCost = selectedBags * 30;
-      finalTotal += bagCost;
-      services.push({ id: availableServices[0]?.id || 'bag_1', quantity: selectedBags });
-    }
-
-    if (selectedSeat) {
-      finalTotal += parseFloat(selectedSeat.total_amount || '0');
-      services.push({ id: selectedSeat.id, quantity: 1 });
-    }
+    if (selectedBags > 0) finalTotal += selectedBags * 30;
+    if (selectedSeat) finalTotal += parseFloat(selectedSeat.total_amount || '0');
 
     const newTrip = {
       id: selectedOffer?.id || 'ORD' + Date.now(),
@@ -161,7 +152,7 @@ export default function DuffelCloneHome() {
       passenger: { name: 'mr James Cooper', dob: '04/12/1978', gender: 'Male', email: 'jcooper4888@aol.co.uk', phone: '+447368841330' }
     };
     setMyTrips([...myTrips, newTrip]);
-    alert(`✅ Booking confirmed with ${selectedBags} extra bags + seat! Total: £${finalTotal}`);
+    alert(`✅ Booking confirmed! Total: £${finalTotal}`);
     closeCheckout();
     setCurrentView('myTrips');
   };
@@ -314,7 +305,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      {/* TRIP DETAIL VIEW - SAFE VERSION (NO CRASH) */}
+      {/* TRIP DETAIL VIEW - SAFE + SHOWS SEAT PROPERLY */}
       {currentView === 'tripDetail' && selectedTrip && (
         <div>
           <button onClick={backToMyTrips} className="mb-6 text-emerald-400">← Back to My Trips</button>
@@ -350,7 +341,6 @@ export default function DuffelCloneHome() {
               )}
             </div>
 
-            {/* Safe flights rendering */}
             {(selectedTrip.flights || []).map((f: any, fi: number) => (
               <div key={fi} className="mb-6">
                 <div className="font-bold mb-2">{f.date} {f.time} • {f.route}</div>
@@ -362,13 +352,14 @@ export default function DuffelCloneHome() {
               </div>
             ))}
 
-            {/* EXTRA BAGS + SEAT - NOW SAFELY SHOWN */}
+            {/* EXTRA BAGS + SEAT - FIXED DISPLAY */}
             {(selectedTrip.extraBags > 0 || selectedTrip.selectedSeat) && (
               <div className="mb-6 p-4 bg-zinc-700 rounded-xl">
                 <div className="font-bold mb-2">Extras added</div>
                 {selectedTrip.extraBags > 0 && <div>Extra bags: {selectedTrip.extraBags}</div>}
                 {selectedTrip.selectedSeat && (
-                  <div>Selected seat: {selectedTrip.selectedSeat.designator || selectedTrip.selectedSeat} 
+                  <div>
+                    Selected seat: {selectedTrip.selectedSeat.designator || 'Selected'} 
                     {selectedTrip.selectedSeat.total_amount && ` (£${selectedTrip.selectedSeat.total_amount})`}
                   </div>
                 )}
@@ -687,7 +678,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ Fixed - My Trips now opens without crashing and shows extra bags + seat. Reply "FIXED".</p>
+      <p className="text-center mt-12 text-xs">✅ Seat now works without crashing the detail page. Reply "SEAT FIXED".</p>
     </div>
   );
 }
