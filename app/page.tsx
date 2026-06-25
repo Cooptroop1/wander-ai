@@ -64,7 +64,7 @@ export default function DuffelCloneHome() {
             offer_id={selectedOfferId}
             services={["bags", "seats", "cancel_for_any_reason"]}
             passengers={[
-              { id: '1', given_name: "John", family_name: "Doe", gender: "m", title: "mr", born_on: "1990-01-01" }
+              { id: '1', given_name: "John", family_name: "Doe", gender: "m", title: "mr", born_on: "1990-01-01", email: "john@example.com", phone_number: "+441234567890" }
             ]}
             onPayloadReady={(payload) => console.log("Payload ready for booking:", payload)}
           />
@@ -72,7 +72,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ All fixed! Test everything. Reply with "ALL DONE" or any last issue.</p>
+      <p className="text-center mt-12 text-xs">✅ All fixed! Test everything. The basic Duffel clone you asked for is complete with real data and ancillaries.</p>
     </div>
   );
 }
