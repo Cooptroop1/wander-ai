@@ -5,18 +5,33 @@ import { useState } from 'react';
 import { searchAirports, popularAirports } from '@/lib/airports';
 import dynamic from 'next/dynamic';
 
-// Official Duffel React component (recommended way - handles seats + bags cleanly)
+// Robust import for DuffelAncillaries
 const DuffelAncillaries = dynamic(
-  () => import('@duffel/components').then((mod) => mod.DuffelAncillaries),
-  { 
+  () =>
+    import('@duffel/components').then((mod: any) => {
+      return mod.DuffelAncillaries || mod.default || mod;
+    }),
+  {
     ssr: false,
     loading: () => (
-      <div className="p-6 bg-zinc-900 rounded-2xl text-center text-zinc-400">
-        Loading Duffel seat map &amp; baggage options...
+      <div className="p-6 bg-zinc-900 rounded-2xl text-center text-zinc-400 border border-zinc-700">
+        Loading Duffel seat map &amp; baggage selector...
       </div>
-    )
+    ),
   }
 );
+
+// Proper types for Duffel passenger (fixes the TypeScript error)
+interface Passenger {
+  id?: string;
+  given_name: string;
+  family_name: string;
+  title: 'mr' | 'mrs' | 'ms' | 'miss' | 'dr' | 'prof';
+  gender: 'm' | 'f' | 'x';
+  born_on: string;
+  email: string;
+  phone_number: string;
+}
 
 interface DestinationPanelProps {
   isOpen: boolean;
@@ -37,37 +52,37 @@ export default function DestinationPanel({
   placeName,
   airportCode = '',
   airportFull = '',
-  onPickNextStop
+  onPickNextStop,
 }: DestinationPanelProps) {
   const [homeCity, setHomeCity] = useState('');
   const [homeDeparture, setHomeDeparture] = useState('');
   const [homeReturn, setHomeReturn] = useState('');
   const [destIATA, setDestIATA] = useState(airportCode || 'LHR');
   const [homeSuggestions, setHomeSuggestions] = useState(popularAirports.slice(0, 8));
-  
+
   const [flights, setFlights] = useState<any[]>([]);
   const [searchingFlights, setSearchingFlights] = useState(false);
-  
+
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [ancillaryPayload, setAncillaryPayload] = useState<any>(null);
-  
-  // Controlled passenger form (feeds directly into Duffel component)
-  const [passenger, setPassenger] = useState({
+
+  // Typed passenger state (this fixes the TS error)
+  const [passenger, setPassenger] = useState<Passenger>({
     given_name: 'James',
     family_name: 'Cooper',
     title: 'mr',
     gender: 'm',
     born_on: '1990-05-15',
     email: 'james.cooper@example.com',
-    phone_number: '+447700900123'
+    phone_number: '+447700900123',
   });
 
   const searchFlights = async () => {
     if (!homeCity || !homeDeparture) {
-      alert("Please enter your home airport and departure date");
+      alert('Please enter your home airport and departure date');
       return;
     }
-    
+
     setSearchingFlights(true);
     setFlights([]);
     setSelectedOffer(null);
@@ -83,78 +98,61 @@ export default function DestinationPanel({
           departureDate: homeDeparture,
           returnDate: homeReturn || undefined,
           passengers: 1,
-          cabinClass: 'economy'
+          cabinClass: 'economy',
         }),
       });
-      
+
       const data = await res.json();
-      
+
       if (data.success && data.offers?.length > 0) {
         setFlights(data.offers);
       } else {
-        alert("No flights found or API error. Check console for details.");
+        alert('No flights found or API error. Check console.');
+        console.error(data);
       }
     } catch (e) {
       console.error(e);
-      alert("Error searching flights. Check console.");
+      alert('Error searching flights. Check console.');
     }
-    
+
     setSearchingFlights(false);
   };
 
   const handleSelectOffer = (offer: any) => {
     setSelectedOffer(offer);
     setAncillaryPayload(null);
-    // Scroll smoothly to the customization section
+
     setTimeout(() => {
       const el = document.getElementById('customize-section');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    }, 80);
   };
 
-  const handlePassengerChange = (field: string, value: string) => {
-    setPassenger(prev => ({ ...prev, [field]: value }));
+  const handlePassengerChange = (field: keyof Passenger, value: string) => {
+    setPassenger((prev) => ({ ...prev, [field]: value as any }));
   };
 
-  // This is the key callback from Duffel - gives you the exact payload for create order
   const handleAncillariesReady = (data: any, metadata: any) => {
-    console.log('Duffel ancillaries selected:', { data, metadata });
+    console.log('Duffel ancillaries ready:', { data, metadata });
     setAncillaryPayload(data);
   };
 
   const handleConfirmBooking = async () => {
     if (!selectedOffer) {
-      alert("No flight selected");
+      alert('No flight selected');
       return;
     }
     if (!ancillaryPayload) {
-      alert("Please choose your seats and/or bags first using the Duffel options above.");
+      alert('Please finish selecting seats and/or bags first.');
       return;
     }
 
-    // In a real app you would POST this exact payload to your backend:
-    // const res = await fetch('/api/flights/create-order', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(ancillaryPayload)
-    // });
-    //
-    // The ancillaryPayload already contains:
-    // - selected_offers
-    // - passengers (with the details you passed)
-    // - services (seats + bags with quantities and ids)
-    // - payments (you add this on server usually)
-
-    console.log('=== FINAL DUFFEL ORDER PAYLOAD (ready for your backend) ===');
+    console.log('=== FINAL DUFFEL ORDER PAYLOAD ===');
     console.log(JSON.stringify(ancillaryPayload, null, 2));
 
     alert(
-      "✅ Perfect! The full booking payload (including chosen seats + bags) is in the console.\n\n" +
-      "In production this would be sent to your /api/flights/create-order route which calls Duffel Orders API with your secret key."
+      '✅ Full booking payload logged to console.\n\nSend this to your backend /api/flights/create-order route.'
     );
-
-    // Optional: close panel or show success state
-    // onClose();
   };
 
   if (!isOpen) return null;
@@ -162,7 +160,6 @@ export default function DestinationPanel({
   return (
     <div className="fixed inset-0 bg-zinc-950 z-[9999] flex items-center justify-center p-4">
       <div className="bg-zinc-900 rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col">
-        
         {/* Header */}
         <div className="px-6 py-5 border-b border-zinc-700 flex justify-between items-center flex-shrink-0">
           <div>
@@ -175,10 +172,8 @@ export default function DestinationPanel({
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto space-y-8">
-          
-          {/* Trip Search Form */}
+          {/* Search Form */}
           <div className="space-y-6">
-            {/* Destination (from map) */}
             <div>
               <p className="font-semibold text-sm mb-1.5 text-emerald-400">DESTINATION</p>
               <div className="bg-zinc-800 px-5 py-4 rounded-3xl text-lg font-medium">
@@ -186,11 +181,10 @@ export default function DestinationPanel({
               </div>
             </div>
 
-            {/* Home Airport */}
             <div>
               <p className="font-semibold text-sm mb-1.5">HOME AIRPORT</p>
               <input
-                placeholder="e.g. London, Manchester, Edinburgh..."
+                placeholder="e.g. London, Manchester..."
                 className="w-full bg-zinc-800 px-5 py-4 rounded-3xl text-lg"
                 value={homeCity}
                 onChange={(e) => {
@@ -203,7 +197,7 @@ export default function DestinationPanel({
                   <button
                     key={a.code}
                     onClick={() => setHomeCity(a.code)}
-                    className="px-4 py-1.5 bg-zinc-700 hover:bg-emerald-600 rounded-2xl text-sm transition-colors"
+                    className="px-4 py-1.5 bg-zinc-700 hover:bg-emerald-600 rounded-2xl text-sm"
                   >
                     {a.full} ({a.code})
                   </button>
@@ -211,7 +205,6 @@ export default function DestinationPanel({
               </div>
             </div>
 
-            {/* Dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="font-semibold text-sm mb-1.5">DEPARTURE DATE</p>
@@ -236,13 +229,13 @@ export default function DestinationPanel({
             <button
               onClick={searchFlights}
               disabled={searchingFlights}
-              className="w-full py-6 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-700 text-xl font-bold rounded-3xl transition-colors flex items-center justify-center gap-3"
+              className="w-full py-6 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-700 text-xl font-bold rounded-3xl"
             >
               {searchingFlights ? 'Searching Duffel...' : '🔍 SEARCH REAL FLIGHTS WITH DUFFEL'}
             </button>
           </div>
 
-          {/* Search Results */}
+          {/* Flight Results */}
           {flights.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -254,12 +247,12 @@ export default function DestinationPanel({
                 {flights.slice(0, 8).map((offer: any, index: number) => {
                   const firstSlice = offer.slices?.[0];
                   const firstSegment = firstSlice?.segments?.[0];
-                  
+
                   return (
                     <div
                       key={index}
                       onClick={() => handleSelectOffer(offer)}
-                      className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-emerald-500 p-5 rounded-3xl cursor-pointer transition-all active:scale-[0.985]"
+                      className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-emerald-500 p-5 rounded-3xl cursor-pointer transition-all"
                     >
                       <div className="flex justify-between items-start">
                         <div>
@@ -267,29 +260,20 @@ export default function DestinationPanel({
                             {offer.total_amount} {offer.total_currency}
                           </div>
                           <div className="text-sm text-zinc-400 mt-0.5">
-                            {firstSegment?.marketing_airline?.name || firstSegment?.airline_name || 'Airline'} • {firstSlice?.segments?.length || 1} segment(s)
+                            {firstSegment?.marketing_airline?.name || 'Airline'} •{' '}
+                            {firstSlice?.segments?.length || 1} segment(s)
                           </div>
                         </div>
-                        
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleSelectOffer(offer); }}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectOffer(offer);
+                          }}
                           className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-semibold rounded-2xl text-sm"
                         >
                           Choose &amp; add extras →
                         </button>
                       </div>
-
-                      {firstSegment && (
-                        <div className="mt-4 text-sm text-zinc-300 grid grid-cols-2 gap-x-4">
-                          <div>
-                            <span className="text-zinc-500">Out: </span>
-                            {firstSegment.departing_at?.slice(0, 10)} • {firstSegment.departing_at?.slice(11, 16)}
-                          </div>
-                          <div className="text-right">
-                            {firstSlice?.destination} ← {firstSlice?.origin}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   );
                 })}
@@ -297,7 +281,7 @@ export default function DestinationPanel({
             </div>
           )}
 
-          {/* === CUSTOMIZE SECTION (Seats + Baggage via official Duffel component) === */}
+          {/* Customize Section */}
           {selectedOffer && (
             <div id="customize-section" className="bg-zinc-800 rounded-3xl p-6 space-y-6 border border-emerald-900/50">
               <div className="flex items-center justify-between">
@@ -305,60 +289,61 @@ export default function DestinationPanel({
                   <h3 className="font-bold text-2xl">Customize this flight</h3>
                   <p className="text-emerald-400 text-sm">Add seats &amp; extra bags with Duffel</p>
                 </div>
-                <button 
-                  onClick={() => { setSelectedOffer(null); setAncillaryPayload(null); }}
+                <button
+                  onClick={() => {
+                    setSelectedOffer(null);
+                    setAncillaryPayload(null);
+                  }}
                   className="text-sm px-4 py-2 bg-zinc-700 rounded-2xl hover:bg-zinc-600"
                 >
                   Change flight
                 </button>
               </div>
 
-              {/* Flight Summary */}
               <div className="bg-zinc-900 rounded-2xl p-4 text-sm">
                 <div className="font-mono text-emerald-400 text-xs mb-1">SELECTED OFFER</div>
-                <div className="font-bold text-xl">{selectedOffer.total_amount} {selectedOffer.total_currency}</div>
-                <div className="text-zinc-400 mt-1">
-                  {selectedOffer.slices?.[0]?.segments?.[0]?.marketing_airline?.name || 'Flight'} • {selectedOffer.slices?.length || 1} slice(s)
+                <div className="font-bold text-xl">
+                  {selectedOffer.total_amount} {selectedOffer.total_currency}
                 </div>
               </div>
 
-              {/* Passenger Details (required by Duffel) */}
+              {/* Passenger Form */}
               <div>
-                <p className="font-semibold mb-3 text-sm">PASSENGER DETAILS (Adult 1)</p>
+                <p className="font-semibold mb-3 text-sm">PASSENGER DETAILS</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input 
-                    placeholder="First name" 
+                  <input
+                    placeholder="First name"
                     value={passenger.given_name}
                     onChange={(e) => handlePassengerChange('given_name', e.target.value)}
-                    className="bg-zinc-900 px-5 py-3.5 rounded-2xl" 
+                    className="bg-zinc-900 px-5 py-3.5 rounded-2xl"
                   />
-                  <input 
-                    placeholder="Last name" 
+                  <input
+                    placeholder="Last name"
                     value={passenger.family_name}
                     onChange={(e) => handlePassengerChange('family_name', e.target.value)}
-                    className="bg-zinc-900 px-5 py-3.5 rounded-2xl" 
+                    className="bg-zinc-900 px-5 py-3.5 rounded-2xl"
                   />
-                  <input 
-                    placeholder="Email" 
+                  <input
+                    placeholder="Email"
                     type="email"
                     value={passenger.email}
                     onChange={(e) => handlePassengerChange('email', e.target.value)}
-                    className="bg-zinc-900 px-5 py-3.5 rounded-2xl" 
+                    className="bg-zinc-900 px-5 py-3.5 rounded-2xl"
                   />
-                  <input 
-                    placeholder="Phone" 
+                  <input
+                    placeholder="Phone"
                     value={passenger.phone_number}
                     onChange={(e) => handlePassengerChange('phone_number', e.target.value)}
-                    className="bg-zinc-900 px-5 py-3.5 rounded-2xl" 
+                    className="bg-zinc-900 px-5 py-3.5 rounded-2xl"
                   />
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     value={passenger.born_on}
                     onChange={(e) => handlePassengerChange('born_on', e.target.value)}
-                    className="bg-zinc-900 px-5 py-3.5 rounded-2xl" 
+                    className="bg-zinc-900 px-5 py-3.5 rounded-2xl"
                   />
-                  <select 
-                    value={passenger.title} 
+                  <select
+                    value={passenger.title}
                     onChange={(e) => handlePassengerChange('title', e.target.value)}
                     className="bg-zinc-900 px-5 py-3.5 rounded-2xl"
                   >
@@ -370,62 +355,48 @@ export default function DestinationPanel({
                 </div>
               </div>
 
-              {/* Duffel Official Ancillaries Component - Seats + Bags */}
+              {/* Duffel Ancillaries Component */}
               <div>
                 <p className="font-semibold mb-3 text-sm text-emerald-400">SEATS &amp; EXTRA BAGGAGE</p>
-                
+
                 <DuffelAncillaries
-                  key={selectedOffer.id} // remount when offer changes
-                  debug={true}           // shows helpful logs in console during development
+                  key={selectedOffer.id}
+                  debug={true}
                   offer={selectedOffer}
                   services={['bags', 'seats']}
                   passengers={[
                     {
-                      id: 'pas_1', // must be unique per passenger
-                      ...passenger
-                    }
+                      id: 'pas_1',
+                      ...(passenger as any), // Safe cast to satisfy strict Duffel types
+                    },
                   ]}
                   onPayloadReady={handleAncillariesReady}
-                  // Optional: add your own markup on top of Duffel prices
                   markup={{
-                    bags: { amount: 5, rate: 0.1 },   // £5 + 10%
-                    seats: { amount: 0, rate: 0.05 }  // 5% on seats
+                    bags: { amount: 5, rate: 0.1 },
+                    seats: { amount: 0, rate: 0.05 },
                   }}
                 />
               </div>
 
-              {/* Confirm Button */}
               <button
                 onClick={handleConfirmBooking}
                 disabled={!ancillaryPayload}
-                className="w-full py-5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-700 disabled:text-zinc-400 text-xl font-bold rounded-3xl transition-colors"
+                className="w-full py-5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-700 text-xl font-bold rounded-3xl"
               >
-                {ancillaryPayload 
-                  ? '✅ Confirm Booking with Chosen Seats & Bags' 
+                {ancillaryPayload
+                  ? '✅ Confirm Booking with Chosen Seats & Bags'
                   : 'Select seats and/or bags above to continue'}
               </button>
-
-              <p className="text-xs text-center text-zinc-500">
-                The button above becomes active after you finish selecting in the Duffel component.<br />
-                Final payload (with all services) will be logged to console for your backend.
-              </p>
-            </div>
-          )}
-
-          {flights.length === 0 && !searchingFlights && (
-            <div className="text-center py-8 text-zinc-500 text-sm">
-              Search for flights above to see real Duffel offers
             </div>
           )}
         </div>
 
-        {/* Footer */}
         <div className="p-4 border-t border-zinc-700 flex gap-3 flex-shrink-0">
           <button onClick={onClose} className="flex-1 py-4 bg-zinc-700 hover:bg-zinc-600 rounded-2xl font-semibold">
             Close
           </button>
-          <button 
-            onClick={() => alert("AI Itinerary feature can be wired to your existing generateItinerary function")} 
+          <button
+            onClick={() => alert('Wire this button to your AI itinerary function')}
             className="flex-1 py-4 bg-white text-black font-bold rounded-2xl"
           >
             ✨ Generate AI Itinerary
