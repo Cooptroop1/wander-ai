@@ -136,7 +136,7 @@ export default function DestinationPanel({
                 <p className="text-sm font-medium mb-2 text-emerald-400">Choose your seats (Duffel)</p>
                 <SeatSelection
                   offer={selectedFlights}
-                  passengers={[{ id: "pas_1", given_name: "Alex", family_name: "Cooper", type: "adult" }]}
+                  passengers={[{ id: "pas_1", type: "adult" }]}
                   onPayloadReady={(payload) => {
                     alert("✅ Seats selected! Ready for final booking");
                     console.log("Seat selection payload:", payload);
