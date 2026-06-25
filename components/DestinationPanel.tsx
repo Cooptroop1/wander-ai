@@ -3,7 +3,6 @@
 import { X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { searchAirports, popularAirports } from '@/lib/airports';
-
 interface DestinationPanelProps {
   isOpen: boolean;
   onClose: () => void;
@@ -104,6 +103,36 @@ export default function DestinationPanel({
           </button>
 
           {flights.length > 0 && <p className="text-emerald-400 text-center">✅ Real flights loaded (your booking & itinerary buttons work)</p>}
+                    {/* 🔥 Restored full booking flow */}
+          {flights.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-bold">Select a real Duffel offer:</h3>
+              {flights.slice(0, 6).map((offer: any, i: number) => (
+                <div key={i} className="bg-zinc-800 p-4 rounded-2xl border border-zinc-700 cursor-pointer hover:border-emerald-500" onClick={() => setSelectedFlights(offer)}>
+                  <div className="flex justify-between items-center">
+                    <div className="font-bold text-xl">{offer.total_amount} {offer.total_currency} • {offer.slices?.[0]?.segments?.[0]?.airline_name || 'Flight'}</div>
+                    <button className="px-4 py-1 bg-emerald-600 text-black rounded">Select this</button>
+                  </div>
+                  <button onClick={createBooking} className="mt-3 w-full py-3 bg-green-600 rounded-xl font-semibold">✅ Book with Duffel now</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {selectedFlights && (
+            <div className="p-5 bg-zinc-800 rounded-3xl">
+              <h3 className="font-semibold mb-3">Passenger details for booking</h3>
+              <input placeholder="First name" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl mb-2" />
+              <input placeholder="Last name" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl mb-2" />
+              <input type="date" placeholder="Birthdate" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl mb-2" />
+              <input placeholder="Email" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl" />
+              <button onClick={createBooking} className="w-full mt-4 py-4 bg-green-600 hover:bg-green-500 rounded-2xl font-bold">Confirm Booking on Duffel</button>
+            </div>
+          )}
+
+          {step === 'confirmed' && <div className="text-center py-8 text-2xl">🎉 Booking Confirmed! Order saved. Check My Trips.</div>}
+
+          <button onClick={generateItinerary} className="w-full py-5 bg-white text-black font-bold rounded-3xl">✨ Generate full AI itinerary (flights + hotels + day plan)</button>
         </div>
 
         <div className="p-4 border-t flex gap-3">
