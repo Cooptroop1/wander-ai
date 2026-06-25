@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DuffelAncillaries } from '@duffel/components';  // ← official React version
+import { DuffelAncillaries } from '@duffel/components';  // official React version
 
 export default function DuffelCloneHome() {
   const [from, setFrom] = useState('LHR');
@@ -25,12 +25,12 @@ export default function DuffelCloneHome() {
 
   const selectOffer = (id: string) => {
     setSelectedOfferId(id);
-    alert('Offer selected — ancillaries now shown below');
+    alert('Offer selected — ancillaries card shown below');
   };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (real search + bags/seats component)</h1>
+      <h1>Wander • Duffel Clone (real everything)</h1>
 
       {/* Form */}
       <div className="grid grid-cols-5 gap-3 my-6">
@@ -42,21 +42,21 @@ export default function DuffelCloneHome() {
         </select>
         <input type="date" value={depart} onChange={e => setDepart(e.target.value)} className="p-3 bg-zinc-800 rounded-xl" />
         <button onClick={handleRealSearch} className="bg-sky-500 py-3 rounded-xl font-bold">SEARCH REAL</button>
-        <button onClick={() => setFrom('LGW') && setTo('CDG')}>Test Swap</button>
+        <button onClick={() => { setFrom('LGW'); setTo('CDG'); }}>Test Swap ↔️</button>
       </div>
 
       <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2">Get Live Offers</button>
 
       {/* Real offers */}
-      <div className="mt-8">
+      <div className="mt-8 space-y-2">
         {offers.map((o, i) => (
-          <button key={i} onClick={() => selectOffer(o.id || 'fixture_off_1')} className="block w-full text-left bg-zinc-900 p-4 mb-2 rounded-xl">
-            Offer {i+1} — Select to see bags/seats component
+          <button key={i} onClick={() => selectOffer(o.id || 'fixture_off_1')} className="block w-full text-left bg-zinc-900 p-4 rounded-xl">
+            Offer {i+1} — Select to see bags/seats
           </button>
         ))}
       </div>
 
-      {/* Real Duffel Ancillaries Component */}
+      {/* Duffel Ancillaries */}
       {selectedOfferId && (
         <div className="mt-8 border border-zinc-600 p-6 rounded-2xl">
           <h2>Bags • Seats • Cancel for any reason (official component)</h2>
@@ -66,13 +66,13 @@ export default function DuffelCloneHome() {
             passengers={[
               { id: '1', given_name: "John", family_name: "Doe", gender: "M", title: "mr", born_on: "1990-01-01" }
             ]}
-            onPayloadReady={(payload) => console.log("Payload for booking:", payload)}
+            onPayloadReady={(payload) => console.log("Payload ready for booking:", payload)}
           />
-          <button className="mt-4 bg-white text-black px-8 py-3">Proceed to Payment</button>
+          <button className="mt-4 bg-white text-black px-8 py-3">Proceed to Payment (your PaymentStep)</button>
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ Ancillaries added! Test the form, select an offer, then select bags/seats. Next: booking flow or polish?</p>
+      <p className="text-center mt-12 text-xs">✅ Real search + real ancillaries! Test the form, get offers, select one, see the bags/seats card. Reply with next or "DONE".</p>
     </div>
   );
 }
