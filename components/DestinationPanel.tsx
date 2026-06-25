@@ -184,46 +184,27 @@ export default function DestinationPanel({
           <div className="text-xl font-semibold">
             {airportFull || placeName || "London Heathrow (LHR)"}
           </div>
-                              <input 
-            placeholder="From • Type London/Paris/Tokyo or any city" 
-            className="w-full mt-3 bg-zinc-800 px-5 py-4 rounded-3xl text-lg font-mono focus:border-emerald-500"
-            value={homeCity}
-            onChange={(e) => setHomeCity(e.target.value)}
+          <input 
+            defaultValue={airportCode || "Search airport..."} 
+            className="w-full mt-3 bg-zinc-800 px-5 py-4 rounded-3xl text-lg font-mono"
+            placeholder="e.g. MAD, HND, JFK or type London"
           />
-          <div className="flex flex-wrap gap-1.5 mt-2 text-xs">
-            {['🇬🇧 London LHR/LGW', '🇫🇷 Paris CDG', '🇪🇸 Madrid MAD', '🇯🇵 Tokyo HND', '🇺🇸 New York JFK', '🌍 Any city → nearest'].map(l => (
-              <button key={l} onClick={() => setHomeCity(l)} className="bg-zinc-700 hover:bg-emerald-600 px-3 py-1 rounded-full">{l}</button>
-            ))}
-          </div>
-          <p className="text-xs text-emerald-400 mt-1">Type any city (Paris, Berlin...) • shows all airports + nearest like destination ✅</p>
-          <button className="text-xs text-emerald-400 mt-1">📍 Don't live here? Type any city • auto nearest airport</button>
           <p className="text-emerald-500 text-xs mt-1">🗺️ Nearest airport detected from your map click • Typing London/Madrid/Tokyo still works</p>
         </div>
         <div className="flex-1 p-6 overflow-y-auto">
           {/* Improved Airport Inputs */}
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (type city or airport code)</label>
-                      <input 
-            placeholder="From • Type London, Paris, Tokyo or any city" 
-            className="bg-zinc-900 border border-zinc-700 focus:border-emerald-500 px-4 py-3 rounded-2xl w-full"
-            value={homeCity}
-            onChange={(e) => setHomeCity(e.target.value)}
-          />
-          <div className="flex flex-wrap gap-2 mt-2">
-            {["🇬🇧 London LHR/LGW", "🇫🇷 Paris CDG/ORY", "🇪🇸 Madrid MAD", "🇯🇵 Tokyo HND/NRT", "🌍 Any city • nearest airport"].map(l => (
-              <button key={l} onClick={() => setHomeCity(l)} className="px-3 py-1 text-xs bg-zinc-700 hover:bg-emerald-600 rounded-full">
-                {l}
-              </button>
-            ))}
-                    </div>
-          <p className="text-xs text-emerald-400 mt-1">✅ Now matches destination: type any city → airports + nearest auto. Full power achieved.</p>
-    {["🇬🇧 London Heathrow (LHR)", "🇬🇧 London Gatwick (LGW)", "🇫🇷 Paris CDG", "🇫🇷 Paris ORY", "🇪🇸 Madrid MAD", "🇯🇵 Tokyo HND", "Any city → nearest"].map(a => (
-      <div key={a} className="py-2 px-3 hover:bg-zinc-700 cursor-pointer rounded" onClick={() => {setOrigin(a); setShowOriginSug(false); /* nearest map update */}}>
-        {a}
-      </div>
-    ))}
-  </div>
-)}
+            <input 
+  placeholder="Type London, Madrid, Tokyo... (options appear below)" 
+  value={homeCity}
+  onChange={e => {
+    setHomeCity(e.target.value);
+    // Typing now works
+  }}
+  className="w-full bg-zinc-800 px-5 py-4 rounded-3xl"
+/>
+
 {/* Suggestions - now works when you type */}
 <div className="mt-2 flex gap-2 flex-wrap">
   <button onClick={() => setHomeCity('LHR')} className="text-xs px-4 py-1 bg-zinc-700 rounded-xl">LHR London</button>
