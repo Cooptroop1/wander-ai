@@ -64,7 +64,6 @@ export default function DuffelCloneHome() {
     setSelectedBags(0);
     setSelectedSeat(null);
 
-    // Fetch available services (bags)
     try {
       const res = await fetch(`/api/flights/search?offer_id=${offer.id}&return_available_services=true`);
       const data = await res.json();
@@ -98,7 +97,6 @@ export default function DuffelCloneHome() {
       setSeatMapData(data.seat_maps || data);
       setShowSeatMap(true);
     } catch (e) {
-      // Fallback with example data from Duffel docs
       setSeatMapData({
         data: [{
           cabins: [{
@@ -155,7 +153,7 @@ export default function DuffelCloneHome() {
       airline: 'Duffel Airways',
       created: new Date().toLocaleString('en-GB'),
       extraBags: selectedBags,
-      selectedSeat: selectedSeat ? selectedSeat.designator || 'Selected' : null,
+      selectedSeat: selectedSeat,
       flights: [
         { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'Confirmed' },
         { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'Confirmed' }
@@ -163,7 +161,7 @@ export default function DuffelCloneHome() {
       passenger: { name: 'mr James Cooper', dob: '04/12/1978', gender: 'Male', email: 'jcooper4888@aol.co.uk', phone: '+447368841330' }
     };
     setMyTrips([...myTrips, newTrip]);
-    alert(`✅ Booking confirmed! Total: £${finalTotal}`);
+    alert(`✅ Booking confirmed with ${selectedBags} extra bags + seat! Total: £${finalTotal}`);
     closeCheckout();
     setCurrentView('myTrips');
   };
@@ -182,7 +180,7 @@ export default function DuffelCloneHome() {
       created: new Date().toLocaleString('en-GB'),
       holdUntil: '28 Jun 2026',
       extraBags: selectedBags,
-      selectedSeat: selectedSeat ? selectedSeat.designator || 'Selected' : null,
+      selectedSeat: selectedSeat,
       flights: [
         { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
         { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
@@ -316,7 +314,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      {/* TRIP DETAIL VIEW */}
+      {/* TRIP DETAIL VIEW - NOW SHOWS EXTRA BAGS + SEAT */}
       {currentView === 'tripDetail' && selectedTrip && (
         <div>
           <button onClick={backToMyTrips} className="mb-6 text-emerald-400">← Back to My Trips</button>
@@ -362,6 +360,15 @@ export default function DuffelCloneHome() {
                 <div className="text-sm">1 carry-on bag • 1 checked bag</div>
               </div>
             ))}
+
+            {/* EXTRA BAGS + SEAT NOW SHOW HERE */}
+            {(selectedTrip.extraBags > 0 || selectedTrip.selectedSeat) && (
+              <div className="mb-6 p-4 bg-zinc-700 rounded-xl">
+                <div className="font-bold mb-2">Extras added</div>
+                {selectedTrip.extraBags > 0 && <div>Extra bags: {selectedTrip.extraBags}</div>}
+                {selectedTrip.selectedSeat && <div>Selected seat: {selectedTrip.selectedSeat.designator || selectedTrip.selectedSeat}</div>}
+              </div>
+            )}
 
             <div className="text-sm mb-6">
               <div>Order change policy: This order is not changeable</div>
@@ -476,7 +483,6 @@ export default function DuffelCloneHome() {
               </div>
             )}
 
-            {/* Hold Info + Order Held screens (full content from previous working version) */}
             {showHoldInfo && !showOrderHeld && (
               <div className="mb-8 bg-zinc-800 p-6 rounded-2xl">
                 <div className="text-xl font-bold mb-4">Confirm and pay later</div>
@@ -543,6 +549,15 @@ export default function DuffelCloneHome() {
                     <div className="text-sm mt-1">Economy • Duffel Airways • Boeing 777-300 • ZZ5528</div>
                     <div className="text-sm">1 carry-on bag • 2 checked bags</div>
                   </div>
+
+                  {/* EXTRA BAGS + SEAT IN ORDER HELD SCREEN */}
+                  {(selectedBags > 0 || selectedSeat) && (
+                    <div className="mb-6 p-4 bg-zinc-700 rounded-xl">
+                      <div className="font-bold mb-2">Extras added to this order</div>
+                      {selectedBags > 0 && <div>Extra bags: {selectedBags}</div>}
+                      {selectedSeat && <div>Selected seat: {selectedSeat.designator || 'Seat'} (£{selectedSeat.total_amount || '0.00'})</div>}
+                    </div>
+                  )}
 
                   <div className="text-sm mb-6">
                     <div>Order change policy: This order is not changeable</div>
@@ -667,7 +682,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ Full code with real seat map from Duffel API. Reply "SEATS GOOD".</p>
+      <p className="text-center mt-12 text-xs">✅ Extra bags + selected seat now show in the final order screen. Reply "FIXED".</p>
     </div>
   );
 }
