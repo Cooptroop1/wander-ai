@@ -107,7 +107,6 @@ export default function DuffelCloneHome() {
     }
   };
 
-  // Dynamic total
   const getDynamicTotal = () => {
     const base = parseFloat(selectedOffer?.total_amount || '100');
     const taxes = parseFloat(selectedOffer?.tax_amount || '18');
@@ -116,7 +115,6 @@ export default function DuffelCloneHome() {
     return (base + taxes + bags + seat).toFixed(2);
   };
 
-  // === REAL BOOKING FUNCTION ===
   const bookNow = async () => {
     if (!selectedOffer) return;
 
@@ -126,7 +124,6 @@ export default function DuffelCloneHome() {
     if (selectedBags > 0 && availableServices[0]) {
       services.push({ id: availableServices[0].id, quantity: selectedBags });
     }
-
     if (selectedSeat) {
       services.push({ id: selectedSeat.id, quantity: 1 });
     }
@@ -182,10 +179,10 @@ export default function DuffelCloneHome() {
         closeCheckout();
         setCurrentView('myTrips');
       } else {
-        alert('Booking failed: ' + result.error);
+        alert('Booking failed: ' + (result.error || 'Unknown error'));
       }
     } catch (error) {
-      alert('Error creating booking. Check console.');
+      alert('Error creating real booking. Check console for details.');
       console.error(error);
     }
   };
@@ -193,8 +190,7 @@ export default function DuffelCloneHome() {
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
   const confirmHold = () => {
-    // (keep your existing hold logic or simplify for now)
-    alert('Hold functionality still simulated for now.');
+    alert('Hold order is still simulated for now.');
     setShowHoldInfo(false);
   };
 
@@ -223,10 +219,6 @@ export default function DuffelCloneHome() {
         </div>
         <h1 className="text-2xl font-bold">Wander • Duffel Clone</h1>
       </div>
-      <p className="text-center mt-12 text-xs">✅ Real Duffel order creation is now active. Reply "REAL BOOKING WORKING" after testing.</p>
-    </div>
-  );
-}
 
       {/* SEARCH VIEW */}
       {currentView === 'search' && (
@@ -413,7 +405,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      {/* FULL CHECKOUT MODAL WITH DYNAMIC PAYMENT */}
+      {/* CHECKOUT MODAL */}
       {showCheckout && selectedOffer && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto p-8">
@@ -442,11 +434,9 @@ export default function DuffelCloneHome() {
               </div>
             </div>
 
-            {/* ADD EXTRAS */}
             <div className="mb-8">
               <div className="font-bold mb-3">Add extras</div>
               
-              {/* Bags */}
               <div className="bg-zinc-800 p-6 rounded-2xl mb-4">
                 <div className="mb-4">Extra Bags (from Duffel API)</div>
                 {availableServices.length > 0 ? (
@@ -469,7 +459,6 @@ export default function DuffelCloneHome() {
                 <div className="mt-2 font-bold">Bags total: £{(selectedBags * 30).toFixed(2)}</div>
               </div>
 
-              {/* Seats */}
               <div className="bg-zinc-800 p-6 rounded-2xl">
                 <div className="flex justify-between items-center mb-4">
                   <div>Seat Selection (from Duffel Seat Maps API)</div>
@@ -485,7 +474,6 @@ export default function DuffelCloneHome() {
               </div>
             </div>
 
-            {/* DYNAMIC PAYMENT SECTION */}
             <div className="mb-8">
               <div className="font-bold mb-3">Payment</div>
               <div className="bg-zinc-800 p-6 rounded-2xl">
@@ -528,7 +516,6 @@ export default function DuffelCloneHome() {
               </div>
             )}
 
-            {/* Hold + Order Held sections (same as before) */}
             {showHoldInfo && !showOrderHeld && (
               <div className="mb-8 bg-zinc-800 p-6 rounded-2xl">
                 <div className="text-xl font-bold mb-4">Confirm and pay later</div>
@@ -718,7 +705,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ Payment now shows live total with bags + seat. Reply "PAYMENT GOOD".</p>
+      <p className="text-center mt-12 text-xs">✅ Real Duffel booking is now active. Test it and reply with the result.</p>
     </div>
   );
 }
