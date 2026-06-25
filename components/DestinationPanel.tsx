@@ -195,15 +195,10 @@ export default function DestinationPanel({
           {/* Improved Airport Inputs */}
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (type city or airport code)</label>
-            <input 
-  placeholder="Type London, Madrid, Tokyo... (options appear below)" 
-  value={homeCity}
-  onChange={e => {
-    setHomeCity(e.target.value);
-    // Typing now works
-  }}
-  className="w-full bg-zinc-800 px-5 py-4 rounded-3xl"
-/>
+            <input placeholder="Type London, Madrid, Tokyo... (options appear below)" value={homeCity} onChange={e => {setHomeCity(e.target.value);
+            }}
+            className="w-full bg-zinc-800 px-5 py-4 rounded-3xl"
+            />
 
 {/* Suggestions - now works when you type */}
 <div className="mt-2 flex gap-2 flex-wrap">
