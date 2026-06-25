@@ -17,7 +17,7 @@ const DuffelAncillaries = dynamic(
       <div className="p-6 bg-zinc-900 rounded-2xl text-center text-zinc-400 border border-zinc-700">
         Loading Duffel seat map &amp; baggage selector...
       </div>
-    ),
+    ), 
   }
 );
 
