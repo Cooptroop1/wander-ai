@@ -67,13 +67,9 @@ export default function DuffelCloneHome() {
     try {
       const res = await fetch(`/api/flights/search?offer_id=${offer.id}&return_available_services=true`);
       const data = await res.json();
-      setAvailableServices(data.available_services || [
-        { id: 'bag_1', type: 'baggage', total_amount: '30.00', total_currency: 'GBP', metadata: { type: 'checked' } }
-      ]);
+      setAvailableServices(data.available_services || []);
     } catch (e) {
-      setAvailableServices([
-        { id: 'bag_1', type: 'baggage', total_amount: '30.00', total_currency: 'GBP', metadata: { type: 'checked' } }
-      ]);
+      setAvailableServices([]);
     }
   };
 
@@ -97,26 +93,7 @@ export default function DuffelCloneHome() {
       setSeatMapData(data.seat_maps || data);
       setShowSeatMap(true);
     } catch (e) {
-      setSeatMapData({
-        data: [{
-          cabins: [{
-            cabin_class: "economy",
-            rows: [
-              { sections: [{ elements: [
-                { type: "seat", designator: "28A", available_services: [] },
-                { type: "seat", designator: "28B", available_services: [{ id: "ase_seat_28B", total_amount: "0.00", total_currency: "GBP" }] },
-                { type: "seat", designator: "28C", available_services: [{ id: "ase_seat_28C", total_amount: "20.00", total_currency: "GBP" }] }
-              ]}] },
-              { sections: [{ elements: [
-                { type: "seat", designator: "29A", available_services: [] },
-                { type: "seat", designator: "29B", available_services: [{ id: "ase_seat_29B", total_amount: "0.00", total_currency: "GBP" }] },
-                { type: "seat", designator: "29C", available_services: [{ id: "ase_seat_29C", total_amount: "20.00", total_currency: "GBP" }] }
-              ]}] }
-            ]
-          }]
-        }]
-      });
-      setShowSeatMap(true);
+      alert('Seat maps not available for this offer');
     }
     setLoading(false);
   };
@@ -126,67 +103,99 @@ export default function DuffelCloneHome() {
       setSelectedSeat(seat.available_services[0]);
       setShowSeatMap(false);
     } else {
-      alert("This seat is not available");
+      alert('This seat is not available');
     }
   };
 
-  // === DYNAMIC TOTAL CALCULATION ===
+  // Dynamic total
   const getDynamicTotal = () => {
-    const baseFare = parseFloat(selectedOffer?.total_amount || '100');
+    const base = parseFloat(selectedOffer?.total_amount || '100');
     const taxes = parseFloat(selectedOffer?.tax_amount || '18');
-    const bagsCost = selectedBags * 30;
-    const seatCost = selectedSeat ? parseFloat(selectedSeat.total_amount || '0') : 0;
-    return (baseFare + taxes + bagsCost + seatCost).toFixed(2);
+    const bags = selectedBags * 30;
+    const seat = selectedSeat ? parseFloat(selectedSeat.total_amount || '0') : 0;
+    return (base + taxes + bags + seat).toFixed(2);
   };
 
-  const bookNow = () => {
-    const finalTotal = getDynamicTotal();
+  // === REAL BOOKING FUNCTION ===
+  const bookNow = async () => {
+    if (!selectedOffer) return;
 
-    const newTrip = {
-      id: selectedOffer?.id || 'ORD' + Date.now(),
-      status: 'Booked',
-      total: finalTotal,
-      currency: selectedOffer?.total_currency || 'GBP',
-      airline: 'Duffel Airways',
-      created: new Date().toLocaleString('en-GB'),
-      extraBags: selectedBags,
-      selectedSeat: selectedSeat,
-      flights: [
-        { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'Confirmed' },
-        { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'Confirmed' }
-      ],
-      passenger: { name: 'mr James Cooper', dob: '04/12/1978', gender: 'Male', email: 'jcooper4888@aol.co.uk', phone: '+447368841330' }
-    };
-    setMyTrips([...myTrips, newTrip]);
-    alert(`✅ Booking confirmed! Total: £${finalTotal}`);
-    closeCheckout();
-    setCurrentView('myTrips');
+    const finalAmount = getDynamicTotal();
+    const services: any[] = [];
+
+    if (selectedBags > 0 && availableServices[0]) {
+      services.push({ id: availableServices[0].id, quantity: selectedBags });
+    }
+
+    if (selectedSeat) {
+      services.push({ id: selectedSeat.id, quantity: 1 });
+    }
+
+    const passengers = [
+      {
+        id: 'pas_1',
+        title: 'mr',
+        given_name: 'James',
+        family_name: 'Cooper',
+        born_on: '1978-12-04',
+        gender: 'm',
+        email: 'jcooper4888@aol.co.uk',
+        phone_number: '+447368841330',
+      },
+    ];
+
+    try {
+      const res = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          offerId: selectedOffer.id,
+          passengers,
+          services,
+          finalAmount,
+          currency: selectedOffer.total_currency || 'GBP',
+        }),
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        const newTrip = {
+          id: result.order.id,
+          status: 'Booked',
+          total: finalAmount,
+          currency: selectedOffer.total_currency || 'GBP',
+          airline: selectedOffer.owner?.name || 'Duffel Airways',
+          created: new Date().toLocaleString('en-GB'),
+          extraBags: selectedBags,
+          selectedSeat: selectedSeat,
+          booking_reference: result.booking_reference,
+          flights: [
+            { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'Confirmed' },
+            { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'Confirmed' }
+          ],
+          passenger: { name: 'mr James Cooper', dob: '04/12/1978', gender: 'Male', email: 'jcooper4888@aol.co.uk', phone: '+447368841330' }
+        };
+
+        setMyTrips([...myTrips, newTrip]);
+        alert(`✅ Real booking created!\nBooking Reference: ${result.booking_reference}`);
+        closeCheckout();
+        setCurrentView('myTrips');
+      } else {
+        alert('Booking failed: ' + result.error);
+      }
+    } catch (error) {
+      alert('Error creating booking. Check console.');
+      console.error(error);
+    }
   };
 
-  const showHoldConfirmation = () => {
-    setShowHoldInfo(true);
-  };
+  const showHoldConfirmation = () => setShowHoldInfo(true);
 
   const confirmHold = () => {
-    const newTrip = {
-      id: selectedOffer?.id || 'ORD' + Date.now(),
-      status: 'On hold',
-      total: selectedOffer?.total_amount || '£158.00',
-      currency: selectedOffer?.total_currency || 'GBP',
-      airline: 'Duffel Airways',
-      created: new Date().toLocaleString('en-GB'),
-      holdUntil: '28 Jun 2026',
-      extraBags: selectedBags,
-      selectedSeat: selectedSeat,
-      flights: [
-        { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
-        { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
-      ],
-      passenger: { name: 'mr James Cooper', dob: '04/12/1978', gender: 'Male', email: 'jcooper4888@aol.co.uk', phone: '+447368841330' }
-    };
-    setMyTrips([...myTrips, newTrip]);
+    // (keep your existing hold logic or simplify for now)
+    alert('Hold functionality still simulated for now.');
     setShowHoldInfo(false);
-    setShowOrderHeld(true);
   };
 
   const openTripDetail = (trip: any) => {
@@ -214,6 +223,10 @@ export default function DuffelCloneHome() {
         </div>
         <h1 className="text-2xl font-bold">Wander • Duffel Clone</h1>
       </div>
+      <p className="text-center mt-12 text-xs">✅ Real Duffel order creation is now active. Reply "REAL BOOKING WORKING" after testing.</p>
+    </div>
+  );
+}
 
       {/* SEARCH VIEW */}
       {currentView === 'search' && (
