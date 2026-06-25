@@ -9,6 +9,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    // Flat structure (correct for current SDK)
     const response = await duffel.orders.create({
       type: 'instant',
       selected_offers: [body.offerId],
@@ -23,8 +24,7 @@ export async function POST(request: Request) {
       ],
     });
 
-    // The actual order is inside .data
-    const order = response.data;
+    const order = response.data; // actual order is inside .data
 
     return NextResponse.json({
       success: true,
