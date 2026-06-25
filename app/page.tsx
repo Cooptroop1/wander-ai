@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 
 export default function DuffelCloneHome() {
+  const [currentView, setCurrentView] = useState<'search' | 'myTrips' | 'tripDetail'>('search');
+  const [selectedTrip, setSelectedTrip] = useState<any>(null);
   const [journeyType, setJourneyType] = useState('one_way');
   const [from, setFrom] = useState('LHR');
   const [to, setTo] = useState('JFK');
@@ -17,7 +19,6 @@ export default function DuffelCloneHome() {
   const [showHoldInfo, setShowHoldInfo] = useState(false);
   const [showOrderHeld, setShowOrderHeld] = useState(false);
   const [myTrips, setMyTrips] = useState<any[]>([]);
-  const [showMyTrips, setShowMyTrips] = useState(false);
 
   const [fromSearch, setFromSearch] = useState('');
   const [toSearch, setToSearch] = useState('');
@@ -74,11 +75,13 @@ export default function DuffelCloneHome() {
       flights: [
         { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'Confirmed' },
         { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'Confirmed' }
-      ]
+      ],
+      passenger: { name: 'mr James Cooper', dob: '04/12/1978', gender: 'Male', email: 'jcooper4888@aol.co.uk', phone: '+447368841330' }
     };
     setMyTrips([...myTrips, newTrip]);
-    alert('✅ Booking confirmed! View in My Trips.');
+    alert('✅ Booking confirmed! Check My Trips.');
     closeCheckout();
+    setCurrentView('myTrips');
   };
 
   const showHoldConfirmation = () => {
@@ -97,11 +100,22 @@ export default function DuffelCloneHome() {
       flights: [
         { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
         { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
-      ]
+      ],
+      passenger: { name: 'mr James Cooper', dob: '04/12/1978', gender: 'Male', email: 'jcooper4888@aol.co.uk', phone: '+447368841330' }
     };
     setMyTrips([...myTrips, newTrip]);
     setShowHoldInfo(false);
     setShowOrderHeld(true);
+  };
+
+  const openTripDetail = (trip: any) => {
+    setSelectedTrip(trip);
+    setCurrentView('tripDetail');
+  };
+
+  const backToMyTrips = () => {
+    setCurrentView('myTrips');
+    setSelectedTrip(null);
   };
 
   const formatTime = (iso: string) => {
@@ -112,92 +126,96 @@ export default function DuffelCloneHome() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
+      {/* Top Navigation */}
       <div className="flex justify-between mb-6">
-        <h1>Wander • Duffel Clone</h1>
-        <button onClick={() => setShowMyTrips(!showMyTrips)} className="bg-white text-black px-6 py-2 rounded-xl font-bold">
-          My Trips ({myTrips.length})
-        </button>
-      </div>
-
-      {/* Journey Type Tabs */}
-      <div className="flex gap-2 mb-6">
-        <button onClick={() => setJourneyType('one_way')} className={`px-6 py-2 rounded-xl ${journeyType === 'one_way' ? 'bg-sky-500' : 'bg-zinc-800'}`}>One way</button>
-        <button onClick={() => setJourneyType('return')} className={`px-6 py-2 rounded-xl ${journeyType === 'return' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Return</button>
-        <button onClick={() => setJourneyType('multi_city')} className={`px-6 py-2 rounded-xl ${journeyType === 'multi_city' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Multi-city</button>
-      </div>
-
-      {/* Form */}
-      <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 grid grid-cols-1 md:grid-cols-6 gap-4">
-        <div className="relative col-span-1">
-          <input type="text" value={fromSearch} onChange={(e) => { setFromSearch(e.target.value); fetchSuggestions(e.target.value, setFromSuggestions, setShowFromDropdown); }} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Origin (type london or madrid)" />
-          {showFromDropdown && fromSuggestions.length > 0 && (
-            <div className="absolute mt-1 bg-zinc-800 rounded-xl w-full max-h-60 overflow-auto z-10">
-              {fromSuggestions.map((p: any) => (
-                <div key={p.id} onClick={() => { setFrom(p.iata_code || p.code); setFromSearch(p.name || p.city_name); setShowFromDropdown(false); }} className="p-3 hover:bg-zinc-700 cursor-pointer">
-                  {p.name} ({p.iata_code || p.code}) - {p.city_name}
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="flex gap-2">
+          <button onClick={() => setCurrentView('search')} className={`px-6 py-2 rounded-xl ${currentView === 'search' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Search</button>
+          <button onClick={() => setCurrentView('myTrips')} className={`px-6 py-2 rounded-xl ${currentView === 'myTrips' ? 'bg-sky-500' : 'bg-zinc-800'}`}>My Trips ({myTrips.length})</button>
         </div>
-        <div className="relative col-span-1">
-          <input type="text" value={toSearch} onChange={(e) => { setToSearch(e.target.value); fetchSuggestions(e.target.value, setToSuggestions, setShowToDropdown); }} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Destination" />
-          {showToDropdown && toSuggestions.length > 0 && (
-            <div className="absolute mt-1 bg-zinc-800 rounded-xl w-full max-h-60 overflow-auto z-10">
-              {toSuggestions.map((p: any) => (
-                <div key={p.id} onClick={() => { setTo(p.iata_code || p.code); setToSearch(p.name || p.city_name); setShowToDropdown(false); }} className="p-3 hover:bg-zinc-700 cursor-pointer">
-                  {p.name} ({p.iata_code || p.code}) - {p.city_name}
+        <h1 className="text-2xl font-bold">Wander • Duffel Clone</h1>
+      </div>
+
+      {/* SEARCH VIEW */}
+      {currentView === 'search' && (
+        <>
+          <div className="flex gap-2 mb-6">
+            <button onClick={() => setJourneyType('one_way')} className={`px-6 py-2 rounded-xl ${journeyType === 'one_way' ? 'bg-sky-500' : 'bg-zinc-800'}`}>One way</button>
+            <button onClick={() => setJourneyType('return')} className={`px-6 py-2 rounded-xl ${journeyType === 'return' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Return</button>
+            <button onClick={() => setJourneyType('multi_city')} className={`px-6 py-2 rounded-xl ${journeyType === 'multi_city' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Multi-city</button>
+          </div>
+
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div className="relative col-span-1">
+              <input type="text" value={fromSearch} onChange={(e) => { setFromSearch(e.target.value); fetchSuggestions(e.target.value, setFromSuggestions, setShowFromDropdown); }} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Origin (type london or madrid)" />
+              {showFromDropdown && fromSuggestions.length > 0 && (
+                <div className="absolute mt-1 bg-zinc-800 rounded-xl w-full max-h-60 overflow-auto z-10">
+                  {fromSuggestions.map((p: any) => (
+                    <div key={p.id} onClick={() => { setFrom(p.iata_code || p.code); setFromSearch(p.name || p.city_name); setShowFromDropdown(false); }} className="p-3 hover:bg-zinc-700 cursor-pointer">
+                      {p.name} ({p.iata_code || p.code}) - {p.city_name}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
-        </div>
-        <input type="date" value={depart} onChange={e => setDepart(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />
-        {journeyType === 'return' && <input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />}
-        <select value={passengers} onChange={e => setPassengers(Number(e.target.value))} className="p-4 bg-zinc-800 rounded-2xl">
-          {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} passengers</option>)}
-        </select>
-        <select value={cabinClass} onChange={e => setCabinClass(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl">
-          <option value="economy">Economy</option><option value="premium_economy">Premium Economy</option><option value="business">Business</option><option value="first">First</option>
-        </select>
-        <button onClick={handleRealSearch} className="bg-sky-500 text-white py-4 rounded-2xl font-bold">SEARCH FLIGHTS</button>
-      </div>
-
-      <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2 mt-4">Get Live Offers</button>
-
-      {/* Offers */}
-      <div className="mt-8 space-y-4">
-        {offers.map((o, i) => {
-          const slice = o.slices && o.slices[0];
-          const segment = slice && slice.segments && slice.segments[0];
-          const airline = segment ? segment.marketing_carrier.name : 'BA/VS';
-          const depTime = segment ? formatTime(segment.departing_at) : 'N/A';
-          const arrTime = segment ? formatTime(segment.arriving_at) : 'N/A';
-          const duration = slice ? (slice.duration || 'N/A') : 'N/A';
-          const stops = slice ? (slice.segments.length - 1) + ' stop' : 'Direct';
-          const cabin = slice ? slice.cabin_class : 'economy';
-          return (
-            <div key={i} className="bg-zinc-900 p-6 rounded-2xl flex justify-between items-center">
-              <div>
-                Offer {i+1} - {o.total_amount || '£428'} {o.total_currency || 'GBP'} • {airline} <br />
-                <span className="text-emerald-400">Dep: {depTime}</span> • <span className="text-emerald-400">Arr: {arrTime}</span> • {duration} • {stops} • {cabin}
-              </div>
-              <button onClick={() => selectOffer(o)} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
+            <div className="relative col-span-1">
+              <input type="text" value={toSearch} onChange={(e) => { setToSearch(e.target.value); fetchSuggestions(e.target.value, setToSuggestions, setShowToDropdown); }} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Destination" />
+              {showToDropdown && toSuggestions.length > 0 && (
+                <div className="absolute mt-1 bg-zinc-800 rounded-xl w-full max-h-60 overflow-auto z-10">
+                  {toSuggestions.map((p: any) => (
+                    <div key={p.id} onClick={() => { setTo(p.iata_code || p.code); setToSearch(p.name || p.city_name); setShowToDropdown(false); }} className="p-3 hover:bg-zinc-700 cursor-pointer">
+                      {p.name} ({p.iata_code || p.code}) - {p.city_name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          );
-        })}
-      </div>
+            <input type="date" value={depart} onChange={e => setDepart(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />
+            {journeyType === 'return' && <input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />}
+            <select value={passengers} onChange={e => setPassengers(Number(e.target.value))} className="p-4 bg-zinc-800 rounded-2xl">
+              {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} passengers</option>)}
+            </select>
+            <select value={cabinClass} onChange={e => setCabinClass(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl">
+              <option value="economy">Economy</option><option value="premium_economy">Premium Economy</option><option value="business">Business</option><option value="first">First</option>
+            </select>
+            <button onClick={handleRealSearch} className="bg-sky-500 text-white py-4 rounded-2xl font-bold">SEARCH FLIGHTS</button>
+          </div>
 
-      {/* My Trips */}
-      {showMyTrips && (
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">My Trips</h2>
+          <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2 mt-4">Get Live Offers</button>
+
+          <div className="mt-8 space-y-4">
+            {offers.map((o, i) => {
+              const slice = o.slices && o.slices[0];
+              const segment = slice && slice.segments && slice.segments[0];
+              const airline = segment ? segment.marketing_carrier.name : 'BA/VS';
+              const depTime = segment ? formatTime(segment.departing_at) : 'N/A';
+              const arrTime = segment ? formatTime(segment.arriving_at) : 'N/A';
+              const duration = slice ? (slice.duration || 'N/A') : 'N/A';
+              const stops = slice ? (slice.segments.length - 1) + ' stop' : 'Direct';
+              const cabin = slice ? slice.cabin_class : 'economy';
+              return (
+                <div key={i} className="bg-zinc-900 p-6 rounded-2xl flex justify-between items-center">
+                  <div>
+                    Offer {i+1} - {o.total_amount || '£428'} {o.total_currency || 'GBP'} • {airline} <br />
+                    <span className="text-emerald-400">Dep: {depTime}</span> • <span className="text-emerald-400">Arr: {arrTime}</span> • {duration} • {stops} • {cabin}
+                  </div>
+                  <button onClick={() => selectOffer(o)} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* MY TRIPS VIEW */}
+      {currentView === 'myTrips' && (
+        <div>
+          <h2 className="text-2xl font-bold mb-6">My Trips</h2>
           {myTrips.length === 0 ? (
             <p>No trips yet. Book or hold a flight to see it here.</p>
           ) : (
             myTrips.map((trip, i) => (
-              <div key={i} className="bg-zinc-900 p-6 rounded-2xl mb-4">
-                <div className="flex justify-between mb-4">
+              <div key={i} onClick={() => openTripDetail(trip)} className="bg-zinc-900 p-6 rounded-2xl mb-4 cursor-pointer hover:bg-zinc-800">
+                <div className="flex justify-between">
                   <div>
                     <div className="font-bold">{trip.airline} • {trip.status}</div>
                     <div className="text-sm text-zinc-400">Order ID: {trip.id}</div>
@@ -207,31 +225,98 @@ export default function DuffelCloneHome() {
                     {trip.status === 'On hold' && <div className="text-sm text-emerald-400">Pay by {trip.holdUntil}</div>}
                   </div>
                 </div>
-                {trip.flights.map((f: any, fi: number) => (
-                  <div key={fi} className="mb-3">
-                    <div className="font-semibold">{f.date} {f.time} • {f.route}</div>
-                    <div className="text-sm text-emerald-400">{f.status}</div>
-                  </div>
-                ))}
-                {trip.status === 'On hold' && (
-                  <button className="mt-4 bg-emerald-500 px-6 py-2 rounded-xl">Pay now to confirm</button>
-                )}
               </div>
             ))
           )}
         </div>
       )}
 
-      {/* Full Checkout + Hold + Order Held Modal */}
+      {/* TRIP DETAIL VIEW */}
+      {currentView === 'tripDetail' && selectedTrip && (
+        <div>
+          <button onClick={backToMyTrips} className="mb-6 text-emerald-400">← Back to My Trips</button>
+          
+          <div className="bg-emerald-900/30 border border-emerald-500 p-6 rounded-2xl mb-6">
+            <div className="text-2xl font-bold text-emerald-400 mb-2">Order {selectedTrip.status}</div>
+            {selectedTrip.status === 'On hold' && (
+              <>
+                <div className="text-sm">The price guarantee expires in 2 days. After this prices for your trip may change.</div>
+                <div className="text-sm">Space expires in 3 days. After this the space will be released and you will need to rebook.</div>
+              </>
+            )}
+          </div>
+
+          <div className="bg-zinc-800 p-6 rounded-2xl mb-6">
+            <div className="grid grid-cols-3 gap-4 text-sm mb-6">
+              <div>
+                <div className="text-zinc-400">{selectedTrip.created}</div>
+                <div className="font-semibold">Booked</div>
+              </div>
+              {selectedTrip.status === 'On hold' && (
+                <>
+                  <div>
+                    <div className="text-zinc-400">27 Jun 2026 23:16 BST</div>
+                    <div className="font-semibold">Price hold expires</div>
+                    <div className="text-emerald-400">{selectedTrip.total}</div>
+                  </div>
+                  <div>
+                    <div className="text-zinc-400">28 Jun 2026 23:16 BST</div>
+                    <div className="font-semibold">Space hold expires</div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {selectedTrip.flights.map((f: any, fi: number) => (
+              <div key={fi} className="mb-6">
+                <div className="font-bold mb-2">{f.date} {f.time} • {f.route}</div>
+                <div className="text-sm text-emerald-400 mb-2">{f.status}</div>
+                <div className="text-sm">19:21 Depart London Stansted (STN) Terminal 2</div>
+                <div className="text-sm">22:39 Arrive Madrid (MAD) Terminal 1</div>
+                <div className="text-sm mt-1">Economy • Duffel Airways • Boeing 777-300 • ZZ5528</div>
+                <div className="text-sm">1 carry-on bag • 1 checked bag</div>
+              </div>
+            ))}
+
+            <div className="text-sm mb-6">
+              <div>Order change policy: This order is not changeable</div>
+              <div>Order refund policy: This order is not refundable</div>
+            </div>
+
+            <div className="mb-6">
+              <div className="font-bold mb-2">Passengers • adult 1</div>
+              <div>Name: {selectedTrip.passenger?.name || 'mr James Cooper'}</div>
+              <div>Date of birth: {selectedTrip.passenger?.dob || '04/12/1978'}</div>
+              <div>Gender: {selectedTrip.passenger?.gender || 'Male'}</div>
+              <div>E-mail: {selectedTrip.passenger?.email || 'jcooper4888@aol.co.uk'}</div>
+              <div>Contact number: {selectedTrip.passenger?.phone || '+447368841330'}</div>
+            </div>
+
+            <div>
+              <div className="font-bold mb-2">Summary</div>
+              <div>Order ID: {selectedTrip.id}</div>
+              <div>Status: {selectedTrip.status}</div>
+              <div>Airline: {selectedTrip.airline}</div>
+              <div>James Cooper created this order. {selectedTrip.created}</div>
+            </div>
+          </div>
+
+          {selectedTrip.status === 'On hold' && (
+            <button className="w-full bg-emerald-500 py-4 rounded-2xl font-bold">Pay now to confirm</button>
+          )}
+        </div>
+      )}
+
+      {/* Checkout Modal (same as before) */}
       {showCheckout && selectedOffer && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto p-8">
+            {/* ... (same checkout content as previous version) ... */}
             <div className="flex justify-between mb-6">
               <h2 className="text-2xl font-bold">Checkout</h2>
               <button onClick={closeCheckout} className="text-2xl">×</button>
             </div>
 
-            {/* Selected Flight Summary */}
             <div className="mb-8">
               <div className="text-sm text-zinc-400 mb-2">Return • 1 Passenger • Economy</div>
               <div className="bg-zinc-800 p-6 rounded-2xl mb-6">
@@ -250,10 +335,6 @@ export default function DuffelCloneHome() {
                   <div className="text-sm">21:25 Arrive London Stansted (STN) Terminal 1</div>
                   <div className="text-sm mt-1">Economy • Duffel Airways • ZZ5528 • 1 carry-on + 1 checked bag included</div>
                 </div>
-              </div>
-              <div className="text-sm mb-6">
-                <div>Order change policy: This order is not changeable</div>
-                <div>Order refund policy: This order is not refundable</div>
               </div>
             </div>
 
@@ -425,7 +506,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ My Trips page + full flow. Reply "TRIPS GOOD" or next.</p>
+      <p className="text-center mt-12 text-xs">✅ My Trips as its own screen + tap for full details. Reply "DETAILS GOOD" or next.</p>
     </div>
   );
 }
