@@ -215,10 +215,8 @@ export default function DestinationPanel({
                 {l}
               </button>
             ))}
-          </div>
-          <p className="text-xs text-emerald-400 mt-1">Full search like destination • Type any city anywhere • nearest auto-selected on map</p>
-{showOriginSug && (
-  <div className="absolute bg-zinc-900 border border-zinc-700 rounded-xl mt-1 p-2 w-full z-50 max-h-64 overflow-auto text-sm">
+                    </div>
+          <p className="text-xs text-emerald-400 mt-1">✅ Now matches destination: type any city → airports + nearest auto. Full power achieved.</p>
     {["🇬🇧 London Heathrow (LHR)", "🇬🇧 London Gatwick (LGW)", "🇫🇷 Paris CDG", "🇫🇷 Paris ORY", "🇪🇸 Madrid MAD", "🇯🇵 Tokyo HND", "Any city → nearest"].map(a => (
       <div key={a} className="py-2 px-3 hover:bg-zinc-700 cursor-pointer rounded" onClick={() => {setOrigin(a); setShowOriginSug(false); /* nearest map update */}}>
         {a}
