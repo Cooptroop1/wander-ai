@@ -1,55 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Duffel } from '@duffel/api';
 
-export async function POST(request: NextRequest) {
+const duffel = new Duffel({
+  token: process.env.DUFFEL_ACCESS_TOKEN!,
+});
+
+export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { offerId, markupPercent = 10 } = body;
 
-    const duffel = new Duffel({
-      token: process.env.DUFFEL_ACCESS_TOKEN!,
-    });
-
-    const orderResponse = await duffel.orders.create({
-      selected_offers: [offerId],
-      type: 'instant',
-      passengers: [
-        {
-          id: 'passenger_0',
-          given_name: "John",
-          family_name: "Doe",
-          born_on: "1990-01-01",
-          gender: "m",
-          email: "john@example.com",
-          phone_number: "+441234567890",
-          title: "mr"
-        }
-      ],
+    const order = await duffel.orders.create({
+      selected_offers: [body.offerId],
+      passengers: body.passengers,
+      services: body.services || [],
       payments: [
         {
-          type: "balance",
-          currency: "GBP",
-          amount: "550.00"  // base + markup (you keep the extra £50)
-        }
+          type: 'balance',
+          currency: body.currency,
+          amount: body.finalAmount,
+        },
       ],
-      metadata: {
-        your_markup: markupPercent + "% added (£50 example)",
-        customer_id: "user123"
-      }
     });
 
     return NextResponse.json({
       success: true,
-      orderId: orderResponse.data.id,
-      bookingReference: orderResponse.data.booking_reference,
-      message: '✅ Booked and paid with markup! (real Duffel order created)'
+      order: order,
+      booking_reference: order.booking_reference,
+      id: order.id,
     });
-
   } catch (error: any) {
-    return NextResponse.json({
-      success: false,
-      error: error.message,
-      tip: 'Use real offerId from search'
-    }, { status: 500 });
+    console.error('Duffel order creation error:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error.message || 'Failed to create order with Duffel' 
+      },
+      { status: 500 }
+    );
   }
 }
