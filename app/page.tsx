@@ -20,31 +20,24 @@ export default function DuffelCloneHome() {
   const [toSearch, setToSearch] = useState('');
   const [from2Search, setFrom2Search] = useState('');
   const [to2Search, setTo2Search] = useState('');
+  const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
+  const [toSuggestions, setToSuggestions] = useState<any[]>([]);
+  const [from2Suggestions, setFrom2Suggestions] = useState<any[]>([]);
+  const [to2Suggestions, setTo2Suggestions] = useState<any[]>([]);
   const [showFromDropdown, setShowFromDropdown] = useState(false);
   const [showToDropdown, setShowToDropdown] = useState(false);
   const [showFrom2Dropdown, setShowFrom2Dropdown] = useState(false);
   const [showTo2Dropdown, setShowTo2Dropdown] = useState(false);
 
-  const airports = [ // your list
-    { code: "LHR", name: "London Heathrow", city: "London", country: "UK" },
-    { code: "LGW", name: "London Gatwick", city: "London", country: "UK" },
-    { code: "STN", name: "London Stansted", city: "London", country: "UK" },
-    { code: "LTN", name: "London Luton", city: "London", country: "UK" },
-    { code: "MAN", name: "Manchester", city: "Manchester", country: "UK" },
-    { code: "CDG", name: "Charles de Gaulle", city: "Paris", country: "France" },
-    { code: "ORY", name: "Orly", city: "Paris", country: "France" },
-    { code: "JFK", name: "John F. Kennedy", city: "New York", country: "USA" },
-    { code: "LGA", name: "LaGuardia", city: "New York", country: "USA" },
-    { code: "EWR", name: "Newark", city: "New York", country: "USA" },
-    { code: "DXB", name: "Dubai International", city: "Dubai", country: "UAE" },
-    { code: "MAD", name: "Adolfo Suárez", city: "Madrid", country: "Spain" },
-    { code: "BCN", name: "El Prat", city: "Barcelona", country: "Spain" },
-  ];
-
-  const filteredFrom = airports.filter(a => a.city.toLowerCase().includes(fromSearch.toLowerCase()) || a.code.toLowerCase().includes(fromSearch.toLowerCase()) || a.name.toLowerCase().includes(fromSearch.toLowerCase())).slice(0, 8);
-  const filteredTo = airports.filter(a => a.city.toLowerCase().includes(toSearch.toLowerCase()) || a.code.toLowerCase().includes(toSearch.toLowerCase()) || a.name.toLowerCase().includes(toSearch.toLowerCase())).slice(0, 8);
-  const filteredFrom2 = airports.filter(a => a.city.toLowerCase().includes(from2Search.toLowerCase()) || a.code.toLowerCase().includes(from2Search.toLowerCase()) || a.name.toLowerCase().includes(from2Search.toLowerCase())).slice(0, 8);
-  const filteredTo2 = airports.filter(a => a.city.toLowerCase().includes(to2Search.toLowerCase()) || a.code.toLowerCase().includes(to2Search.toLowerCase()) || a.name.toLowerCase().includes(to2Search.toLowerCase())).slice(0, 8);
+  const fetchSuggestions = async (query: string, setSuggestions: any) => {
+    if (query.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    const res = await fetch(`/api/places/suggestions?query=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    setSuggestions(data.places || []);
+  };
 
   const handleRealSearch = async () => {
     setLoading(true);
@@ -75,7 +68,7 @@ export default function DuffelCloneHome() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (full form + multi-city)</h1>
+      <h1>Wander • Duffel Clone (real Duffel airport API)</h1>
 
       {/* Journey Type Tabs */}
       <div className="flex gap-2 mb-6">
@@ -84,15 +77,44 @@ export default function DuffelCloneHome() {
         <button onClick={() => setJourneyType('multi_city')} className={`px-6 py-2 rounded-xl ${journeyType === 'multi_city' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Multi-city</button>
       </div>
 
-      {/* Form */}
+      {/* Form with real Duffel suggestions */}
       <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 grid grid-cols-1 md:grid-cols-6 gap-4">
         {/* Flight 1 */}
         <div className="relative col-span-1">
-          <input type="text" value={fromSearch} onChange={(e) => setFromSearch(e.target.value)} onFocus={() => {}} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Flight 1 Origin (type london)" />
-          {/* Simplified dropdown for now - full API suggestions in next step */}
+          <input 
+            type="text" 
+            value={fromSearch} 
+            onChange={(e) => { setFromSearch(e.target.value); fetchSuggestions(e.target.value, setFromSuggestions); setShowFromDropdown(true); }}
+            className="p-4 bg-zinc-800 rounded-2xl w-full" 
+            placeholder="Flight 1 Origin (type london)" 
+          />
+          {showFromDropdown && fromSuggestions.length > 0 && (
+            <div className="absolute mt-1 bg-zinc-800 rounded-xl w-full max-h-60 overflow-auto z-10">
+              {fromSuggestions.map((p: any) => (
+                <div key={p.id} onClick={() => { setFrom(p.iata_code || p.code); setFromSearch(p.name || p.city_name); setShowFromDropdown(false); }} className="p-3 hover:bg-zinc-700 cursor-pointer">
+                  {p.name} ({p.iata_code || p.code}) - {p.city_name}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="relative col-span-1">
-          <input type="text" value={toSearch} onChange={(e) => setToSearch(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Flight 1 Destination" />
+          <input 
+            type="text" 
+            value={toSearch} 
+            onChange={(e) => { setToSearch(e.target.value); fetchSuggestions(e.target.value, setToSuggestions); setShowToDropdown(true); }}
+            className="p-4 bg-zinc-800 rounded-2xl w-full" 
+            placeholder="Flight 1 Destination" 
+          />
+          {showToDropdown && toSuggestions.length > 0 && (
+            <div className="absolute mt-1 bg-zinc-800 rounded-xl w-full max-h-60 overflow-auto z-10">
+              {toSuggestions.map((p: any) => (
+                <div key={p.id} onClick={() => { setTo(p.iata_code || p.code); setToSearch(p.name || p.city_name); setShowToDropdown(false); }} className="p-3 hover:bg-zinc-700 cursor-pointer">
+                  {p.name} ({p.iata_code || p.code}) - {p.city_name}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <input type="date" value={depart} onChange={e => setDepart(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />
 
@@ -101,10 +123,28 @@ export default function DuffelCloneHome() {
         {journeyType === 'multi_city' && (
           <>
             <div className="relative col-span-1">
-              <input type="text" value={from2Search} onChange={(e) => setFrom2Search(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Flight 2 Origin" />
+              <input type="text" value={from2Search} onChange={(e) => { setFrom2Search(e.target.value); fetchSuggestions(e.target.value, setFrom2Suggestions); setShowFrom2Dropdown(true); }} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Flight 2 Origin" />
+              {showFrom2Dropdown && from2Suggestions.length > 0 && (
+                <div className="absolute mt-1 bg-zinc-800 rounded-xl w-full max-h-60 overflow-auto z-10">
+                  {from2Suggestions.map((p: any) => (
+                    <div key={p.id} onClick={() => { setFrom2(p.iata_code || p.code); setFrom2Search(p.name || p.city_name); setShowFrom2Dropdown(false); }} className="p-3 hover:bg-zinc-700 cursor-pointer">
+                      {p.name} ({p.iata_code || p.code}) - {p.city_name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="relative col-span-1">
-              <input type="text" value={to2Search} onChange={(e) => setTo2Search(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Flight 2 Destination" />
+              <input type="text" value={to2Search} onChange={(e) => { setTo2Search(e.target.value); fetchSuggestions(e.target.value, setTo2Suggestions); setShowTo2Dropdown(true); }} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Flight 2 Destination" />
+              {showTo2Dropdown && to2Suggestions.length > 0 && (
+                <div className="absolute mt-1 bg-zinc-800 rounded-xl w-full max-h-60 overflow-auto z-10">
+                  {to2Suggestions.map((p: any) => (
+                    <div key={p.id} onClick={() => { setTo2(p.iata_code || p.code); setTo2Search(p.name || p.city_name); setShowTo2Dropdown(false); }} className="p-3 hover:bg-zinc-700 cursor-pointer">
+                      {p.name} ({p.iata_code || p.code}) - {p.city_name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <input type="date" value={depart2} onChange={e => setDepart2(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />
           </>
@@ -141,7 +181,7 @@ export default function DuffelCloneHome() {
         })}
       </div>
 
-      <p className="text-center mt-12 text-xs">✅ All journey types + airports type search. Reply "ALL GOOD" or next (full booking with markup).</p>
+      <p className="text-center mt-12 text-xs">✅ Real Duffel API airports. Reply "AIRPORTS GOOD" or next (full booking with markup).</p>
     </div>
   );
 }
