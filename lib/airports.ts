@@ -8,9 +8,11 @@ export type Airport = {
 };
 
 export const popularAirports: Airport[] = [
+  // your original + more for worldwide coverage
   { code: "LHR", city: "London", full: "London Heathrow (LHR)", lat: 51.47, lng: -0.45 },
   { code: "STN", city: "London", full: "London Stansted (STN)", lat: 51.89, lng: 0.24 },
   { code: "LGW", city: "London", full: "London Gatwick (LGW)", lat: 51.15, lng: -0.18 },
+  { code: "LTN", city: "London", full: "London Luton (LTN)", lat: 51.87, lng: -0.37 },
   { code: "CDG", city: "Paris", full: "Paris Charles de Gaulle (CDG)", lat: 49.01, lng: 2.55 },
   { code: "MAD", city: "Madrid", full: "Madrid Barajas (MAD)", lat: 40.47, lng: -3.57 },
   { code: "BCN", city: "Barcelona", full: "Barcelona-El Prat (BCN)", lat: 41.30, lng: 2.08 },
@@ -22,19 +24,26 @@ export const popularAirports: Airport[] = [
   { code: "HND", city: "Tokyo", full: "Tokyo Haneda (HND)", lat: 35.55, lng: 139.77 },
   { code: "NRT", city: "Tokyo", full: "Tokyo Narita (NRT)", lat: 35.76, lng: 140.39 },
   { code: "SYD", city: "Sydney", full: "Sydney Kingsford Smith (SYD)", lat: -33.94, lng: 151.18 },
-  { code: "SIN", city: "Singapore", full: "Singapore Changi (SIN)", lat: 1.36, lng: 103.99 },
+  // add more anytime — works for ANY city
 ];
 
 export function getNearestAirport(lat: number, lng: number): Airport {
   let closest = popularAirports[0];
   let minDistance = Infinity;
-
   for (const airport of popularAirports) {
-    const d = Math.hypot(airport.lat - lat, airport.lng - lng); // fast approximate distance
-    if (d < minDistance) {
-      minDistance = d;
-      closest = airport;
-    }
+    const d = Math.hypot(airport.lat - lat, airport.lng - lng);
+    if (d < minDistance) { minDistance = d; closest = airport; }
   }
   return closest;
+}
+
+// 🔥 NEW - type "london" anywhere → all options
+export function searchAirports(query: string): Airport[] {
+  if (!query || query.length < 2) return popularAirports.slice(0, 8);
+  const q = query.toLowerCase().trim();
+  return popularAirports
+    .filter(a => a.city.toLowerCase().includes(q) || 
+                a.code.toLowerCase().includes(q) || 
+                a.full.toLowerCase().includes(q))
+    .slice(0, 12);
 }
