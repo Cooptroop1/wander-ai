@@ -196,17 +196,21 @@ export default function DestinationPanel({
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (type city or airport code)</label>
             <input 
-  placeholder="Start city/airport (type London, Paris...)" 
-  className="bg-zinc-900 border border-zinc-700 focus:border-emerald-500"
-  onChange={handleOrigin} 
-  onFocus={() => setOriginSuggestions(true)} 
-/>
-{originSuggestions && (
-  <div className="absolute bg-zinc-900 border border-zinc-700 rounded-xl mt-1 p-3 w-full z-50 max-h-60 overflow-auto text-sm">
-    {suggestedAirports.map(a => <div key={a} className="py-1.5 hover:bg-zinc-800 px-3 cursor-pointer" onClick={()=>selectOrigin(a)}>{a}</div>)}
+  placeholder="From • Type London, Paris, Tokyo..." 
+  className="bg-zinc-900 border border-zinc-700 focus:border-emerald-500 px-4 py-3 rounded-2xl w-full"
+  onChange={(e) => { setOriginQuery(e.target.value); setShowOriginSug(true); }}
+  onFocus={() => setShowOriginSug(true)}
+  value={originQuery || ''}
+ />
+{showOriginSug && (
+  <div className="absolute bg-zinc-900 border border-zinc-700 rounded-xl mt-1 p-2 w-full z-50 max-h-64 overflow-auto text-sm">
+    {["🇬🇧 London Heathrow (LHR)", "🇬🇧 London Gatwick (LGW)", "🇫🇷 Paris CDG", "🇫🇷 Paris ORY", "🇪🇸 Madrid MAD", "🇯🇵 Tokyo HND", "Any city → nearest"].map(a => (
+      <div key={a} className="py-2 px-3 hover:bg-zinc-700 cursor-pointer rounded" onClick={() => {setOrigin(a); setShowOriginSug(false); /* nearest map update */}}>
+        {a}
+      </div>
+    ))}
   </div>
 )}
-
 {/* Suggestions - now works when you type */}
 <div className="mt-2 flex gap-2 flex-wrap">
   <button onClick={() => setHomeCity('LHR')} className="text-xs px-4 py-1 bg-zinc-700 rounded-xl">LHR London</button>
