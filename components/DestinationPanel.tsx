@@ -203,13 +203,20 @@ export default function DestinationPanel({
           {/* Improved Airport Inputs */}
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (type city or airport code)</label>
-            <input 
-  placeholder="From • Type London, Paris, Tokyo..." 
-  className="bg-zinc-900 border border-zinc-700 focus:border-emerald-500 px-4 py-3 rounded-2xl w-full"
-  onChange={(e) => { setOriginQuery(e.target.value); setShowOriginSug(true); }}
-  onFocus={() => setShowOriginSug(true)}
-  value={originQuery || ''}
- />
+                      <input 
+            placeholder="From • Type London, Paris, Tokyo or any city" 
+            className="bg-zinc-900 border border-zinc-700 focus:border-emerald-500 px-4 py-3 rounded-2xl w-full"
+            value={homeCity}
+            onChange={(e) => setHomeCity(e.target.value)}
+          />
+          <div className="flex flex-wrap gap-2 mt-2">
+            {["🇬🇧 London LHR/LGW", "🇫🇷 Paris CDG/ORY", "🇪🇸 Madrid MAD", "🇯🇵 Tokyo HND/NRT", "🌍 Any city • nearest airport"].map(l => (
+              <button key={l} onClick={() => setHomeCity(l)} className="px-3 py-1 text-xs bg-zinc-700 hover:bg-emerald-600 rounded-full">
+                {l}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-emerald-400 mt-1">Full search like destination • Type any city anywhere • nearest auto-selected on map</p>
 {showOriginSug && (
   <div className="absolute bg-zinc-900 border border-zinc-700 rounded-xl mt-1 p-2 w-full z-50 max-h-64 overflow-auto text-sm">
     {["🇬🇧 London Heathrow (LHR)", "🇬🇧 London Gatwick (LGW)", "🇫🇷 Paris CDG", "🇫🇷 Paris ORY", "🇪🇸 Madrid MAD", "🇯🇵 Tokyo HND", "Any city → nearest"].map(a => (
