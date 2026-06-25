@@ -128,16 +128,15 @@ export default function DestinationPanel({
               <input type="date" placeholder="Birthdate" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl mb-2" />
               <input placeholder="Email" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl" />
 
-              {/* 🎉 The pro Duffel widget for bags + seats */}
+                            {/* Duffel Ancillaries widget - bags + seats selection */}
               <DuffelAncillaries
                 offer={selectedFlights}
                 passengers={[{ given_name: "Alex", family_name: "Cooper", type: "adult" }]}
                 services={['bags', 'seats']}
                 onPayloadReady={(payload) => {
-                  alert("✅ Bags and seats added! Payload ready for final booking");
+                  alert("✅ Bags and seats added! Ready for final booking");
                   console.log("Ancillaries payload:", payload);
                 }}
-                markup={{ bags: { amount: 10, rate: 0.15 } }}  {/* you earn extra money */}
               />
 
               <button onClick={createBooking} className="w-full py-4 bg-green-600 hover:bg-green-500 rounded-2xl font-bold">✅ Confirm Full Booking with Duffel (including extras)</button>
