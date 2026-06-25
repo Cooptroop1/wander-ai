@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const order = await duffel.orders.create({
-      type: 'instant',                    // ← This was missing
+      type: 'instant',                    // ← Required by SDK
       selected_offers: [body.offerId],
       passengers: body.passengers,
       services: body.services || [],
@@ -30,12 +30,9 @@ export async function POST(request: Request) {
       id: order.id,
     });
   } catch (error: any) {
-    console.error('Duffel order creation error:', error);
+    console.error('Duffel order error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error.message || 'Failed to create order with Duffel' 
-      },
+      { success: false, error: error.message || 'Failed to create order' },
       { status: 500 }
     );
   }
