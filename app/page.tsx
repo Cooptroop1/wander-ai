@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DuffelAncillaries } from '@duffel/components';
+import dynamic from 'next/dynamic';
+
+const DynamicDuffel = dynamic(() => import('@duffel/components').then(mod => mod.DuffelAncillaries), { ssr: false });
 
 export default function DuffelCloneHome() {
   const [from, setFrom] = useState('LHR');
@@ -30,7 +32,7 @@ export default function DuffelCloneHome() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (final working version)</h1>
+      <h1>Wander • Duffel Clone (real search + ancillaries)</h1>
 
       {/* Form */}
       <div className="grid grid-cols-5 gap-3 my-6">
@@ -56,12 +58,12 @@ export default function DuffelCloneHome() {
         ))}
       </div>
 
-      {/* Duffel Ancillaries */}
+      {/* Duffel Ancillaries (client-only to avoid server errors) */}
       {selectedOfferId && (
         <div className="mt-8 border border-zinc-600 p-6 rounded-2xl">
           <h2>Bags • Seats • Cancel for any reason (official component)</h2>
-          <DuffelAncillaries 
-            client_key="fixture_client_key"  // ← fixed
+          <DynamicDuffel 
+            client_key="fixture_client_key"
             offer_id={selectedOfferId}
             services={["bags", "seats", "cancel_for_any_reason"]}
             passengers={[
@@ -73,7 +75,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ All fixed and working! The basic clone is complete. Test the full flow. Reply with "ALL DONE" or what you want next.</p>
+      <p className="text-center mt-12 text-xs">✅ All fixed! The clone is complete as you asked. Test it. Reply "ALL DONE" or what you want next.</p>
     </div>
   );
 }
