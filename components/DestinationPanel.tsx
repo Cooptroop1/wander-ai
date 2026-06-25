@@ -3,9 +3,11 @@
 import { X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { searchAirports, popularAirports } from '@/lib/airports';
+import { useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
 const SeatSelection = dynamic(() => import('@duffel/components').then(mod => mod.SeatSelection), { ssr: false });
+const ancillariesRef = useRef<any>(null);
 
 interface DestinationPanelProps {
   isOpen: boolean;
@@ -58,7 +60,40 @@ export default function DestinationPanel({
 
   const generateItinerary = async () => { alert("AI Itinerary coming (your API works)"); };
   const createBooking = async () => { alert("Booking created with Duffel!"); };
+    // Load Duffel ancillaries script and render when flight is selected
+  useEffect(() => {
+    if (!selectedFlights) return;
 
+    // Load the script once
+    if (!document.querySelector('script[src*="duffel-ancillaries"]')) {
+      const script = document.createElement('script');
+      script.src = "https://assets.duffel.com/components/3.7.25/duffel-ancillaries.js";
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    // Render the ancillaries when flight is selected
+    if (ancillariesRef.current) {
+      ancillariesRef.current.render({
+        offer_id: selectedFlights.id,
+        services: ["bags", "seats"],
+        passengers: [
+          {
+            given_name: "Alex",
+            family_name: "Cooper",
+            gender: "M",
+            title: "mr",
+            born_on: "1995-01-01",
+            email: "test@example.com",
+            phone_number: "+442080160508"
+          }
+        ],
+        markup: {
+          bags: { amount: 10, rate: 0.1 }
+        }
+      });
+    }
+  }, [selectedFlights]);
   if (!isOpen) return null;
 
   return (
