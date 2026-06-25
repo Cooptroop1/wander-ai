@@ -23,7 +23,7 @@
     "tailwind-merge": "^3.3.0",
     "leaflet": "^1.9.4",
     "react-leaflet": "^4.2.1",
-    "@duffel/components": "^1.0.0",
+    "@duffel/components": "^3.16.1",
     "base64-js": "^1.5.1",
     "ieee754": "^1.2.1",
     "lodash": "^4.17.21",
