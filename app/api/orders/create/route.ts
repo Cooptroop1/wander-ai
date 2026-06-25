@@ -10,6 +10,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const order = await duffel.orders.create({
+      type: 'instant',                    // ← This was missing
       selected_offers: [body.offerId],
       passengers: body.passengers,
       services: body.services || [],
