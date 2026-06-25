@@ -130,16 +130,22 @@ export default function DuffelCloneHome() {
     }
   };
 
-  const bookNow = () => {
-    let finalTotal = parseFloat(selectedOffer?.total_amount || '118');
+  // === DYNAMIC TOTAL CALCULATION ===
+  const getDynamicTotal = () => {
+    const baseFare = parseFloat(selectedOffer?.total_amount || '100');
+    const taxes = parseFloat(selectedOffer?.tax_amount || '18');
+    const bagsCost = selectedBags * 30;
+    const seatCost = selectedSeat ? parseFloat(selectedSeat.total_amount || '0') : 0;
+    return (baseFare + taxes + bagsCost + seatCost).toFixed(2);
+  };
 
-    if (selectedBags > 0) finalTotal += selectedBags * 30;
-    if (selectedSeat) finalTotal += parseFloat(selectedSeat.total_amount || '0');
+  const bookNow = () => {
+    const finalTotal = getDynamicTotal();
 
     const newTrip = {
       id: selectedOffer?.id || 'ORD' + Date.now(),
       status: 'Booked',
-      total: finalTotal.toFixed(2),
+      total: finalTotal,
       currency: selectedOffer?.total_currency || 'GBP',
       airline: 'Duffel Airways',
       created: new Date().toLocaleString('en-GB'),
@@ -305,7 +311,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      {/* TRIP DETAIL VIEW - SAFE + SHOWS SEAT PROPERLY */}
+      {/* TRIP DETAIL VIEW */}
       {currentView === 'tripDetail' && selectedTrip && (
         <div>
           <button onClick={backToMyTrips} className="mb-6 text-emerald-400">← Back to My Trips</button>
@@ -352,7 +358,6 @@ export default function DuffelCloneHome() {
               </div>
             ))}
 
-            {/* EXTRA BAGS + SEAT - FIXED DISPLAY */}
             {(selectedTrip.extraBags > 0 || selectedTrip.selectedSeat) && (
               <div className="mb-6 p-4 bg-zinc-700 rounded-xl">
                 <div className="font-bold mb-2">Extras added</div>
@@ -395,7 +400,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      {/* FULL CHECKOUT MODAL WITH SEAT MAP */}
+      {/* FULL CHECKOUT MODAL WITH DYNAMIC PAYMENT */}
       {showCheckout && selectedOffer && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto p-8">
@@ -424,7 +429,7 @@ export default function DuffelCloneHome() {
               </div>
             </div>
 
-            {/* ADD EXTRAS - BAGS + SEATS FROM API */}
+            {/* ADD EXTRAS */}
             <div className="mb-8">
               <div className="font-bold mb-3">Add extras</div>
               
@@ -451,7 +456,7 @@ export default function DuffelCloneHome() {
                 <div className="mt-2 font-bold">Bags total: £{(selectedBags * 30).toFixed(2)}</div>
               </div>
 
-              {/* Seats from API */}
+              {/* Seats */}
               <div className="bg-zinc-800 p-6 rounded-2xl">
                 <div className="flex justify-between items-center mb-4">
                   <div>Seat Selection (from Duffel Seat Maps API)</div>
@@ -467,18 +472,50 @@ export default function DuffelCloneHome() {
               </div>
             </div>
 
+            {/* DYNAMIC PAYMENT SECTION */}
+            <div className="mb-8">
+              <div className="font-bold mb-3">Payment</div>
+              <div className="bg-zinc-800 p-6 rounded-2xl">
+                <div className="flex justify-between">
+                  <div>Fare</div>
+                  <div>£{parseFloat(selectedOffer?.total_amount || '100').toFixed(2)}</div>
+                </div>
+                <div className="flex justify-between">
+                  <div>Fare taxes</div>
+                  <div>£{parseFloat(selectedOffer?.tax_amount || '18').toFixed(2)}</div>
+                </div>
+                {selectedBags > 0 && (
+                  <div className="flex justify-between text-emerald-400">
+                    <div>Extra bags ({selectedBags})</div>
+                    <div>£{(selectedBags * 30).toFixed(2)}</div>
+                  </div>
+                )}
+                {selectedSeat && (
+                  <div className="flex justify-between text-emerald-400">
+                    <div>Selected seat</div>
+                    <div>£{parseFloat(selectedSeat.total_amount || '0').toFixed(2)}</div>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold mt-4 pt-4 border-t border-zinc-700 text-lg">
+                  <div>Total (GBP)</div>
+                  <div>£{getDynamicTotal()}</div>
+                </div>
+              </div>
+            </div>
+
             {!showHoldInfo && !showOrderHeld && (
               <div className="mb-8">
                 <div className="font-bold mb-3">Paying now, or later?</div>
                 <div className="flex gap-4">
                   <button onClick={bookNow} className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold">
-                    Pay now (+ £{((selectedBags * 30) + (selectedSeat ? parseFloat(selectedSeat.total_amount || '0') : 0)).toFixed(2)})
+                    Pay now (£{getDynamicTotal()})
                   </button>
                   <button onClick={showHoldConfirmation} className="flex-1 bg-zinc-700 py-4 rounded-2xl">Hold order (pay later)</button>
                 </div>
               </div>
             )}
 
+            {/* Hold + Order Held sections (same as before) */}
             {showHoldInfo && !showOrderHeld && (
               <div className="mb-8 bg-zinc-800 p-6 rounded-2xl">
                 <div className="text-xl font-bold mb-4">Confirm and pay later</div>
@@ -546,7 +583,6 @@ export default function DuffelCloneHome() {
                     <div className="text-sm">1 carry-on bag • 2 checked bags</div>
                   </div>
 
-                  {/* EXTRA BAGS + SEAT IN ORDER HELD SCREEN */}
                   {(selectedBags > 0 || selectedSeat) && (
                     <div className="mb-6 p-4 bg-zinc-700 rounded-xl">
                       <div className="font-bold mb-2">Extras added to this order</div>
@@ -612,15 +648,6 @@ export default function DuffelCloneHome() {
                   </div>
                 </div>
 
-                <div className="mb-8">
-                  <div className="font-bold mb-3">Payment</div>
-                  <div className="bg-zinc-800 p-6 rounded-2xl">
-                    <div className="flex justify-between"><div>Fare</div><div>£100.00</div></div>
-                    <div className="flex justify-between"><div>Fare taxes</div><div>£18.00</div></div>
-                    <div className="flex justify-between font-bold mt-4 pt-4 border-t border-zinc-700"><div>Total (GBP)</div><div>£118.00</div></div>
-                  </div>
-                </div>
-
                 <button onClick={bookNow} className="w-full bg-emerald-500 py-4 rounded-2xl font-bold">Pay now and confirm booking</button>
               </>
             )}
@@ -678,7 +705,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ Seat now works without crashing the detail page. Reply "SEAT FIXED".</p>
+      <p className="text-center mt-12 text-xs">✅ Payment now shows live total with bags + seat. Reply "PAYMENT GOOD".</p>
     </div>
   );
 }
