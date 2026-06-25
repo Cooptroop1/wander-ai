@@ -184,11 +184,23 @@ export default function DestinationPanel({
           <div className="text-xl font-semibold">
             {airportFull || placeName || "London Heathrow (LHR)"}
           </div>
-          <input 
-            defaultValue={airportCode || "Search airport..."} 
-            className="w-full mt-3 bg-zinc-800 px-5 py-4 rounded-3xl text-lg font-mono"
-            placeholder="e.g. MAD, HND, JFK or type London"
+                    <input 
+            placeholder="From • Type London/Paris/Tokyo or any city" 
+            className="w-full mt-3 bg-zinc-800 px-5 py-4 rounded-3xl text-lg font-mono focus:border-emerald-500"
+            value={originQuery}
+            onChange={(e) => {setOriginQuery(e.target.value); setShowOriginSug(true);}}
+            onFocus={() => setShowOriginSug(true)}
           />
+          {showOriginSug && (
+            <div className="absolute bg-zinc-900 border border-zinc-700 rounded-xl mt-1 p-2 w-[calc(100%-3rem)] z-50 max-h-64 overflow-auto shadow-2xl">
+              {["🇬🇧 London Heathrow (LHR)", "🇬🇧 Gatwick (LGW)", "🇫🇷 Paris CDG / ORY", "🇪🇸 Madrid MAD", "🇯🇵 Tokyo HND / NRT", "🇺🇸 New York JFK", "Any city → nearest airport"].map(a => (
+                <div key={a} className="py-2 px-3 hover:bg-zinc-700 cursor-pointer rounded" onClick={() => {setHomeCity(a); setOriginQuery(a); setShowOriginSug(false); /* nearest map trigger */}}>
+                  {a}
+                </div>
+              ))}
+            </div>
+          )}
+          <button className="text-xs text-emerald-400 mt-1">📍 Don't live here? Type any city • auto nearest airport</button>
           <p className="text-emerald-500 text-xs mt-1">🗺️ Nearest airport detected from your map click • Typing London/Madrid/Tokyo still works</p>
         </div>
         <div className="flex-1 p-6 overflow-y-auto">
