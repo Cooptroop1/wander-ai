@@ -1,13 +1,12 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { searchAirports, popularAirports } from '@/lib/airports';
-import { useRef, useEffect } from 'react';
-import dynamic from 'next/dynamic';
 
 const SeatSelection = dynamic(() => import('@duffel/components').then(mod => mod.SeatSelection), { ssr: false });
 const ancillariesRef = useRef<any>(null);
+
 
 interface DestinationPanelProps {
   isOpen: boolean;
@@ -57,6 +56,37 @@ export default function DestinationPanel({
     } catch (e) { alert("Check console"); }
     setSearchingFlights(false);
   };
+    useEffect(() => {
+    if (selectedFlights && ancillariesRef.current) {
+      ancillariesRef.current.render({
+        offer_id: selectedFlights.id,
+        services: ["bags", "seats"],
+        passengers: [
+          {
+            given_name: "Alex",
+            family_name: "Cooper",
+            gender: "M",
+            title: "mr",
+            born_on: "1995-01-01",
+            email: "test@example.com",
+            phone_number: "+442080160508"
+          }
+        ],
+        markup: {
+          bags: { amount: 10, rate: 0.1 }
+        }
+      });
+    }
+  }, [selectedFlights]);
+
+    useEffect(() => {
+    if (!document.querySelector('script[src*="duffel-ancillaries"]')) {
+      const script = document.createElement('script');
+      script.src = "https://assets.duffel.com/components/3.7.25/duffel-ancillaries.js";
+      script.async = true;
+      document.head.appendChild(script);
+    }
+  }, []);
 
   const generateItinerary = async () => { alert("AI Itinerary coming (your API works)"); };
   const createBooking = async () => { alert("Booking created with Duffel!"); };
@@ -200,7 +230,7 @@ export default function DestinationPanel({
                 </select>
                 <p className="text-xs text-zinc-400 mt-1">Bags added at booking • final price shown at checkout</p>
               </div>
-
+              <duffel-ancillaries ref={ancillariesRef}></duffel-ancillaries>
               <button onClick={createBooking} className="w-full py-4 bg-green-600 hover:bg-green-500 rounded-2xl font-bold">✅ Confirm Full Booking with Duffel (including extras)</button>
             </div>
           )}
