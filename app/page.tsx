@@ -1,5 +1,5 @@
 'use client';
- 
+
 import React, { useState } from 'react';
 
 export default function DuffelCloneHome() {
@@ -14,6 +14,7 @@ export default function DuffelCloneHome() {
   const [loading, setLoading] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showHoldInfo, setShowHoldInfo] = useState(false);
 
   const [fromSearch, setFromSearch] = useState('');
   const [toSearch, setToSearch] = useState('');
@@ -48,15 +49,26 @@ export default function DuffelCloneHome() {
   const selectOffer = (offer: any) => {
     setSelectedOffer(offer);
     setShowCheckout(true);
+    setShowHoldInfo(false);
   };
 
   const closeCheckout = () => {
     setShowCheckout(false);
     setSelectedOffer(null);
+    setShowHoldInfo(false);
   };
 
   const bookNow = () => {
     alert('✅ Order created with Duffel! Booking reference: ' + (selectedOffer?.id || 'ORD123456'));
+    closeCheckout();
+  };
+
+  const showHoldConfirmation = () => {
+    setShowHoldInfo(true);
+  };
+
+  const confirmHold = () => {
+    alert('✅ Order held! You have 3 days to pay. Pay by 28/06/2026.');
     closeCheckout();
   };
 
@@ -68,7 +80,7 @@ export default function DuffelCloneHome() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (real airport API + checkout)</h1>
+      <h1>Wander • Duffel Clone (Hold order confirmation)</h1>
 
       {/* Journey Type Tabs */}
       <div className="flex gap-2 mb-6">
@@ -166,6 +178,7 @@ export default function DuffelCloneHome() {
               <button onClick={closeCheckout} className="text-2xl">×</button>
             </div>
 
+            {/* Selected Flight Summary */}
             <div className="mb-8">
               <div className="text-sm text-zinc-400 mb-2">Return • 1 Passenger • Economy</div>
               <div className="bg-zinc-800 p-6 rounded-2xl mb-6">
@@ -191,75 +204,111 @@ export default function DuffelCloneHome() {
               </div>
             </div>
 
-            <div className="mb-8">
-              <div className="font-bold mb-3">Paying now, or later?</div>
-              <div className="flex gap-4">
-                <button onClick={bookNow} className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold">Pay now and confirm seat and baggage selection</button>
-                <button className="flex-1 bg-zinc-700 py-4 rounded-2xl">Hold order (pay later)</button>
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <div className="font-bold mb-3">Contact details</div>
-              <div className="grid grid-cols-2 gap-4">
-                <input type="email" placeholder="Email*" className="p-3 bg-zinc-800 rounded-xl" />
-                <input type="tel" placeholder="Phone number*" className="p-3 bg-zinc-800 rounded-xl" />
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <div className="font-bold mb-3">Passengers • Adult 1</div>
-              <div className="grid grid-cols-2 gap-4">
-                <select className="p-3 bg-zinc-800 rounded-xl"><option>Mr</option><option>Ms</option><option>Mrs</option><option>Miss</option><option>Dr</option></select>
-                <input type="text" placeholder="Given name*" className="p-3 bg-zinc-800 rounded-xl" />
-                <input type="text" placeholder="Family name*" className="p-3 bg-zinc-800 rounded-xl" />
-                <input type="date" className="p-3 bg-zinc-800 rounded-xl" />
-                <select className="p-3 bg-zinc-800 rounded-xl"><option>Male</option><option>Female</option></select>
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <div className="font-bold mb-3">Passport details</div>
-              <div className="grid grid-cols-2 gap-4">
-                <select className="p-3 bg-zinc-800 rounded-xl"><option>United Kingdom (GB)</option><option>Spain (ES)</option></select>
-                <input type="text" placeholder="Passport number" className="p-3 bg-zinc-800 rounded-xl" />
-                <input type="date" placeholder="Expiry date" className="p-3 bg-zinc-800 rounded-xl" />
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <div className="font-bold mb-3">Add extras</div>
-              <div className="bg-zinc-800 p-6 rounded-2xl mb-4">
-                <div>Flight to MAD • 26 Jun 2026 • Passenger 1</div>
-                <div>1 cabin bag and 1 checked bag included</div>
-                <div className="mt-4">Price for 0 extra bags + £0.00</div>
-              </div>
-              <div className="bg-zinc-800 p-6 rounded-2xl">
-                <div>Flight to MAD • 26 Jun 2026 • Passenger 1 • Select seat</div>
-                <div className="grid grid-cols-6 gap-2 text-center text-sm mb-4">
-                  {[28,29,30,31,32,33,34,35,37,38,39,40,41,42,43,44,45,46,47,48,49,50].map(n => (
-                    <div key={n} className="bg-zinc-700 py-1 rounded cursor-pointer hover:bg-emerald-600">{n}</div>
-                  ))}
+            {/* Pay Now or Hold */}
+            {!showHoldInfo && (
+              <div className="mb-8">
+                <div className="font-bold mb-3">Paying now, or later?</div>
+                <div className="flex gap-4">
+                  <button onClick={bookNow} className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold">Pay now and confirm seat and baggage selection</button>
+                  <button onClick={showHoldConfirmation} className="flex-1 bg-zinc-700 py-4 rounded-2xl">Hold order (pay later)</button>
                 </div>
-                <div>Price for 0 seats + £0.00</div>
               </div>
-            </div>
+            )}
 
-            <div className="mb-8">
-              <div className="font-bold mb-3">Payment</div>
-              <div className="bg-zinc-800 p-6 rounded-2xl">
-                <div className="flex justify-between"><div>Fare</div><div>£100.00</div></div>
-                <div className="flex justify-between"><div>Fare taxes</div><div>£18.00</div></div>
-                <div className="flex justify-between font-bold mt-4 pt-4 border-t border-zinc-700"><div>Total (GBP)</div><div>£118.00</div></div>
+            {/* Hold Confirmation (exactly like Duffel) */}
+            {showHoldInfo && (
+              <div className="mb-8 bg-zinc-800 p-6 rounded-2xl">
+                <div className="text-xl font-bold mb-4">Confirm and pay later</div>
+                
+                <div className="mb-6">
+                  <div className="font-semibold mb-1">Hold price for</div>
+                  <div className="text-emerald-400">2 days</div>
+                  <div className="text-sm">Pay by 27/06/2026</div>
+                </div>
+
+                <div className="mb-6">
+                  <div className="font-semibold mb-1">Hold space for</div>
+                  <div className="text-emerald-400">3 days</div>
+                  <div className="text-sm">Pay by 28/06/2026</div>
+                </div>
+
+                <div className="text-sm mb-6">
+                  Space on this trip will be guaranteed 3 days. After this, the guarantee will expire and the space will be released.<br /><br />
+                  This price will be guaranteed 2 days. After this, the guarantee will expire and the price may change.
+                </div>
+
+                <div className="flex gap-4">
+                  <button onClick={confirmHold} className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold">Confirm hold</button>
+                  <button onClick={() => setShowHoldInfo(false)} className="flex-1 bg-zinc-700 py-4 rounded-2xl">Cancel</button>
+                </div>
               </div>
-            </div>
+            )}
 
-            <button onClick={bookNow} className="w-full bg-emerald-500 py-4 rounded-2xl font-bold">Pay now and confirm booking</button>
+            {!showHoldInfo && (
+              <>
+                <div className="mb-8">
+                  <div className="font-bold mb-3">Contact details</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <input type="email" placeholder="Email*" className="p-3 bg-zinc-800 rounded-xl" />
+                    <input type="tel" placeholder="Phone number*" className="p-3 bg-zinc-800 rounded-xl" />
+                  </div>
+                </div>
+
+                <div className="mb-8">
+                  <div className="font-bold mb-3">Passengers • Adult 1</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <select className="p-3 bg-zinc-800 rounded-xl"><option>Mr</option><option>Ms</option><option>Mrs</option><option>Miss</option><option>Dr</option></select>
+                    <input type="text" placeholder="Given name*" className="p-3 bg-zinc-800 rounded-xl" />
+                    <input type="text" placeholder="Family name*" className="p-3 bg-zinc-800 rounded-xl" />
+                    <input type="date" className="p-3 bg-zinc-800 rounded-xl" />
+                    <select className="p-3 bg-zinc-800 rounded-xl"><option>Male</option><option>Female</option></select>
+                  </div>
+                </div>
+
+                <div className="mb-8">
+                  <div className="font-bold mb-3">Passport details</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <select className="p-3 bg-zinc-800 rounded-xl"><option>United Kingdom (GB)</option><option>Spain (ES)</option></select>
+                    <input type="text" placeholder="Passport number" className="p-3 bg-zinc-800 rounded-xl" />
+                    <input type="date" placeholder="Expiry date" className="p-3 bg-zinc-800 rounded-xl" />
+                  </div>
+                </div>
+
+                <div className="mb-8">
+                  <div className="font-bold mb-3">Add extras</div>
+                  <div className="bg-zinc-800 p-6 rounded-2xl mb-4">
+                    <div>Flight to MAD • 26 Jun 2026 • Passenger 1</div>
+                    <div>1 cabin bag and 1 checked bag included</div>
+                    <div className="mt-4">Price for 0 extra bags + £0.00</div>
+                  </div>
+                  <div className="bg-zinc-800 p-6 rounded-2xl">
+                    <div>Flight to MAD • 26 Jun 2026 • Passenger 1 • Select seat</div>
+                    <div className="grid grid-cols-6 gap-2 text-center text-sm mb-4">
+                      {[28,29,30,31,32,33,34,35,37,38,39,40,41,42,43,44,45,46,47,48,49,50].map(n => (
+                        <div key={n} className="bg-zinc-700 py-1 rounded cursor-pointer hover:bg-emerald-600">{n}</div>
+                      ))}
+                    </div>
+                    <div>Price for 0 seats + £0.00</div>
+                  </div>
+                </div>
+
+                <div className="mb-8">
+                  <div className="font-bold mb-3">Payment</div>
+                  <div className="bg-zinc-800 p-6 rounded-2xl">
+                    <div className="flex justify-between"><div>Fare</div><div>£100.00</div></div>
+                    <div className="flex justify-between"><div>Fare taxes</div><div>£18.00</div></div>
+                    <div className="flex justify-between font-bold mt-4 pt-4 border-t border-zinc-700"><div>Total (GBP)</div><div>£118.00</div></div>
+                  </div>
+                </div>
+
+                <button onClick={bookNow} className="w-full bg-emerald-500 py-4 rounded-2xl font-bold">Pay now and confirm booking</button>
+              </>
+            )}
           </div>
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ Real Duffel airport API + full checkout. Reply "ALL GOOD" or next.</p>
+      <p className="text-center mt-12 text-xs">✅ Hold order confirmation exactly like Duffel. Reply "HOLD GOOD" or next.</p>
     </div>
   );
 }
