@@ -15,6 +15,9 @@ export default function DuffelCloneHome() {
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showHoldInfo, setShowHoldInfo] = useState(false);
+  const [showOrderHeld, setShowOrderHeld] = useState(false);
+  const [myTrips, setMyTrips] = useState<any[]>([]);
+  const [showMyTrips, setShowMyTrips] = useState(false);
 
   const [fromSearch, setFromSearch] = useState('');
   const [toSearch, setToSearch] = useState('');
@@ -50,16 +53,31 @@ export default function DuffelCloneHome() {
     setSelectedOffer(offer);
     setShowCheckout(true);
     setShowHoldInfo(false);
+    setShowOrderHeld(false);
   };
 
   const closeCheckout = () => {
     setShowCheckout(false);
     setSelectedOffer(null);
     setShowHoldInfo(false);
+    setShowOrderHeld(false);
   };
 
   const bookNow = () => {
-    alert('✅ Order created with Duffel! Booking reference: ' + (selectedOffer?.id || 'ORD123456'));
+    const newTrip = {
+      id: selectedOffer?.id || 'ORD' + Date.now(),
+      status: 'Booked',
+      total: selectedOffer?.total_amount || '£118.00',
+      currency: selectedOffer?.total_currency || 'GBP',
+      airline: 'Duffel Airways',
+      created: new Date().toLocaleString('en-GB'),
+      flights: [
+        { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'Confirmed' },
+        { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'Confirmed' }
+      ]
+    };
+    setMyTrips([...myTrips, newTrip]);
+    alert('✅ Booking confirmed! View in My Trips.');
     closeCheckout();
   };
 
@@ -68,8 +86,22 @@ export default function DuffelCloneHome() {
   };
 
   const confirmHold = () => {
-    alert('✅ Order held! You have 3 days to pay. Pay by 28/06/2026.');
-    closeCheckout();
+    const newTrip = {
+      id: selectedOffer?.id || 'ORD' + Date.now(),
+      status: 'On hold',
+      total: selectedOffer?.total_amount || '£158.00',
+      currency: selectedOffer?.total_currency || 'GBP',
+      airline: 'Duffel Airways',
+      created: new Date().toLocaleString('en-GB'),
+      holdUntil: '28 Jun 2026',
+      flights: [
+        { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
+        { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
+      ]
+    };
+    setMyTrips([...myTrips, newTrip]);
+    setShowHoldInfo(false);
+    setShowOrderHeld(true);
   };
 
   const formatTime = (iso: string) => {
@@ -80,7 +112,12 @@ export default function DuffelCloneHome() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (Hold order confirmation)</h1>
+      <div className="flex justify-between mb-6">
+        <h1>Wander • Duffel Clone</h1>
+        <button onClick={() => setShowMyTrips(!showMyTrips)} className="bg-white text-black px-6 py-2 rounded-xl font-bold">
+          My Trips ({myTrips.length})
+        </button>
+      </div>
 
       {/* Journey Type Tabs */}
       <div className="flex gap-2 mb-6">
@@ -89,16 +126,10 @@ export default function DuffelCloneHome() {
         <button onClick={() => setJourneyType('multi_city')} className={`px-6 py-2 rounded-xl ${journeyType === 'multi_city' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Multi-city</button>
       </div>
 
-      {/* Form with real Duffel airport suggestions */}
+      {/* Form */}
       <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 grid grid-cols-1 md:grid-cols-6 gap-4">
         <div className="relative col-span-1">
-          <input 
-            type="text" 
-            value={fromSearch} 
-            onChange={(e) => { setFromSearch(e.target.value); fetchSuggestions(e.target.value, setFromSuggestions, setShowFromDropdown); }}
-            className="p-4 bg-zinc-800 rounded-2xl w-full" 
-            placeholder="Origin (type london or madrid)" 
-          />
+          <input type="text" value={fromSearch} onChange={(e) => { setFromSearch(e.target.value); fetchSuggestions(e.target.value, setFromSuggestions, setShowFromDropdown); }} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Origin (type london or madrid)" />
           {showFromDropdown && fromSuggestions.length > 0 && (
             <div className="absolute mt-1 bg-zinc-800 rounded-xl w-full max-h-60 overflow-auto z-10">
               {fromSuggestions.map((p: any) => (
@@ -109,15 +140,8 @@ export default function DuffelCloneHome() {
             </div>
           )}
         </div>
-
         <div className="relative col-span-1">
-          <input 
-            type="text" 
-            value={toSearch} 
-            onChange={(e) => { setToSearch(e.target.value); fetchSuggestions(e.target.value, setToSuggestions, setShowToDropdown); }}
-            className="p-4 bg-zinc-800 rounded-2xl w-full" 
-            placeholder="Destination (type london or madrid)" 
-          />
+          <input type="text" value={toSearch} onChange={(e) => { setToSearch(e.target.value); fetchSuggestions(e.target.value, setToSuggestions, setShowToDropdown); }} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Destination" />
           {showToDropdown && toSuggestions.length > 0 && (
             <div className="absolute mt-1 bg-zinc-800 rounded-xl w-full max-h-60 overflow-auto z-10">
               {toSuggestions.map((p: any) => (
@@ -128,18 +152,13 @@ export default function DuffelCloneHome() {
             </div>
           )}
         </div>
-
         <input type="date" value={depart} onChange={e => setDepart(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />
         {journeyType === 'return' && <input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />}
-        
         <select value={passengers} onChange={e => setPassengers(Number(e.target.value))} className="p-4 bg-zinc-800 rounded-2xl">
           {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} passengers</option>)}
         </select>
         <select value={cabinClass} onChange={e => setCabinClass(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl">
-          <option value="economy">Economy</option>
-          <option value="premium_economy">Premium Economy</option>
-          <option value="business">Business</option>
-          <option value="first">First</option>
+          <option value="economy">Economy</option><option value="premium_economy">Premium Economy</option><option value="business">Business</option><option value="first">First</option>
         </select>
         <button onClick={handleRealSearch} className="bg-sky-500 text-white py-4 rounded-2xl font-bold">SEARCH FLIGHTS</button>
       </div>
@@ -169,7 +188,41 @@ export default function DuffelCloneHome() {
         })}
       </div>
 
-      {/* Full Duffel Checkout Modal */}
+      {/* My Trips */}
+      {showMyTrips && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">My Trips</h2>
+          {myTrips.length === 0 ? (
+            <p>No trips yet. Book or hold a flight to see it here.</p>
+          ) : (
+            myTrips.map((trip, i) => (
+              <div key={i} className="bg-zinc-900 p-6 rounded-2xl mb-4">
+                <div className="flex justify-between mb-4">
+                  <div>
+                    <div className="font-bold">{trip.airline} • {trip.status}</div>
+                    <div className="text-sm text-zinc-400">Order ID: {trip.id}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold">{trip.total} {trip.currency}</div>
+                    {trip.status === 'On hold' && <div className="text-sm text-emerald-400">Pay by {trip.holdUntil}</div>}
+                  </div>
+                </div>
+                {trip.flights.map((f: any, fi: number) => (
+                  <div key={fi} className="mb-3">
+                    <div className="font-semibold">{f.date} {f.time} • {f.route}</div>
+                    <div className="text-sm text-emerald-400">{f.status}</div>
+                  </div>
+                ))}
+                {trip.status === 'On hold' && (
+                  <button className="mt-4 bg-emerald-500 px-6 py-2 rounded-xl">Pay now to confirm</button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Full Checkout + Hold + Order Held Modal */}
       {showCheckout && selectedOffer && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto p-8">
@@ -204,8 +257,7 @@ export default function DuffelCloneHome() {
               </div>
             </div>
 
-            {/* Pay Now or Hold */}
-            {!showHoldInfo && (
+            {!showHoldInfo && !showOrderHeld && (
               <div className="mb-8">
                 <div className="font-bold mb-3">Paying now, or later?</div>
                 <div className="flex gap-4">
@@ -215,28 +267,23 @@ export default function DuffelCloneHome() {
               </div>
             )}
 
-            {/* Hold Confirmation (exactly like Duffel) */}
-            {showHoldInfo && (
+            {showHoldInfo && !showOrderHeld && (
               <div className="mb-8 bg-zinc-800 p-6 rounded-2xl">
                 <div className="text-xl font-bold mb-4">Confirm and pay later</div>
-                
                 <div className="mb-6">
                   <div className="font-semibold mb-1">Hold price for</div>
                   <div className="text-emerald-400">2 days</div>
                   <div className="text-sm">Pay by 27/06/2026</div>
                 </div>
-
                 <div className="mb-6">
                   <div className="font-semibold mb-1">Hold space for</div>
                   <div className="text-emerald-400">3 days</div>
                   <div className="text-sm">Pay by 28/06/2026</div>
                 </div>
-
                 <div className="text-sm mb-6">
                   Space on this trip will be guaranteed 3 days. After this, the guarantee will expire and the space will be released.<br /><br />
                   This price will be guaranteed 2 days. After this, the guarantee will expire and the price may change.
                 </div>
-
                 <div className="flex gap-4">
                   <button onClick={confirmHold} className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold">Confirm hold</button>
                   <button onClick={() => setShowHoldInfo(false)} className="flex-1 bg-zinc-700 py-4 rounded-2xl">Cancel</button>
@@ -244,7 +291,77 @@ export default function DuffelCloneHome() {
               </div>
             )}
 
-            {!showHoldInfo && (
+            {showOrderHeld && (
+              <div className="mb-8">
+                <div className="bg-emerald-900/30 border border-emerald-500 p-6 rounded-2xl mb-6">
+                  <div className="text-2xl font-bold text-emerald-400 mb-2">Order held</div>
+                  <div className="text-sm">The price guarantee expires in 2 days. After this prices for your trip may change.</div>
+                  <div className="text-sm">Space expires in 3 days. After this the space will be released and you will need to rebook.</div>
+                </div>
+
+                <div className="bg-zinc-800 p-6 rounded-2xl mb-6">
+                  <div className="grid grid-cols-3 gap-4 text-sm mb-6">
+                    <div>
+                      <div className="text-zinc-400">25 Jun 2026 23:38 BST</div>
+                      <div className="font-semibold">Booked</div>
+                    </div>
+                    <div>
+                      <div className="text-zinc-400">27 Jun 2026 23:16 BST</div>
+                      <div className="font-semibold">Price hold expires</div>
+                      <div className="text-emerald-400">£158.00</div>
+                    </div>
+                    <div>
+                      <div className="text-zinc-400">28 Jun 2026 23:16 BST</div>
+                      <div className="font-semibold">Space hold expires</div>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="font-bold mb-2">26 Jun 2026 19:21 BST • Flight to MAD</div>
+                    <div>19:21 - 22:39 • Basic • Duffel Airways • 02h 18m • STN - MAD • Non-stop</div>
+                    <div className="text-sm mt-1">19:21 Depart London Stansted (STN) Terminal 2</div>
+                    <div className="text-sm">22:39 Arrive Madrid (MAD) Terminal 1</div>
+                    <div className="text-sm mt-1">Economy • Duffel Airways • Boeing 777-300 • ZZ5528</div>
+                    <div className="text-sm">1 carry-on bag • 1 checked bag</div>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="font-bold mb-2">27 Jun 2026 20:07 BST • Flight to STN</div>
+                    <div>20:07 - 21:25 • Basic • Duffel Airways • 02h 18m • MAD - STN • Non-stop</div>
+                    <div className="text-sm mt-1">20:07 Depart Madrid (MAD) Terminal 2</div>
+                    <div className="text-sm">21:25 Arrive London Stansted (STN) Terminal 1</div>
+                    <div className="text-sm mt-1">Economy • Duffel Airways • Boeing 777-300 • ZZ5528</div>
+                    <div className="text-sm">1 carry-on bag • 2 checked bags</div>
+                  </div>
+
+                  <div className="text-sm mb-6">
+                    <div>Order change policy: This order is not changeable</div>
+                    <div>Order refund policy: This order is not refundable</div>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="font-bold mb-2">Passengers • adult 1</div>
+                    <div>Name: mr James Cooper</div>
+                    <div>Date of birth: 04/12/1978</div>
+                    <div>Gender: Male</div>
+                    <div>E-mail: jcooper4888@aol.co.uk</div>
+                    <div>Contact number: +447368841330</div>
+                  </div>
+
+                  <div>
+                    <div className="font-bold mb-2">Summary</div>
+                    <div>Order ID: {selectedOffer?.id || 'ord_0000B7hok9gr34aFUMqM80'}</div>
+                    <div>Status: On hold</div>
+                    <div>Airline: Duffel Airways</div>
+                    <div>James Cooper created this order. {new Date().toLocaleString('en-GB')}</div>
+                  </div>
+                </div>
+
+                <button onClick={closeCheckout} className="w-full bg-emerald-500 py-4 rounded-2xl font-bold">Done - View in My Trips</button>
+              </div>
+            )}
+
+            {!showHoldInfo && !showOrderHeld && (
               <>
                 <div className="mb-8">
                   <div className="font-bold mb-3">Contact details</div>
@@ -308,7 +425,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ Hold order confirmation exactly like Duffel. Reply "HOLD GOOD" or next.</p>
+      <p className="text-center mt-12 text-xs">✅ My Trips page + full flow. Reply "TRIPS GOOD" or next.</p>
     </div>
   );
 }
