@@ -314,7 +314,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      {/* TRIP DETAIL VIEW - NOW SHOWS EXTRA BAGS + SEAT */}
+      {/* TRIP DETAIL VIEW - SAFE VERSION (NO CRASH) */}
       {currentView === 'tripDetail' && selectedTrip && (
         <div>
           <button onClick={backToMyTrips} className="mb-6 text-emerald-400">← Back to My Trips</button>
@@ -350,7 +350,8 @@ export default function DuffelCloneHome() {
               )}
             </div>
 
-            {selectedTrip.flights.map((f: any, fi: number) => (
+            {/* Safe flights rendering */}
+            {(selectedTrip.flights || []).map((f: any, fi: number) => (
               <div key={fi} className="mb-6">
                 <div className="font-bold mb-2">{f.date} {f.time} • {f.route}</div>
                 <div className="text-sm text-emerald-400 mb-2">{f.status}</div>
@@ -361,12 +362,16 @@ export default function DuffelCloneHome() {
               </div>
             ))}
 
-            {/* EXTRA BAGS + SEAT NOW SHOW HERE */}
+            {/* EXTRA BAGS + SEAT - NOW SAFELY SHOWN */}
             {(selectedTrip.extraBags > 0 || selectedTrip.selectedSeat) && (
               <div className="mb-6 p-4 bg-zinc-700 rounded-xl">
                 <div className="font-bold mb-2">Extras added</div>
                 {selectedTrip.extraBags > 0 && <div>Extra bags: {selectedTrip.extraBags}</div>}
-                {selectedTrip.selectedSeat && <div>Selected seat: {selectedTrip.selectedSeat.designator || selectedTrip.selectedSeat}</div>}
+                {selectedTrip.selectedSeat && (
+                  <div>Selected seat: {selectedTrip.selectedSeat.designator || selectedTrip.selectedSeat} 
+                    {selectedTrip.selectedSeat.total_amount && ` (£${selectedTrip.selectedSeat.total_amount})`}
+                  </div>
+                )}
               </div>
             )}
 
@@ -682,7 +687,7 @@ export default function DuffelCloneHome() {
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ Extra bags + selected seat now show in the final order screen. Reply "FIXED".</p>
+      <p className="text-center mt-12 text-xs">✅ Fixed - My Trips now opens without crashing and shows extra bags + seat. Reply "FIXED".</p>
     </div>
   );
 }
