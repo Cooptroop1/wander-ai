@@ -3,6 +3,7 @@
 import { X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { searchAirports, popularAirports } from '@/lib/airports';
+import { DuffelAncillaries } from '@duffel/components';
 interface DestinationPanelProps {
   isOpen: boolean;
   onClose: () => void;
@@ -119,14 +120,27 @@ export default function DestinationPanel({
             </div>
           )}
 
-          {selectedFlights && (
-            <div className="p-5 bg-zinc-800 rounded-3xl">
-              <h3 className="font-semibold mb-3">Passenger details for booking</h3>
+                    {selectedFlights && (
+            <div className="p-5 bg-zinc-800 rounded-3xl space-y-4">
+              <h3 className="font-semibold mb-3">Passenger details + extras (bags & seats)</h3>
               <input placeholder="First name" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl mb-2" />
               <input placeholder="Last name" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl mb-2" />
               <input type="date" placeholder="Birthdate" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl mb-2" />
               <input placeholder="Email" className="w-full bg-zinc-900 px-5 py-3 rounded-2xl" />
-              <button onClick={createBooking} className="w-full mt-4 py-4 bg-green-600 hover:bg-green-500 rounded-2xl font-bold">Confirm Booking on Duffel</button>
+
+              {/* 🎉 The pro Duffel widget for bags + seats */}
+              <DuffelAncillaries
+                offer={selectedFlights}
+                passengers={[{ given_name: "Alex", family_name: "Cooper", type: "adult" }]}
+                services={['bags', 'seats']}
+                onPayloadReady={(payload) => {
+                  alert("✅ Bags and seats added! Payload ready for final booking");
+                  console.log("Ancillaries payload:", payload);
+                }}
+                markup={{ bags: { amount: 10, rate: 0.15 } }}  {/* you earn extra money */}
+              />
+
+              <button onClick={createBooking} className="w-full py-4 bg-green-600 hover:bg-green-500 rounded-2xl font-bold">✅ Confirm Full Booking with Duffel (including extras)</button>
             </div>
           )}
 
