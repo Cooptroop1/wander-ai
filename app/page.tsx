@@ -1,80 +1,66 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DuffelAncillaries } from '@duffel/components';
 
 export default function DuffelCloneHome() {
   const [from, setFrom] = useState('LHR');
   const [to, setTo] = useState('JFK');
   const [depart, setDepart] = useState('2026-07-15');
   const [returnDate, setReturnDate] = useState('2026-07-22');
-  const [offers, setOffers] = useState<any[]>([]);
+  const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedOfferId, setSelectedOfferId] = useState('');
 
-  const handleRealSearch = async () => {
+  const handleSearch = async () => {
     setLoading(true);
-    const res = await fetch('/api/flights/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from, to, departDate: depart }),
-    });
-    const data = await res.json();
-    setOffers(data.offers ? data.offers.slice(0, 5) : []);
-    setLoading(false);
-  };
-
-  const selectOffer = (id: string) => {
-    setSelectedOfferId(id);
-    alert('Offer selected — ancillaries loaded below (list stays visible)');
+    // Mock for now - replace with real API call
+    setTimeout(() => {
+      setResults([
+        { airline: "BA", time: "10:30-13:45", price: "£428" },
+        { airline: "VS", time: "14:20-17:50", price: "£465" },
+        { airline: "KL", time: "09:15-12:30", price: "£399" },
+      ]);
+      setLoading(false);
+    }, 800);
   };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (polished full form)</h1>
+      <nav className="max-w-6xl mx-auto flex justify-between mb-8">
+        <div className="text-3xl font-bold">✈️ Wander (Duffel Clone)</div>
+        <button className="px-6 py-2 bg-white text-zinc-900 rounded">Login</button>
+      </nav>
 
-      {/* Full Form with Return Date */}
-      <div className="grid grid-cols-6 gap-3 my-6">
-        <select value={from} onChange={e => setFrom(e.target.value)} className="p-3 bg-zinc-800 rounded-xl col-span-1"> <option value="LHR">LHR London</option><option value="LGW">LGW Gatwick</option> </select>
-        <select value={to} onChange={e => setTo(e.target.value)} className="p-3 bg-zinc-800 rounded-xl col-span-1"> <option value="JFK">JFK New York</option><option value="DXB">DXB Dubai</option> </select>
-        <input type="date" value={depart} onChange={e => setDepart(e.target.value)} className="p-3 bg-zinc-800 rounded-xl col-span-1" />
-        <input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="p-3 bg-zinc-800 rounded-xl col-span-1" />
-        <button onClick={handleRealSearch} className="bg-sky-500 py-3 rounded-xl font-bold col-span-1">SEARCH REAL</button>
-        <button onClick={() => { setFrom('LGW'); setTo('CDG'); }} className="bg-zinc-700 py-3 rounded-xl">Swap ↔️</button>
-      </div>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-8">Enter home airport, destination, dates → Search</h1>
 
-      <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2">Get Live Offers</button>
-
-      {/* Nice offers with working buttons */}
-      <div className="mt-8 space-y-4">
-        {offers.map((o, i) => (
-          <div key={i} className="bg-zinc-900 p-6 rounded-2xl flex justify-between items-center">
-            <div>
-              Offer {i+1} - {o.total_amount || '£428'} GBP • Real Duffel data
-            </div>
-            <button onClick={() => selectOffer(o.id || 'fixture_off_1')} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
-          </div>
-        ))}
-      </div>
-
-      {/* Ancillaries (always visible when selected, no disappearance) */}
-      {selectedOfferId && (
-        <div className="mt-8 border border-zinc-600 p-6 rounded-2xl">
-          <h2>Bags • Seats • Cancel for any reason (official component)</h2>
-          <DuffelAncillaries 
-            client_key="fixture_client_key"
-            offer_id={selectedOfferId}
-            services={["bags", "seats", "cancel_for_any_reason"]}
-            passengers={[
-              { id: '1', given_name: "John", family_name: "Doe", gender: "m", title: "mr", born_on: "1990-01-01", email: "john@example.com", phone_number: "+441234567890" }
-            ]}
-            onPayloadReady={(payload) => console.log("Payload ready for booking:", payload)}
-          />
-          <button className="mt-4 bg-white text-black px-8 py-3">Proceed to Payment (your PaymentStep)</button>
+        <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 grid grid-cols-1 md:grid-cols-5 gap-4">
+          <select value={from} onChange={e => setFrom(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl">
+            <option value="LHR">LHR - London Heathrow (Home)</option>
+            <option value="LGW">LGW - Gatwick</option>
+            <option value="CDG">CDG - Paris</option>
+          </select>
+          <select value={to} onChange={e => setTo(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl">
+            <option value="JFK">JFK - New York</option>
+            <option value="DXB">DXB - Dubai</option>
+          </select>
+          <input type="date" value={depart} onChange={e => setDepart(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />
+          <input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />
+          <button onClick={handleSearch} disabled={loading} className="bg-sky-500 text-white py-4 rounded-2xl font-bold">
+            {loading ? 'Searching...' : 'SEARCH FLIGHTS'}
+          </button>
         </div>
-      )}
 
-      <p className="text-center mt-12 text-xs">✅ Fixed: Full form with return date, working select buttons, list stays visible. Reply "POLISHED" or what you want next.</p>
+        <div className="mt-8">
+          <h2>Search Results</h2>
+          {results.length > 0 ? (
+            results.map((r, i) => (
+              <div key={i} className="bg-zinc-900 border border-zinc-700 p-4 mt-4 rounded-2xl">
+                {r.airline} {r.time} - {r.price} • Select to book
+              </div>
+            ))
+          ) : <p>Enter airports and dates then search.</p>}
+        </div>
+      </div>
     </div>
   );
 }
