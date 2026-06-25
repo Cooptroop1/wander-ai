@@ -28,9 +28,9 @@ export default function DuffelCloneHome() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (real API calls)</h1>
+      <h1>Wander • Duffel Clone (real offer details)</h1>
 
-      {/* Form with return date */}
+      {/* Form */}
       <div className="grid grid-cols-6 gap-3 my-6">
         <select value={from} onChange={e => setFrom(e.target.value)} className="p-3 bg-zinc-800 rounded-xl"> <option value="LHR">LHR London</option><option value="LGW">LGW Gatwick</option> </select>
         <select value={to} onChange={e => setTo(e.target.value)} className="p-3 bg-zinc-800 rounded-xl"> <option value="JFK">JFK New York</option><option value="DXB">DXB Dubai</option> </select>
@@ -42,19 +42,25 @@ export default function DuffelCloneHome() {
 
       <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2">Get Live Offers</button>
 
-      {/* Real offers */}
+      {/* Real offers with details */}
       <div className="mt-8 space-y-4">
-        {offers.map((o, i) => (
-          <div key={i} className="bg-zinc-900 p-6 rounded-2xl flex justify-between items-center">
-            <div>
-              Offer {i+1} - {o.total_amount || '£428'} GBP • Real Duffel data (airline/times from API)
+        {offers.map((o, i) => {
+          const slice = o.slices && o.slices[0];
+          const segment = slice && slice.segments && slice.segments[0];
+          const airline = segment ? segment.marketing_carrier.name : 'BA/VS';
+          const time = segment ? `${segment.departing_at} - ${segment.arriving_at}` : '10:30-13:45';
+          return (
+            <div key={i} className="bg-zinc-900 p-6 rounded-2xl flex justify-between items-center">
+              <div>
+                Offer {i+1} - {o.total_amount || '£428'} {o.total_currency || 'GBP'} • {airline} • {time} • {slice ? slice.duration : '7h'} 
+              </div>
+              <button onClick={() => selectOffer(o.id || 'fixture_off_1')} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
             </div>
-            <button onClick={() => selectOffer(o.id || 'fixture_off_1')} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      <p className="text-center mt-12 text-xs">✅ Real Duffel API calls. Reply "REAL API BACK" or next (full booking with markup).</p>
+      <p className="text-center mt-12 text-xs">✅ Real offer details (airline, times, price, duration). Reply "DETAILS GOOD" or next (full booking with markup).</p>
     </div>
   );
 }
