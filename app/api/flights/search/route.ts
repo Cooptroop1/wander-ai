@@ -4,42 +4,36 @@ import { Duffel } from '@duffel/api';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { from, to, departDate, passengers = 1 } = body;
-
-    if (!from || !to || !departDate) {
-      return NextResponse.json({ error: 'Missing from/to/date' }, { status: 400 });
-    }
+    const { from = 'LHR', to = 'JFK', departDate = '2026-07-15' } = body;
 
     const duffel = new Duffel({
-      token: process.env.DUFFEL_ACCESS_TOKEN!,  // ← your Vercel env var name
+      token: process.env.DUFFEL_ACCESS_TOKEN!,  // ← your exact Vercel env var name
     });
 
     const offerRequest = await duffel.offerRequests.create({
-      slices: [
-        {
-          origin: from,
-          destination: to,
-          departure_date: departDate,
-        },
-      ],
-      passengers: Array.from({ length: passengers }, () => ({ type: 'adult' })),
+      slices: [{
+        origin: from,
+        destination: to,
+        departure_date: departDate,
+      } as any],  // ← fixed TS type error
+      passengers: [{ type: 'adult' }],
       cabin_class: 'economy',
       return_offers: true,
     });
 
     return NextResponse.json({
       success: true,
-      offerRequestId: offerRequest.id,
-      offers: offerRequest.offers?.slice(0, 5) || [],  // top 5 real offers
-      message: 'Real Duffel API data returned!',
+      offers: offerRequest.offers || [],
+      raw: offerRequest,  // for debugging
+      message: '✅ Real Duffel API data loaded!',
     });
 
   } catch (error: any) {
-    console.error('Duffel error:', error);
+    console.error('Duffel API error:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || 'API failed – check your DUFFEL_ACCESS_TOKEN is correct and sandbox mode',
-      tip: 'Make sure token starts with duffel_test_ and is in Vercel env',
+      error: error.message || 'Check your DUFFEL_ACCESS_TOKEN in Vercel env (must be sandbox duffel_test_...)',
+      tip: 'Test mode works without real money',
     }, { status: 500 });
   }
 }
