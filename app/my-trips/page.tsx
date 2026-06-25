@@ -23,14 +23,18 @@ export default function MyTrips() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch('/api/bookings')
-      .then((res) => res.json())
-      .then((data) => {
-        setBookings(data.bookings);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch('/api/bookings', { cache: 'no-store' });
+        const data = await res.json();
+        setBookings(data.bookings || []);
+      } catch {}
+      setLoading(false);
+    };
+    load();
+    const i = setInterval(load, 7000);
+    return () => clearInterval(i);
   }, []);
 
   const openTicket = (booking: Booking) => setSelectedBooking(booking);
