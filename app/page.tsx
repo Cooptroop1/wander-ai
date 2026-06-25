@@ -26,9 +26,23 @@ export default function DuffelCloneHome() {
     alert('Offer selected! Bags/Seats added (£40 extra). Your PaymentStep ready.');
   };
 
+  const formatTime = (iso: string) => {
+    if (!iso) return 'N/A';
+    const date = new Date(iso);
+    return date.toLocaleString('en-GB', { 
+      year: 'numeric', month: 'short', day: 'numeric', 
+      hour: '2-digit', minute: '2-digit' 
+    });
+  };
+
+  const formatDuration = (duration: string) => {
+    if (!duration) return 'N/A';
+    return duration.replace('PT', '').replace('H', 'h ').replace('M', 'm');
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (real offer details)</h1>
+      <h1>Wander • Duffel Clone (readable times)</h1>
 
       {/* Form */}
       <div className="grid grid-cols-6 gap-3 my-6">
@@ -42,17 +56,20 @@ export default function DuffelCloneHome() {
 
       <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2">Get Live Offers</button>
 
-      {/* Real offers with details */}
+      {/* Real offers with readable times */}
       <div className="mt-8 space-y-4">
         {offers.map((o, i) => {
           const slice = o.slices && o.slices[0];
           const segment = slice && slice.segments && slice.segments[0];
           const airline = segment ? segment.marketing_carrier.name : 'BA/VS';
-          const time = segment ? `${segment.departing_at} - ${segment.arriving_at}` : '10:30-13:45';
+          const depTime = segment ? formatTime(segment.departing_at) : 'N/A';
+          const arrTime = segment ? formatTime(segment.arriving_at) : 'N/A';
+          const duration = slice ? formatDuration(slice.duration) : 'N/A';
           return (
             <div key={i} className="bg-zinc-900 p-6 rounded-2xl flex justify-between items-center">
               <div>
-                Offer {i+1} - {o.total_amount || '£428'} {o.total_currency || 'GBP'} • {airline} • {time} • {slice ? slice.duration : '7h'} 
+                Offer {i+1} - {o.total_amount || '£428'} {o.total_currency || 'GBP'} • {airline} <br />
+                <span className="text-emerald-400">Dep: {depTime}</span> • <span className="text-emerald-400">Arr: {arrTime}</span> • Duration: {duration}
               </div>
               <button onClick={() => selectOffer(o.id || 'fixture_off_1')} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
             </div>
@@ -60,7 +77,7 @@ export default function DuffelCloneHome() {
         })}
       </div>
 
-      <p className="text-center mt-12 text-xs">✅ Real offer details (airline, times, price, duration). Reply "DETAILS GOOD" or next (full booking with markup).</p>
+      <p className="text-center mt-12 text-xs">✅ Readable departure/arrival times. Reply "TIMES GOOD" or next (full booking with markup).</p>
     </div>
   );
 }
