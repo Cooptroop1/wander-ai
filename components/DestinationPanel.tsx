@@ -3,6 +3,7 @@
 import { X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { searchAirports, popularAirports } from '@/lib/airports';
+import dynamic from 'next/dynamic';
 
 const SeatSelection = dynamic(() => import('@duffel/components').then(mod => mod.SeatSelection), { ssr: false });
 const ancillariesRef = useRef<any>(null);
