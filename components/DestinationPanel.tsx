@@ -3,7 +3,10 @@
 import { X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { searchAirports, popularAirports } from '@/lib/airports';
-import { DuffelAncillaries } from '@duffel/components';
+import dynamic from 'next/dynamic';
+
+const DuffelAncillaries = dynamic(() => import('@duffel/components').then(mod => mod.DuffelAncillaries), { ssr: false });
+
 interface DestinationPanelProps {
   isOpen: boolean;
   onClose: () => void;
