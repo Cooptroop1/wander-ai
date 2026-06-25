@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       type: 'instant',
       passengers: [
         {
-          id: 'passenger_0',  // ← fixed
+          id: 'passenger_0',
           given_name: "John",
           family_name: "Doe",
           born_on: "1990-01-01",
@@ -29,15 +29,7 @@ export async function POST(request: NextRequest) {
         {
           type: "balance",
           currency: "GBP",
-          amount: "550.00"  // base + markup (you keep the extra)
-        }
-      ],
-      services: [
-        {
-          type: "baggage",
-          quantity: 1,
-          passenger_ids: ["passenger_0"],
-          metadata: { type: "checked" }
+          amount: "550.00"  // base + markup (you keep the extra £50)
         }
       ],
       metadata: {
