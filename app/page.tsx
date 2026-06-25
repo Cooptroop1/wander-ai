@@ -8,6 +8,9 @@ export default function DuffelCloneHome() {
   const [to, setTo] = useState('JFK');
   const [depart, setDepart] = useState('2026-07-15');
   const [returnDate, setReturnDate] = useState('2026-07-22');
+  const [from2, setFrom2] = useState('JFK');
+  const [to2, setTo2] = useState('LHR');
+  const [depart2, setDepart2] = useState('2026-07-22');
   const [passengers, setPassengers] = useState(1);
   const [cabinClass, setCabinClass] = useState('economy');
   const [offers, setOffers] = useState<any[]>([]);
@@ -42,7 +45,7 @@ export default function DuffelCloneHome() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (full Duffel inputs)</h1>
+      <h1>Wander • Duffel Clone (multi-city like Duffel)</h1>
 
       {/* Journey Type Tabs */}
       <div className="flex gap-2 mb-6">
@@ -53,10 +56,17 @@ export default function DuffelCloneHome() {
 
       {/* Full Form */}
       <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 grid grid-cols-1 md:grid-cols-6 gap-4">
-        <input type="text" value={from} onChange={e => setFrom(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" placeholder="Origin (type london)" />
-        <input type="text" value={to} onChange={e => setTo(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" placeholder="Destination (type madrid)" />
+        <input type="text" value={from} onChange={e => setFrom(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" placeholder="Flight 1 Origin" />
+        <input type="text" value={to} onChange={e => setTo(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" placeholder="Flight 1 Destination" />
         <input type="date" value={depart} onChange={e => setDepart(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />
         {journeyType === 'return' && <input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />}
+        {journeyType === 'multi_city' && (
+          <>
+            <input type="text" value={from2} onChange={e => setFrom2(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" placeholder="Flight 2 Origin" />
+            <input type="text" value={to2} onChange={e => setTo2(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" placeholder="Flight 2 Destination" />
+            <input type="date" value={depart2} onChange={e => setDepart2(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />
+          </>
+        )}
         <select value={passengers} onChange={e => setPassengers(Number(e.target.value))} className="p-4 bg-zinc-800 rounded-2xl">
           {[1,2,3,4,5,6,7,8,9].map(n => <option key={n} value={n}>{n} passengers</option>)}
         </select>
@@ -95,7 +105,7 @@ export default function DuffelCloneHome() {
         })}
       </div>
 
-      <p className="text-center mt-12 text-xs">✅ Full Duffel inputs (journey type, passengers, class). Reply "INPUTS GOOD" or next (full booking with markup).</p>
+      <p className="text-center mt-12 text-xs">✅ Full Duffel multi-city like you showed. Reply "MULTI GOOD" or next (full booking with markup).</p>
     </div>
   );
 }
