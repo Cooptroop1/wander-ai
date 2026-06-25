@@ -196,14 +196,16 @@ export default function DestinationPanel({
           <div className="mb-8">
             <label className="block text-sm text-zinc-400 mb-2">✈️ Start from (type city or airport code)</label>
             <input 
-  placeholder="Type London, Madrid, Tokyo... (options appear below)" 
-  value={homeCity}
-  onChange={e => {
-    setHomeCity(e.target.value);
-    // Typing now works
-  }}
-  className="w-full bg-zinc-800 px-5 py-4 rounded-3xl"
+  placeholder="Start city/airport (type London, Paris...)" 
+  className="bg-zinc-900 border border-zinc-700 focus:border-emerald-500"
+  onChange={handleOrigin} 
+  onFocus={() => setOriginSuggestions(true)} 
 />
+{originSuggestions && (
+  <div className="absolute bg-zinc-900 border border-zinc-700 rounded-xl mt-1 p-3 w-full z-50 max-h-60 overflow-auto text-sm">
+    {suggestedAirports.map(a => <div key={a} className="py-1.5 hover:bg-zinc-800 px-3 cursor-pointer" onClick={()=>selectOrigin(a)}>{a}</div>)}
+  </div>
+)}
 
 {/* Suggestions - now works when you type */}
 <div className="mt-2 flex gap-2 flex-wrap">
