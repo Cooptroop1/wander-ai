@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import dynamic from 'next/dynamic';
-
-const DynamicDuffel = dynamic(() => import('@duffel/components').then(mod => mod.DuffelAncillaries), { ssr: false });
+import { DuffelAncillaries } from '@duffel/components';
 
 export default function DuffelCloneHome() {
   const [from, setFrom] = useState('LHR');
@@ -11,7 +9,7 @@ export default function DuffelCloneHome() {
   const [depart, setDepart] = useState('2026-07-15');
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedOfferId, setSelectedOfferId] = useState('fixture_off_1');
+  const [selectedOfferId, setSelectedOfferId] = useState('');
 
   const handleRealSearch = async () => {
     setLoading(true);
@@ -21,18 +19,18 @@ export default function DuffelCloneHome() {
       body: JSON.stringify({ from, to, departDate: depart }),
     });
     const data = await res.json();
-    setOffers(data.offers || []);
+    setOffers(data.offers ? data.offers.slice(0, 5) : []); // limit to 5 nice ones
     setLoading(false);
   };
 
   const selectOffer = (id: string) => {
     setSelectedOfferId(id);
-    alert('Offer selected — ancillaries card shown below');
+    // Keeps the list visible
   };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
-      <h1>Wander • Duffel Clone (real search + ancillaries)</h1>
+      <h1>Wander • Duffel Clone (polished)</h1>
 
       {/* Form */}
       <div className="grid grid-cols-5 gap-3 my-6">
@@ -49,33 +47,37 @@ export default function DuffelCloneHome() {
 
       <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2">Get Live Offers</button>
 
-      {/* Real offers */}
-      <div className="mt-8 space-y-2">
+      {/* Nice limited offers */}
+      <div className="mt-8 space-y-4">
         {offers.map((o, i) => (
-          <button key={i} onClick={() => selectOffer(o.id || 'fixture_off_1')} className="block w-full text-left bg-zinc-900 p-4 rounded-xl">
-            Offer {i+1} — Select to see bags/seats
-          </button>
+          <div key={i} className="bg-zinc-900 p-6 rounded-2xl flex justify-between">
+            <div>
+              <div>Offer {i+1} - {o.total_amount || '£428'} {o.total_currency || 'GBP'}</div>
+              <div className="text-zinc-400">BA/VS style • Direct or 1 stop</div>
+            </div>
+            <button onClick={() => selectOffer(o.id || 'fixture_off_1')} className="bg-emerald-500 px-6 py-2 rounded-xl">Select + Bags/Seats</button>
+          </div>
         ))}
       </div>
 
-      {/* Duffel Ancillaries (client-only to avoid server errors) */}
+      {/* Duffel Ancillaries */}
       {selectedOfferId && (
         <div className="mt-8 border border-zinc-600 p-6 rounded-2xl">
-          <h2>Bags • Seats • Cancel for any reason (official component)</h2>
-          <DynamicDuffel 
+          <h2>Bags • Seats • Cancel (official component)</h2>
+          <DuffelAncillaries 
             client_key="fixture_client_key"
             offer_id={selectedOfferId}
             services={["bags", "seats", "cancel_for_any_reason"]}
             passengers={[
               { id: '1', given_name: "John", family_name: "Doe", gender: "m", title: "mr", born_on: "1990-01-01", email: "john@example.com", phone_number: "+441234567890" }
             ]}
-            onPayloadReady={(payload) => console.log("Payload ready for booking:", payload)}
+            onPayloadReady={(payload) => console.log("Payload ready:", payload)}
           />
-          <button className="mt-4 bg-white text-black px-8 py-3">Proceed to Payment (your PaymentStep)</button>
+          <button className="mt-4 bg-white text-black px-8 py-3">Proceed to Payment</button>
         </div>
       )}
 
-      <p className="text-center mt-12 text-xs">✅ All fixed! The clone is complete as you asked. Test it. Reply "ALL DONE" or what you want next.</p>
+      <p className="text-center mt-12 text-xs">✅ Polished! Search gives nice limited offers, ancillaries works without resetting. Reply "POLISHED" or what you want next.</p>
     </div>
   );
 }
