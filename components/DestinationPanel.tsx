@@ -3,6 +3,7 @@
 
 import { X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { searchAirports } from '@/lib/airports';
 
 interface DestinationPanelProps {
   isOpen: boolean;
@@ -41,6 +42,8 @@ export default function DestinationPanel({
   });
   const [stops, setStops] = useState([{ city: placeName, departure: '', return: '' }]);
   const [isMultiCity, setIsMultiCity] = useState(false);
+  const [homeSuggestions, setHomeSuggestions] = useState(popularAirports.slice(0, 8)); // ← needed
+  const [destinationAirport, setDestinationAirport] = useState(placeName); // ← needed
 
   useEffect(() => {
     if (placeName) {
