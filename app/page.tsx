@@ -635,28 +635,30 @@ const [familyName, setFamilyName] = useState('');
 {!showHoldInfo && !showOrderHeld && (
   <div className="mb-8">
     <div className="font-bold mb-3">Paying now, or later?</div>
-    <div className="flex gap-4">
 
-      {/* Pay Now - Only highlights, does NOT trigger booking */}
-      <button 
-        onClick={() => setPaymentMethod('payNow')}
-        className={`flex-1 py-4 rounded-2xl font-bold transition-all ${
-          paymentMethod === 'payNow' 
-            ? 'bg-emerald-500 ring-2 ring-emerald-400' 
-            : 'bg-zinc-700 hover:bg-zinc-600'
-        }`}
-      >
+    {/* Warning when extras are selected */}
+    {(selectedBags > 0 || selectedSeat) && (
+      <div className="mb-3 text-sm text-yellow-400">
+        Hold is not available when you have selected extra bags or seats.
+      </div>
+    )}
+
+    <div className="flex gap-4">
+      <button onClick={bookNow} className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold">
         Pay now
       </button>
 
-      {/* Hold Order - Works exactly like before */}
       <button 
-        onClick={showHoldConfirmation}
-        className="flex-1 bg-zinc-700 hover:bg-zinc-600 py-4 rounded-2xl font-bold"
+        onClick={showHoldConfirmation} 
+        disabled={selectedBags > 0 || selectedSeat}
+        className={`flex-1 py-4 rounded-2xl font-bold ${
+          (selectedBags > 0 || selectedSeat) 
+            ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed' 
+            : 'bg-zinc-700'
+        }`}
       >
         Hold order (pay later)
       </button>
-
     </div>
   </div>
 )}
