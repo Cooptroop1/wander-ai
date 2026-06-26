@@ -207,8 +207,8 @@ const confirmHold = () => {
     airline: selectedOffer.owner?.name || 'Duffel Airways',
     created: new Date().toLocaleString('en-GB'),
     holdUntil: '28 Jun 2026',
-    extraBags: selectedBags,
-    selectedSeat: selectedSeat,
+    extraBags: 0,
+    selectedSeat: null,
     flights: legs.map((slice: any) => {
       const segment = (slice.segments && slice.segments[0]) || {};
       const marketing = segment.marketing_carrier || {};
@@ -685,14 +685,13 @@ const confirmHold = () => {
           <div>28 Jun 2026 23:16 BST<br />Space hold expires</div>
         </div>
 
-        {/* Dynamic flights from the held trip */}
         {myTrips[myTrips.length - 1]?.flights.map((f: any, index: number) => (
           <div key={index} className="mb-4 border-t border-zinc-700 pt-4">
             <div className="font-bold mb-1">{f.date} • Flight to {f.destination}</div>
             <div>{f.time} • {f.cabin} • {f.airline} • {f.duration} • {f.route} • Non-stop</div>
             <div className="text-sm text-zinc-400 mt-1">
-              {f.depTerminal ? `${f.depTerminal} ` : ''}Depart {f.origin} Terminal {f.depTerminal || ''}<br />
-              {f.arrTerminal ? `${f.arrTerminal} ` : ''}Arrive {f.destination} Terminal {f.arrTerminal || ''}
+              Depart {f.origin} {f.depTerminal ? `Terminal ${f.depTerminal}` : ''}<br />
+              Arrive {f.destination} {f.arrTerminal ? `Terminal ${f.arrTerminal}` : ''}
             </div>
             <div className="text-sm mt-1">{f.aircraft} • {f.flightNumber}</div>
             <div className="text-sm">{f.bags}</div>
