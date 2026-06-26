@@ -894,11 +894,12 @@ const confirmHold = () => {
               </div>
             </div>
 
-            <p className="text-sm text-zinc-400 text-center">Click an available seat to select it. Price shown on seat.</p>
+                        <p className="text-sm text-zinc-400 text-center">Click an available seat to select it. Price shown on seat.</p>
           </div>
         </div>
       )}
 
+      {/* Final message outside the modal */}
       <p className="text-center mt-12 text-xs">✅ Real Duffel booking is now active. Test it and reply with the result.</p>
     </div>
   );
