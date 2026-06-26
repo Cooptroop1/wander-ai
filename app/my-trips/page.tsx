@@ -9,27 +9,13 @@ export default function MyTrips() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Listen for login/logout changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          await fetchUserTrips(session.user.id);
-        } else {
-          setUser(null);
-          setBookings([]);
-        }
-        setLoading(false);
-      }
-    );
-
-    // Check current session when page loads
-    const checkUser = async () => {
+    // 1. Check current session when page loads
+    const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
         setUser(session.user);
-        await fetchUserTrips(session.user.id);
+        await loadTripsForUser(session.user.id);
       } else {
         setUser(null);
         setBookings([]);
@@ -37,20 +23,33 @@ export default function MyTrips() {
       setLoading(false);
     };
 
-    checkUser();
+    checkSession();
+
+    // 2. Listen for login/logout events (so it updates live)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          await loadTripsForUser(session.user.id);
+        } else {
+          setUser(null);
+          setBookings([]);
+        }
+      }
+    );
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserTrips = async (userId: string) => {
+  const loadTripsForUser = async (userId: string) => {
     const { data, error } = await supabase
       .from('bookings')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', userId)           // ← Only get trips for this user
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching trips:', error);
+      console.error('Error loading trips:', error);
     } else {
       setBookings(data || []);
     }
@@ -70,7 +69,7 @@ export default function MyTrips() {
       <div className="min-h-screen bg-zinc-950 text-white p-8">
         <h1 className="text-3xl font-bold mb-8">My Trips</h1>
         <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 text-center">
-          <p className="text-lg">Please log in to view your trips.</p>
+          <p className="text-lg">Please log in to see your trips.</p>
         </div>
       </div>
     );
@@ -95,7 +94,7 @@ export default function MyTrips() {
                 key={index} 
                 className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6"
               >
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-center">
                   <div>
                     <div className="font-semibold text-lg">
                       {booking.origin} → {booking.destination}
