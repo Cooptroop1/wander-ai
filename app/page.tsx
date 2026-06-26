@@ -357,30 +357,71 @@ const [familyName, setFamilyName] = useState('');
 
           <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2 mt-4">Get Live Offers</button>
 
-          <div className="mt-8 space-y-4">
-            {offers.map((o, i) => {
-              const slice = o.slices && o.slices[0];
-              const segment = slice && slice.segments && slice.segments[0];
-              const airline = segment ? segment.marketing_carrier.name : 'BA/VS';
-              const depTime = segment ? formatTime(segment.departing_at) : 'N/A';
-              const arrTime = segment ? formatTime(segment.arriving_at) : 'N/A';
-              const duration = slice ? (slice.duration || 'N/A') : 'N/A';
-              const stops = slice ? (slice.segments.length - 1) + ' stop' : 'Direct';
-              const cabin = slice ? slice.cabin_class : 'economy';
-              return (
-                <div key={i} className="bg-zinc-900 p-6 rounded-2xl flex justify-between items-center">
-                  <div>
-                    Offer {i+1} - {o.total_amount || '£428'} {o.total_currency || 'GBP'} • {airline} <br />
-                    <span className="text-emerald-400">Dep: {depTime}</span> • <span className="text-emerald-400">Arr: {arrTime}</span> • {duration} • {stops} • {cabin}
-                  </div>
-                  <button onClick={() => selectOffer(o)} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
+         <div className="mt-8 space-y-4">
+  {offers.map((o, i) => {
+    const slice = o.slices && o.slices[0];
+    const segment = slice && slice.segments && slice.segments[0];
+    const airline = segment ? segment.marketing_carrier.name : 'Airline';
+    const depTime = segment ? formatTime(segment.departing_at) : 'N/A';
+    const arrTime = segment ? formatTime(segment.arriving_at) : 'N/A';
+    const duration = slice ? (slice.duration || 'N/A') : 'N/A';
+    const stops = slice ? (slice.segments.length - 1) + ' stop' : 'Direct';
+    const cabin = slice ? slice.cabin_class : 'economy';
 
+    // === New: Check what this offer supports ===
+    const canHold = o.payment_requirements?.requires_instant_payment === false;
+    const paymentDeadline = o.payment_requirements?.payment_required_by 
+      ? new Date(o.payment_requirements.payment_required_by).toLocaleString('en-GB', { 
+          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+        }) 
+      : null;
+
+    const hasBags = o.available_services?.some((s: any) => s.type === 'baggage');
+    const hasSeats = o.available_services?.some((s: any) => s.type === 'seat');
+
+    return (
+      <div key={i} className="bg-zinc-900 p-6 rounded-2xl">
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="font-semibold">
+              {o.total_amount} {o.total_currency} • {airline}
+            </div>
+            <div className="text-sm text-emerald-400 mt-1">
+              {depTime} → {arrTime} • {duration} • {stops} • {cabin}
+            </div>
+          </div>
+
+          <div className="text-right text-sm">
+            {/* === New Info Badges === */}
+            {canHold ? (
+              <div className="text-emerald-400 font-medium">
+                Hold available
+                {paymentDeadline && <div className="text-xs">Pay by {paymentDeadline}</div>}
+              </div>
+            ) : (
+              <div className="text-orange-400 font-medium">Instant payment only</div>
+            )}
+
+            <div className="mt-1 text-xs text-zinc-400">
+              {hasSeats && "Seats available • "}
+              {hasBags && "Bags available"}
+              {!hasSeats && !hasBags && "No extras on this flight"}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button 
+            onClick={() => selectOffer(o)}
+            className="bg-emerald-500 hover:bg-emerald-600 px-8 py-3 rounded-xl font-bold"
+          >
+            Select
+          </button>
+        </div>
+      </div>
+    );
+  })}
+</div>
       {/* MY TRIPS VIEW */}
       {currentView === 'myTrips' && (
         <div>
