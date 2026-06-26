@@ -40,9 +40,9 @@ const [email, setEmail] = useState('');
 const [phone, setPhone] = useState('');
 const [givenName, setGivenName] = useState('');
 const [familyName, setFamilyName] = useState('');
-const [title, setTitle] = useState('mr');
-const [bornOn, setBornOn] = useState('1978-12-04');
-const [gender, setGender] = useState('m');
+const [title, setTitle] = useState('');
+const [bornOn, setBornOn] = useState('');
+const [gender, setGender] = useState('');
 
   const fetchSuggestions = async (query: string, setSuggestions: any, setShow: any) => {
     if (query.length < 2) {
@@ -162,7 +162,7 @@ const [gender, setGender] = useState('m');
       title: 'mr',
       given_name: givenName,
       family_name: familyName,
-      born_on: '1978-12-04',
+      born_on: ,
       gender: 'm',
       email: email,
       phone_number: phone,
