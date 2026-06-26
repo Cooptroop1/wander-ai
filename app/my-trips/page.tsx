@@ -6,21 +6,28 @@ import { supabase } from '@/lib/supabase';
 export default function MyTrips() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const fetchBookings = async () => {
-      console.log('=== My Trips Page: Fetching from Supabase ===');
+    const getUserAndTrips = async () => {
+      // Get current logged in user
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
 
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      // Fetch only this user's bookings (RLS will also help)
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      console.log('Supabase data:', data);
-      console.log('Supabase error:', error);
-
       if (error) {
-        console.error('Error fetching bookings:', error);
+        console.error('Error fetching trips:', error);
       } else {
         setBookings(data || []);
       }
@@ -28,14 +35,25 @@ export default function MyTrips() {
       setLoading(false);
     };
 
-    fetchBookings();
+    getUserAndTrips();
   }, []);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-950 text-white p-8">
         <h1 className="text-3xl font-bold mb-8">My Trips</h1>
-        <p>Loading your trips...</p>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white p-8">
+        <h1 className="text-3xl font-bold mb-8">My Trips</h1>
+        <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 text-center">
+          <p className="text-lg">Please log in to see your trips.</p>
+        </div>
       </div>
     );
   }
@@ -48,17 +66,12 @@ export default function MyTrips() {
         {bookings.length === 0 ? (
           <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 text-center">
             <p className="text-zinc-400">You don&apos;t have any trips yet.</p>
-            <p className="text-sm text-zinc-500 mt-2">
-              Hold a flight and it should appear here after refresh.
-            </p>
+            <p className="text-sm text-zinc-500 mt-2">Hold a flight and it will appear here.</p>
           </div>
         ) : (
           <div className="space-y-4">
             {bookings.map((booking, index) => (
-              <div 
-                key={index} 
-                className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6"
-              >
+              <div key={index} className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6">
                 <div className="flex justify-between items-center">
                   <div>
                     <div className="font-semibold text-lg">
@@ -72,11 +85,8 @@ export default function MyTrips() {
                       {booking.airline} • {booking.status}
                     </div>
                   </div>
-
                   <div className="text-right">
-                    <div className="font-semibold">
-                      {booking.currency} {booking.total}
-                    </div>
+                    <div className="font-semibold">{booking.currency} {booking.total}</div>
                   </div>
                 </div>
               </div>
