@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log("Received search body:", body); // ← This will appear in Vercel logs
+    console.log("Received search body:", body);
 
     const { from, to, departDate, returnDate, passengers = 1, cabinClass = 'economy' } = body;
 
@@ -32,6 +32,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const duffelBody = {
+      data: {
+        slices,
+        passengers: Array.from({ length: passengers }, () => ({ type: "adult" })),
+        cabin_class: cabinClass,
+        return_available_services: true,
+      }
+    };
+
     const res = await fetch('https://api.duffel.com/air/offer_requests', {
       method: 'POST',
       headers: {
@@ -39,19 +48,14 @@ export async function POST(request: NextRequest) {
         'Duffel-Version': 'v2',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        slices,
-        passengers: Array.from({ length: passengers }, () => ({ type: "adult" })),
-        cabin_class: cabinClass,
-        return_available_services: true,
-      }),
+      body: JSON.stringify(duffelBody),
     });
 
     const data = await res.json();
 
     if (!res.ok) {
       console.error("Duffel error:", data);
-      return NextResponse.json({ success: false, error: data.errors || data }, { status: res.status });
+      return NextResponse.json({ success: false, error: data.errors?.[0]?.message || JSON.stringify(data) }, { status: res.status });
     }
 
     return NextResponse.json({
