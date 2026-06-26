@@ -48,6 +48,74 @@ const [title, setTitle] = useState('');
 const [bornOn, setBornOn] = useState('');
 const [gender, setGender] = useState('');
 
+  // ==================== LOAD USER TRIPS FROM SUPABASE ====================
+useEffect(() => {
+  const loadUserTrips = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      setMyTrips([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading trips:', error);
+    } else if (data) {
+      // Convert Supabase rows into the shape your UI expects
+      const formatted = data.map((row: any) => ({
+        id: row.duffel_order_id,
+        status: 'On hold',
+        total: row.total,
+        currency: row.currency,
+        airline: row.airline,
+        created: new Date(row.created_at).toLocaleString('en-GB'),
+        holdUntil: '28 Jun 2026',
+        extraBags: 0,
+        selectedSeat: null,
+        flights: [{
+          date: row.departure_date,
+          time: '',
+          route: `${row.origin} - ${row.destination}`,
+          status: 'On hold',
+          airline: row.airline,
+          origin: row.origin,
+          destination: row.destination,
+          depTerminal: '',
+          arrTerminal: '',
+          duration: '',
+          cabin: 'economy',
+          bags: '1 carry-on bag • 1 checked bag'
+        }],
+        passenger: {
+          name: 'mr James Cooper',
+          dob: '04/12/1978',
+          gender: 'Male',
+          email: 'jcooper4888@aol.co.uk',
+          phone: '+447368841330'
+        }
+      }));
+
+      setMyTrips(formatted);
+    }
+  };
+
+  loadUserTrips();
+
+  // Re-load trips when auth state changes (login/logout)
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    loadUserTrips();
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
+// ==================== END LOAD USER TRIPS ====================
+
   const fetchSuggestions = async (query: string, setSuggestions: any, setShow: any) => {
     if (query.length < 2) {
       setSuggestions([]);
@@ -193,7 +261,6 @@ const confirmHold = async () => {
     return;
   }
 
-  // Get the logged-in user
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -253,12 +320,10 @@ const confirmHold = async () => {
     }
   };
 
-  setMyTrips([...myTrips, newTrip]);
-
-  // Save to Supabase with user_id (only logged-in users can do this)
+  // Save to Supabase
   const { error } = await supabase.from('bookings').insert({
     duffel_order_id: selectedOffer.id,
-    user_id: user.id,                    // ← Always attached
+    user_id: user.id,
     status: 'on_hold',
     total: parseFloat(selectedOffer.total_amount) || 0,
     currency: selectedOffer.total_currency || 'GBP',
@@ -270,10 +335,13 @@ const confirmHold = async () => {
   });
 
   if (error) {
-    console.error('Supabase error:', error);
+    console.error('Supabase save error:', error);
     alert('Failed to save hold: ' + error.message);
+    return;
   }
 
+  // Update local state so it appears immediately
+  setMyTrips([...myTrips, newTrip]);
   setShowHoldInfo(false);
   setShowOrderHeld(true);
 };
