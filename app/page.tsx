@@ -59,16 +59,34 @@ const [gender, setGender] = useState('');
   };
 
   const handleRealSearch = async () => {
-    setLoading(true);
+  if (!from || !to || !depart) return alert("Fill from, to, and departure date");
+
+  try {
     const res = await fetch('/api/flights/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from, to, departDate: depart }),
+      body: JSON.stringify({
+        from,
+        to,
+        departDate: depart,
+        returnDate: returnDate || undefined,
+        passengers: 1,
+        cabinClass: 'economy',
+      }),
     });
+
     const data = await res.json();
-    setOffers(data.offers ? data.offers.slice(0, 5) : []);
-    setLoading(false);
-  };
+
+    if (data.success) {
+      setOffers(data.offers);
+      alert(`✅ Loaded ${data.offers.length} real Duffel offers!`);
+    } else {
+      alert('Search failed: ' + data.error);
+    }
+  } catch (err) {
+    alert('Search error');
+  }
+};
 
   const selectOffer = async (offer: any) => {
     setSelectedOffer(offer);
