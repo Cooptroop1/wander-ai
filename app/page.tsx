@@ -187,41 +187,41 @@ const [gender, setGender] = useState('');
 
   
 const confirmHold = () => {
-  if (!selectedOffer) return;
+  if (!selectedOffer) {
+    alert("No offer selected");
+    return;
+  }
 
   const legs = selectedOffer.slices || [];
 
   const newTrip = {
     id: selectedOffer.id || 'ORD' + Date.now(),
     status: 'On hold',
-    total: selectedOffer.total_amount || '£0.00',
+    total: selectedOffer.total_amount || '0.00',
     currency: selectedOffer.total_currency || 'GBP',
     airline: selectedOffer.owner?.name || 'Duffel Airways',
     created: new Date().toLocaleString('en-GB'),
     holdUntil: '28 Jun 2026',
     extraBags: selectedBags,
     selectedSeat: selectedSeat,
-    flights: legs.map((slice: any, index: number) => {
-      const segment = slice.segments && slice.segments[0];
-      const dep = segment?.departing_at ? segment.departing_at.substring(0, 10) : '';
-      const depTime = segment?.departing_at ? segment.departing_at.substring(11, 16) : '';
-      const arrTime = segment?.arriving_at ? segment.arriving_at.substring(11, 16) : '';
-      const airlineName = segment?.marketing_carrier?.name || 'Duffel Airways';
-      const aircraft = segment?.aircraft?.name || '';
-      const flightNumber = segment?.marketing_carrier_flight_number || '';
+    flights: legs.map((slice: any) => {
+      const segment = (slice.segments && slice.segments[0]) || {};
+      const marketing = segment.marketing_carrier || {};
 
       return {
-        date: dep,
-        time: `${depTime} - ${arrTime}`,
-        route: `${slice.origin} - ${slice.destination}`,
+        date: segment.departing_at ? segment.departing_at.substring(0, 10) : '',
+        time: segment.departing_at && segment.arriving_at 
+          ? `${segment.departing_at.substring(11, 16)} - ${segment.arriving_at.substring(11, 16)}` 
+          : '',
+        route: `${slice.origin || ''} - ${slice.destination || ''}`,
         status: 'On hold',
-        airline: airlineName,
-        aircraft: aircraft,
-        flightNumber: flightNumber,
-        origin: slice.origin,
-        destination: slice.destination,
-        depTerminal: segment?.origin_terminal || '',
-        arrTerminal: segment?.destination_terminal || '',
+        airline: marketing.name || 'Duffel Airways',
+        aircraft: segment.aircraft?.name || '',
+        flightNumber: segment.marketing_carrier_flight_number || '',
+        origin: slice.origin || '',
+        destination: slice.destination || '',
+        depTerminal: segment.origin_terminal || '',
+        arrTerminal: segment.destination_terminal || '',
         duration: slice.duration || '',
         cabin: slice.cabin_class || 'economy',
         bags: '1 carry-on bag • 1 checked bag'
