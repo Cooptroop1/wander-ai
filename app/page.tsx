@@ -670,17 +670,6 @@ const [familyName, setFamilyName] = useState('');
       <>
         {/* Your existing form fields go here (contact, passengers, passport) */}
         
-        <button 
-          onClick={bookNow}
-          disabled={!isFormComplete()}
-          className={`w-full py-4 rounded-2xl font-bold text-lg mt-4 transition-all ${
-            isFormComplete() 
-              ? 'bg-emerald-500 hover:bg-emerald-600' 
-              : 'bg-zinc-700 cursor-not-allowed opacity-60'
-          }`}
-        >
-          Pay now and confirm booking
-        </button>
       </>
     )}
 
