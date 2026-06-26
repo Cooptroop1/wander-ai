@@ -208,10 +208,81 @@ const [familyName, setFamilyName] = useState('');
 
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
-  const confirmHold = () => {
-    alert('Hold order is still simulated for now.');
-    setShowHoldInfo(false);
-  };
+  const confirmHold = async () => {
+  if (!selectedOffer) return;
+
+  const services: any[] = [];
+
+  if (selectedBags > 0 && availableServices[0]) {
+    services.push({ id: availableServices[0].id, quantity: selectedBags });
+  }
+  if (selectedSeat) {
+    services.push({ id: selectedSeat.id, quantity: 1 });
+  }
+
+  const passengers = [
+    {
+      id: 'pas_1',
+      title: 'mr',
+      given_name: givenName || 'James',
+      family_name: familyName || 'Cooper',
+      born_on: '1978-12-04',
+      gender: 'm',
+      email: email || 'jcooper4888@aol.co.uk',
+      phone_number: phone || '+447368841330',
+    },
+  ];
+
+  try {
+    const res = await fetch('/api/orders/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        offerId: selectedOffer.id,
+        passengers,
+        services,
+        type: 'hold',                    // ← This makes it a real hold order
+      }),
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      const newTrip = {
+        id: result.order.id,
+        status: 'On hold',
+        total: selectedOffer.total_amount,
+        currency: selectedOffer.total_currency || 'GBP',
+        airline: selectedOffer.owner?.name || 'Duffel Airways',
+        created: new Date().toLocaleString('en-GB'),
+        holdUntil: 'In 3 days',
+        extraBags: selectedBags,
+        selectedSeat: selectedSeat,
+        booking_reference: result.booking_reference,
+        flights: [
+          { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
+          { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
+        ],
+        passenger: { 
+          name: `${givenName || 'James'} ${familyName || 'Cooper'}`, 
+          dob: '04/12/1978', 
+          gender: 'Male', 
+          email: email || 'jcooper4888@aol.co.uk', 
+          phone: phone || '+447368841330' 
+        }
+      };
+
+      setMyTrips([...myTrips, newTrip]);
+      setShowHoldInfo(false);
+      setShowOrderHeld(true);
+    } else {
+      alert('Failed to create hold order: ' + result.error);
+    }
+  } catch (error) {
+    alert('Error creating hold order');
+    console.error(error);
+  }
+};
 
   const openTripDetail = (trip: any) => {
     setSelectedTrip(trip);
