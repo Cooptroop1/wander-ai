@@ -288,6 +288,7 @@ const confirmHold = async () => {
       body: JSON.stringify({
         offerId: selectedOffer.id,
         passengers,
+        type: 'hold',
         
       }),
     });
