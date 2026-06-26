@@ -60,7 +60,7 @@ const [gender, setGender] = useState('');
 
   const handleRealSearch = async () => {
   if (!from || !to || !depart) {
-    alert("Please fill from, to, and departure date");
+    alert("Please fill from, to and departure date");
     return;
   }
 
@@ -82,12 +82,11 @@ const [gender, setGender] = useState('');
 
     if (data.success) {
       setOffers(data.offers || []);
-      alert(`✅ Loaded ${data.offers.length} real Duffel offers!`);
     } else {
       alert('Search failed: ' + (data.error || JSON.stringify(data)));
     }
   } catch (err) {
-    alert('Search error: ' + (err as Error).message);
+    alert('Search error');
   }
 };
 
