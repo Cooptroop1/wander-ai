@@ -195,15 +195,15 @@ const confirmHold = async () => {
 
   const legs = selectedOffer.slices || [];
 
+  const getCode = (val: any) => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    return val.iata_code || val.code || '';
+  };
+
   const flightsData = legs.map((slice: any) => {
     const segment = (slice.segments && slice.segments[0]) || {};
     const marketing = segment.marketing_carrier || {};
-
-    const getCode = (val: any) => {
-      if (!val) return '';
-      if (typeof val === 'string') return val;
-      return val.iata_code || val.code || '';
-    };
 
     return {
       date: segment.departing_at ? segment.departing_at.substring(0, 10) : '',
@@ -245,7 +245,6 @@ const confirmHold = async () => {
     }
   };
 
-  // Save to local state (for immediate popup)
   setMyTrips([...myTrips, newTrip]);
 
   // Save to Supabase
@@ -263,10 +262,10 @@ const confirmHold = async () => {
     });
 
     if (error) {
-      console.error('Supabase insert error:', error);
+      console.error('Supabase error:', error);
     }
   } catch (err) {
-    console.error('Failed to save to Supabase:', err);
+    console.error('Failed to save hold to Supabase:', err);
   }
 
   setShowHoldInfo(false);
