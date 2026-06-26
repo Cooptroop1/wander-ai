@@ -182,13 +182,7 @@ const res = await fetch('/api/orders/create', {
       }),
     });
 
-    const result = await res.json();
-    alert(JSON.stringify(result, null, 2)); // This will show us the full response
-  } catch (err) {
-    alert('Error: ' + err);
-  }
-};
-
+    
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
   
