@@ -414,25 +414,32 @@ export default function DuffelCloneHome() {
               <button onClick={closeCheckout} className="text-2xl">×</button>
             </div>
 
-            <div className="mb-8">
-              <div className="bg-zinc-800 p-6 rounded-2xl mb-6">
-                <div className="font-bold mb-2">Selected flights</div>
-                <div className="mb-4">
-                  <div className="font-semibold">Fri, 26 Jun 2026 19:21 - 22:39</div>
-                  <div>Basic • Duffel Airways • 02h 18m • STN - MAD • Non-stop</div>
-                  <div className="text-sm mt-1">19:21 Depart London Stansted (STN) Terminal 2</div>
-                  <div className="text-sm">22:39 Arrive Madrid (MAD) Terminal 1</div>
-                  <div className="text-sm mt-1">Economy • Duffel Airways • ZZ5528 • 1 carry-on + 1 checked bag included</div>
-                </div>
-                <div>
-                  <div className="font-semibold">Sat, 27 Jun 2026 20:07 - 21:25</div>
-                  <div>Basic • Duffel Airways • 02h 18m • MAD - STN • Non-stop</div>
-                  <div className="text-sm mt-1">20:07 Depart Madrid (MAD) Terminal 2</div>
-                  <div className="text-sm">21:25 Arrive London Stansted (STN) Terminal 1</div>
-                  <div className="text-sm mt-1">Economy • Duffel Airways • ZZ5528 • 1 carry-on + 1 checked bag included</div>
-                </div>
-              </div>
-            </div>
+            {/* Selected Flight Summary - Now respects One way vs Return */}
+<div className="mb-8">
+  <div className="bg-zinc-800 p-6 rounded-2xl mb-6">
+    <div className="font-bold mb-4">Selected flights</div>
+
+    {/* Outbound leg (always shown) */}
+    <div className="mb-6">
+      <div className="font-semibold">Fri, 26 Jun 2026 19:21 - 22:39</div>
+      <div>Basic • Duffel Airways • 02h 18m • STN - MAD • Non-stop</div>
+      <div className="text-sm mt-1">19:21 Depart London Stansted (STN) Terminal 2</div>
+      <div className="text-sm">22:39 Arrive Madrid (MAD) Terminal 1</div>
+      <div className="text-sm mt-1">Economy • Duffel Airways • ZZ5528 • 1 carry-on + 1 checked bag included</div>
+    </div>
+
+    {/* Return leg - Only shown if journeyType is return or multi_city */}
+    {(journeyType === 'return' || journeyType === 'multi_city') && (
+      <div>
+        <div className="font-semibold">Sat, 27 Jun 2026 20:07 - 21:25</div>
+        <div>Basic • Duffel Airways • 02h 18m • MAD - STN • Non-stop</div>
+        <div className="text-sm mt-1">20:07 Depart Madrid (MAD) Terminal 2</div>
+        <div className="text-sm">21:25 Arrive London Stansted (STN) Terminal 1</div>
+        <div className="text-sm mt-1">Economy • Duffel Airways • ZZ5528 • 1 carry-on + 1 checked bag included</div>
+      </div>
+    )}
+  </div>
+</div>
 
             <div className="mb-8">
               <div className="font-bold mb-3">Add extras</div>
