@@ -166,6 +166,8 @@ const [gender, setGender] = useState('');
 
   
 const confirmHold = () => {
+  const legs = selectedOffer?.slices || [];
+
   const newTrip = {
     id: selectedOffer?.id || 'ORD' + Date.now(),
     status: 'On hold',
@@ -174,18 +176,23 @@ const confirmHold = () => {
     airline: selectedOffer?.owner?.name || 'Duffel Airways',
     created: new Date().toLocaleString('en-GB'),
     holdUntil: '28 Jun 2026',
-    extraBags: 0,
-    selectedSeat: null,
-    flights: [
-      { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
-      { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
-    ],
+    extraBags: selectedBags,
+    selectedSeat: selectedSeat,
+    flights: legs.map((slice: any, index: number) => {
+      const segment = slice.segments && slice.segments[0];
+      return {
+        date: segment ? segment.departing_at.substring(0, 10) : '26 Jun 2026',
+        time: segment ? `${segment.departing_at.substring(11, 16)} - ${segment.arriving_at.substring(11, 16)}` : '19:21 - 22:39',
+        route: `${slice.origin} - ${slice.destination}`,
+        status: 'On hold'
+      };
+    }),
     passenger: {
-      name: `${givenName || 'James'} ${familyName || 'Cooper'}`,
-      dob: bornOn || '04/12/1978',
-      gender: gender === 'm' ? 'Male' : 'Female',
-      email: email || 'jcooper4888@aol.co.uk',
-      phone: phone || '+447368841330'
+      name: 'mr James Cooper',
+      dob: '04/12/1978',
+      gender: 'Male',
+      email: 'jcooper4888@aol.co.uk',
+      phone: '+447368841330'
     }
   };
 
