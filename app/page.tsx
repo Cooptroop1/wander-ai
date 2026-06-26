@@ -145,22 +145,6 @@ const [gender, setGender] = useState('');
 
   const services: any[] = [];
 
-  // Add extra bags if selected
-  if (selectedBags > 0 && availableServices.length > 0) {
-    services.push({
-      id: availableServices[0].id,
-      quantity: selectedBags,
-    });
-  }
-
-  // Add selected seat if chosen
-  if (selectedSeat) {
-    services.push({
-      id: selectedSeat.id,
-      quantity: 1,
-    });
-  }
-
   const passengers = [
   {
     title: title || 'mr',
