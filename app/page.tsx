@@ -242,11 +242,6 @@ const confirmHold = () => {
     }
   };
 
-  setMyTrips([...myTrips, newTrip]);
-  setShowHoldInfo(false);
-  setShowOrderHeld(true);
-};
-
       setMyTrips([...myTrips, newTrip]);
       setShowHoldInfo(false);
       setShowOrderHeld(true);
