@@ -626,83 +626,63 @@ const confirmHold = () => {
               </div>
             )}
 
-            {showOrderHeld && (
-              <div className="mb-8">
-                <div className="bg-emerald-900/30 border border-emerald-500 p-6 rounded-2xl mb-6">
-                  <div className="text-2xl font-bold text-emerald-400 mb-2">Order held</div>
-                  <div className="text-sm">The price guarantee expires in 2 days. After this prices for your trip may change.</div>
-                  <div className="text-sm">Space expires in 3 days. After this the space will be released and you will need to rebook.</div>
-                </div>
+            {showOrderHeld && myTrips.length > 0 && (
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto">
+    <div className="bg-zinc-900 p-6 rounded-3xl max-w-lg w-full">
+      <h2 className="text-xl font-bold mb-4">Order held</h2>
+      <div className="text-sm mb-4">The price guarantee expires in 2 days. After this prices for your trip may change.</div>
+      <div className="text-sm mb-6">Space expires in 3 days. After this the space will be released and you will need to rebook.</div>
 
-                <div className="bg-zinc-800 p-6 rounded-2xl mb-6">
-                  <div className="grid grid-cols-3 gap-4 text-sm mb-6">
-                    <div>
-                      <div className="text-zinc-400">25 Jun 2026 23:38 BST</div>
-                      <div className="font-semibold">Booked</div>
-                    </div>
-                    <div>
-                      <div className="text-zinc-400">27 Jun 2026 23:16 BST</div>
-                      <div className="font-semibold">Price hold expires</div>
-                      <div className="text-emerald-400">£158.00</div>
-                    </div>
-                    <div>
-                      <div className="text-zinc-400">28 Jun 2026 23:16 BST</div>
-                      <div className="font-semibold">Space hold expires</div>
-                    </div>
-                  </div>
+      <div className="bg-zinc-800 p-4 rounded-2xl mb-6">
+        <div className="grid grid-cols-3 gap-4 text-sm">
+          <div>25 Jun 2026 23:38 BST<br />Booked</div>
+          <div>27 Jun 2026 23:16 BST<br />Price hold expires<br /><span className="text-emerald-400">£158.00</span></div>
+          <div>28 Jun 2026 23:16 BST<br />Space hold expires</div>
+        </div>
 
-                  <div className="mb-6">
-                    <div className="font-bold mb-2">26 Jun 2026 19:21 BST • Flight to MAD</div>
-                    <div>19:21 - 22:39 • Basic • Duffel Airways • 02h 18m • STN - MAD • Non-stop</div>
-                    <div className="text-sm mt-1">19:21 Depart London Stansted (STN) Terminal 2</div>
-                    <div className="text-sm">22:39 Arrive Madrid (MAD) Terminal 1</div>
-                    <div className="text-sm mt-1">Economy • Duffel Airways • Boeing 777-300 • ZZ5528</div>
-                    <div className="text-sm">1 carry-on bag • 1 checked bag</div>
-                  </div>
+        {/* Dynamic Flights from the last held trip */}
+        {myTrips[myTrips.length - 1]?.flights.map((f: any, index: number) => (
+          <div key={index} className="mt-4 border-t border-zinc-700 pt-4">
+            <div className="font-bold">{f.date} • Flight to {f.route.split(' - ')[1]}</div>
+            <div>{f.time} • Basic • Duffel Airways • {f.route} • Non-stop</div>
+            <div className="text-sm text-zinc-400">Depart / Arrive details</div>
+          </div>
+        ))}
 
-                  <div className="mb-6">
-                    <div className="font-bold mb-2">27 Jun 2026 20:07 BST • Flight to STN</div>
-                    <div>20:07 - 21:25 • Basic • Duffel Airways • 02h 18m • MAD - STN • Non-stop</div>
-                    <div className="text-sm mt-1">20:07 Depart Madrid (MAD) Terminal 2</div>
-                    <div className="text-sm">21:25 Arrive London Stansted (STN) Terminal 1</div>
-                    <div className="text-sm mt-1">Economy • Duffel Airways • Boeing 777-300 • ZZ5528</div>
-                    <div className="text-sm">1 carry-on bag • 2 checked bags</div>
-                  </div>
+        <div className="text-sm mt-6">
+          Order change policy: This order is not changeable<br />
+          Order refund policy: This order is not refundable
+        </div>
 
-                  {(selectedBags > 0 || selectedSeat) && (
-                    <div className="mb-6 p-4 bg-zinc-700 rounded-xl">
-                      <div className="font-bold mb-2">Extras added to this order</div>
-                      {selectedBags > 0 && <div>Extra bags: {selectedBags}</div>}
-                      {selectedSeat && <div>Selected seat: {selectedSeat.designator || 'Seat'} (£{selectedSeat.total_amount || '0.00'})</div>}
-                    </div>
-                  )}
+        <div className="mt-6">
+          <div className="font-bold mb-2">Passengers • adult 1</div>
+          <div>Name: mr James Cooper</div>
+          <div>Date of birth: 04/12/1978</div>
+          <div>Gender: Male</div>
+          <div>E-mail: jcooper4888@aol.co.uk</div>
+          <div>Contact number: +447368841330</div>
+        </div>
 
-                  <div className="text-sm mb-6">
-                    <div>Order change policy: This order is not changeable</div>
-                    <div>Order refund policy: This order is not refundable</div>
-                  </div>
+        <div className="mt-6">
+          <div className="font-bold mb-2">Summary</div>
+          <div>Order ID: {myTrips[myTrips.length - 1]?.id || 'off_0000...'}</div>
+          <div>Status: On hold</div>
+          <div>Airline: Duffel Airways</div>
+          <div>James Cooper created this order. {new Date().toLocaleString('en-GB')}</div>
+        </div>
+      </div>
 
-                  <div className="mb-6">
-                    <div className="font-bold mb-2">Passengers • adult 1</div>
-                    <div>Name: mr James Cooper</div>
-                    <div>Date of birth: 04/12/1978</div>
-                    <div>Gender: Male</div>
-                    <div>E-mail: jcooper4888@aol.co.uk</div>
-                    <div>Contact number: +447368841330</div>
-                  </div>
-
-                  <div>
-                    <div className="font-bold mb-2">Summary</div>
-                    <div>Order ID: {selectedOffer?.id || 'ord_0000B7hok9gr34aFUMqM80'}</div>
-                    <div>Status: On hold</div>
-                    <div>Airline: Duffel Airways</div>
-                    <div>James Cooper created this order. {new Date().toLocaleString('en-GB')}</div>
-                  </div>
-                </div>
-
-                <button onClick={closeCheckout} className="w-full bg-emerald-500 py-4 rounded-2xl font-bold">Done - View in My Trips</button>
-              </div>
-            )}
+      <button 
+        onClick={() => {
+          setShowOrderHeld(false);
+          setCurrentView('myTrips');
+        }} 
+        className="w-full bg-emerald-500 py-4 rounded-2xl font-bold">
+        Done - View in My Trips
+      </button>
+    </div>
+  </div>
+)}
 
             {!showHoldInfo && !showOrderHeld && (
               <>
