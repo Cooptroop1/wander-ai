@@ -247,25 +247,25 @@ const confirmHold = async () => {
 
   setMyTrips([...myTrips, newTrip]);
 
-  // Save to Supabase
-  try {
-    const { error } = await supabase.from('bookings').insert({
-      duffel_order_id: selectedOffer.id,
-      status: 'on_hold',
-      total: parseFloat(selectedOffer.total_amount) || 0,
-      currency: selectedOffer.total_currency || 'GBP',
-      airline: selectedOffer.owner?.name || 'Duffel Airways',
-      origin: flightsData[0]?.origin || '',
-      destination: flightsData[0]?.destination || '',
-      departure_date: flightsData[0]?.date || '',
-      return_date: flightsData[1]?.date || null,
-    });
+  // Save to Supabase with better logging
+  console.log('Attempting to insert into Supabase...');
+  const { data, error } = await supabase.from('bookings').insert({
+    duffel_order_id: selectedOffer.id,
+    status: 'on_hold',
+    total: parseFloat(selectedOffer.total_amount) || 0,
+    currency: selectedOffer.total_currency || 'GBP',
+    airline: selectedOffer.owner?.name || 'Duffel Airways',
+    origin: flightsData[0]?.origin || '',
+    destination: flightsData[0]?.destination || '',
+    departure_date: flightsData[0]?.date || '',
+    return_date: flightsData[1]?.date || null,
+  });
 
-    if (error) {
-      console.error('Supabase error:', error);
-    }
-  } catch (err) {
-    console.error('Failed to save hold to Supabase:', err);
+  if (error) {
+    console.error('SUPABASE INSERT ERROR:', error);
+    alert('Failed to save to Supabase: ' + error.message);
+  } else {
+    console.log('Successfully saved to Supabase:', data);
   }
 
   setShowHoldInfo(false);
