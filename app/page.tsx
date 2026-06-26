@@ -59,15 +59,18 @@ const [gender, setGender] = useState('');
   };
 
   const handleRealSearch = async () => {
-  if (!from || !to || !depart) return alert("Fill from, to, and departure date");
+  if (!from || !to || !depart) {
+    alert("Please fill from, to, and departure date");
+    return;
+  }
 
   try {
     const res = await fetch('/api/flights/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from,
-        to,
+        from: from.toUpperCase(),
+        to: to.toUpperCase(),
         departDate: depart,
         returnDate: returnDate || undefined,
         passengers: 1,
@@ -78,13 +81,13 @@ const [gender, setGender] = useState('');
     const data = await res.json();
 
     if (data.success) {
-      setOffers(data.offers);
+      setOffers(data.offers || []);
       alert(`✅ Loaded ${data.offers.length} real Duffel offers!`);
     } else {
-      alert('Search failed: ' + data.error);
+      alert('Search failed: ' + (data.error || JSON.stringify(data)));
     }
   } catch (err) {
-    alert('Search error');
+    alert('Search error: ' + (err as Error).message);
   }
 };
 
