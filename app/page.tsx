@@ -47,6 +47,12 @@ const [title, setTitle] = useState('');
 const [bornOn, setBornOn] = useState('');
 const [gender, setGender] = useState('');
 
+const getAirportCode = (airport: any): string => {
+  if (!airport) return '';
+  if (typeof airport === 'string') return airport;
+  return airport.iata_code || airport.code || '';
+};
+   
   const fetchSuggestions = async (query: string, setSuggestions: any, setShow: any) => {
     if (query.length < 2) {
       setSuggestions([]);
