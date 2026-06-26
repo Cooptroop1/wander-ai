@@ -8,26 +8,16 @@ const duffel = new Duffel({
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const isHold = body.type === 'hold';
 
-    const orderData: any = {
-      type: isHold ? 'hold' : 'instant',
+    console.log('Creating order with payload:', JSON.stringify(body, null, 2));
+
+    const response = await duffel.orders.create({
+      type: body.type || 'hold',
       selected_offers: [body.offerId],
       passengers: body.passengers,
       services: body.services || [],
-    };
+    });
 
-    if (!isHold) {
-      orderData.payments = [
-        {
-          type: 'balance',
-          currency: body.currency || 'GBP',
-          amount: body.finalAmount,
-        }, 
-      ];
-    }
-
-    const response = await duffel.orders.create(orderData);
     const order = response.data;
 
     return NextResponse.json({
@@ -38,19 +28,15 @@ export async function POST(request: Request) {
     });
 
   } catch (error: any) {
-    // Log the full error so we can see the real reason
-    console.error('=== DUFFEL ERROR ===');
+    console.error('=== DUFFEL FULL ERROR ===');
     console.error(JSON.stringify(error, null, 2));
 
-    const duffelError = error.errors?.[0]?.title || 
-                        error.errors?.[0]?.message || 
-                        error.message || 
-                        'Unknown error from Duffel';
+    const duffelError = error.errors?.[0] || error.message || 'Unknown Duffel error';
 
     return NextResponse.json({
       success: false,
       error: duffelError,
-      fullError: error.errors || error.message,
+      fullError: error,
     }, { status: 500 });
   }
 }
