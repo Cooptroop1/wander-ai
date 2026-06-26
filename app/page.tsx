@@ -35,6 +35,7 @@ export default function DuffelCloneHome() {
 
 // === NEW STATES FOR PAYMENT FLOW ===
   // === ADD THESE FORM STATES ===
+const [passportCountry, setPassportCountry] = useState('');
 const [passportNumber, setPassportNumber] = useState('');
 const [passportExpiry, setPassportExpiry] = useState('');
 const [paymentMethod, setPaymentMethod] = useState<'payNow' | 'hold' | null>(null);
@@ -171,6 +172,7 @@ const [gender, setGender] = useState('');
     phone_number: phone,
     passport_number: passportNumber,
     passport_expiry_date: passportExpiry,
+    passport_country_code: passportCountry,
   },
 ];
 
@@ -867,12 +869,27 @@ const [gender, setGender] = useState('');
   </div>
 </div>
 
-                <div className="mb-8">
+                {/* Passport Details */}
+<div className="mb-8">
   <div className="font-bold mb-3">Passport details</div>
-  <div className="grid grid-cols-2 gap-4">
-    <select className="p-3 bg-zinc-800 rounded-xl">
-      <option>United Kingdom (GB)</option>
-      <option>Spain (ES)</option>
+  <div className="grid grid-cols-1 gap-4">
+    <select 
+      value={passportCountry} 
+      onChange={(e) => setPassportCountry(e.target.value)} 
+      className="p-3 bg-zinc-800 rounded-xl"
+    >
+      <option value="">Country of issue*</option>
+      <option value="GB">United Kingdom (GB)</option>
+      <option value="ES">Spain (ES)</option>
+      <option value="US">United States (US)</option>
+      <option value="FR">France (FR)</option>
+      <option value="DE">Germany (DE)</option>
+      <option value="IT">Italy (IT)</option>
+      <option value="NL">Netherlands (NL)</option>
+      <option value="IE">Ireland (IE)</option>
+      <option value="PT">Portugal (PT)</option>
+      <option value="BE">Belgium (BE)</option>
+      {/* Add more countries as needed */}
     </select>
 
     <input 
