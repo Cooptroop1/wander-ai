@@ -93,11 +93,11 @@ useEffect(() => {
           bags: '1 carry-on bag • 1 checked bag'
         }],
         passenger: {
-          name: ,
-          dob: ,
-          gender: ,
-          email: ,
-          phone: 
+          name: 'mr James Cooper',
+          dob: '04/12/1978',
+          gender: 'Male',
+          email: 'jcooper4888@aol.co.uk',
+          phone: '+447368841330'
         }
       }));
 
