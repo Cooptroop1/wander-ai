@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const { from, to, departDate, returnDate, passengers = 1, cabinClass = 'economy' } = body;
 
     if (!from || !to || !departDate) {
-      return NextResponse.json({ success: false, error: "Missing from, to, or departDate" }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Missing from, to or departDate" }, { status: 400 });
     }
 
     const duffelToken = process.env.DUFFEL_ACCESS_TOKEN;
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         passengers: Array.from({ length: passengers }, () => ({ type: "adult" })),
         cabin_class: cabinClass,
         return_available_services: true,
-        limit: 20,                    // ← Limit to 50 offers max
+        limit: 20,
       }
     };
 
@@ -59,13 +59,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       offers: data.data?.offers || [],
-      raw: data,
-      message: `✅ Loaded ${data.data?.offers?.length || 0} real Duffel offers!`,
     });
   } catch (err: any) {
-    return NextResponse.json({
-      success: false,
-      error: err.message || 'Server error',
-    }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message || 'Server error' }, { status: 500 });
   }
 }
