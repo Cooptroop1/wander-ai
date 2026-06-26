@@ -127,43 +127,43 @@ const [gender, setGender] = useState('');
   };
 
   const isFormComplete = () => {
-  if (paymentMethod !== 'payNow') return false;
-
   const emailValid = email.trim().length > 5 && email.includes('@');
-  const phoneValid = phone.trim().length >= 8;
+  const phoneValid = phone.trim().length >= 10;
   const givenNameValid = givenName.trim().length >= 2;
   const familyNameValid = familyName.trim().length >= 2;
+  const dobValid = bornOn.length === 10; // Duffel requires YYYY-MM-DD
 
-  return emailValid && phoneValid && givenNameValid && familyNameValid;
+  return emailValid && phoneValid && givenNameValid && familyNameValid && dobValid;
 };
   
   const bookNow = async () => {
   if (!selectedOffer || !isFormComplete()) return;
 
-  const finalAmount = getDynamicTotal();
   const services: any[] = [];
 
+  // Add extra bags if selected
   if (selectedBags > 0 && availableServices.length > 0) {
     services.push({
       id: availableServices[0].id,
-      quantity: selectedBags
+      quantity: selectedBags,
     });
   }
 
+  // Add selected seat if chosen
   if (selectedSeat) {
     services.push({
       id: selectedSeat.id,
-      quantity: 1
+      quantity: 1,
     });
   }
 
   const passengers = [
     {
-      title: 'mr',
+      title: title || 'mr',
       given_name: givenName,
       family_name: familyName,
       born_on: bornOn,
-      gender: 'm',
+      gender: gender || 'm',
       email: email,
       phone_number: phone,
     },
@@ -177,7 +177,7 @@ const [gender, setGender] = useState('');
         offerId: selectedOffer.id,
         passengers,
         services,
-        finalAmount,
+        finalAmount: getDynamicTotal(),
         currency: selectedOffer.total_currency || 'GBP',
       }),
     });
@@ -188,7 +188,7 @@ const [gender, setGender] = useState('');
       const newTrip = {
         id: result.order.id,
         status: 'Booked',
-        total: finalAmount,
+        total: getDynamicTotal(),
         currency: selectedOffer.total_currency || 'GBP',
         airline: selectedOffer.owner?.name || 'Duffel Airways',
         created: new Date().toLocaleString('en-GB'),
@@ -199,7 +199,13 @@ const [gender, setGender] = useState('');
           { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'Confirmed' },
           { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'Confirmed' }
         ],
-        passenger: { name: `${givenName} ${familyName}`, dob: '04/12/1978', gender: 'Male', email, phone }
+        passenger: {
+          name: `${givenName} ${familyName}`,
+          dob: bornOn,
+          gender: gender === 'm' ? 'Male' : 'Female',
+          email,
+          phone,
+        },
       };
 
       setMyTrips([...myTrips, newTrip]);
@@ -207,7 +213,7 @@ const [gender, setGender] = useState('');
       closeCheckout();
       setCurrentView('myTrips');
     } else {
-      alert('Booking failed: ' + (result.error || 'Unknown error'));
+      alert('Booking failed: ' + (result.error || JSON.stringify(result)));
     }
   } catch (err) {
     alert('Error creating booking');
