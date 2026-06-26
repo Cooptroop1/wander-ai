@@ -414,29 +414,59 @@ export default function DuffelCloneHome() {
               <button onClick={closeCheckout} className="text-2xl">×</button>
             </div>
 
-            {/* Selected Flight Summary - Now respects One way vs Return */}
+            {/* Selected Flight Summary - Now uses REAL data from Duffel offer */}
 <div className="mb-8">
   <div className="bg-zinc-800 p-6 rounded-2xl mb-6">
     <div className="font-bold mb-4">Selected flights</div>
 
-    {/* Outbound leg (always shown) */}
-    <div className="mb-6">
-      <div className="font-semibold">Fri, 26 Jun 2026 19:21 - 22:39</div>
-      <div>Basic • Duffel Airways • 02h 18m • STN - MAD • Non-stop</div>
-      <div className="text-sm mt-1">19:21 Depart London Stansted (STN) Terminal 2</div>
-      <div className="text-sm">22:39 Arrive Madrid (MAD) Terminal 1</div>
-      <div className="text-sm mt-1">Economy • Duffel Airways • ZZ5528 • 1 carry-on + 1 checked bag included</div>
-    </div>
+    {/* Render real slices from the offer */}
+    {selectedOffer?.slices?.map((slice: any, sliceIndex: number) => (
+      <div key={sliceIndex} className="mb-6 last:mb-0">
+        {slice.segments?.map((segment: any, segIndex: number) => {
+          const dep = new Date(segment.departing_at);
+          const arr = new Date(segment.arriving_at);
+          const depTime = dep.toLocaleString('en-GB', { 
+            weekday: 'short', day: 'numeric', month: 'short', 
+            hour: '2-digit', minute: '2-digit' 
+          });
+          const arrTime = arr.toLocaleString('en-GB', { 
+            weekday: 'short', day: 'numeric', month: 'short', 
+            hour: '2-digit', minute: '2-digit' 
+          });
 
-    {/* Return leg - Only shown if journeyType is return or multi_city */}
-    {(journeyType === 'return' || journeyType === 'multi_city') && (
-      <div>
-        <div className="font-semibold">Sat, 27 Jun 2026 20:07 - 21:25</div>
-        <div>Basic • Duffel Airways • 02h 18m • MAD - STN • Non-stop</div>
-        <div className="text-sm mt-1">20:07 Depart Madrid (MAD) Terminal 2</div>
-        <div className="text-sm">21:25 Arrive London Stansted (STN) Terminal 1</div>
-        <div className="text-sm mt-1">Economy • Duffel Airways • ZZ5528 • 1 carry-on + 1 checked bag included</div>
+          return (
+            <div key={segIndex} className="mb-4">
+              <div className="font-semibold">
+                {depTime} - {arrTime}
+              </div>
+              <div>
+                {segment.marketing_carrier?.name || 'Airline'} • {segment.flight_number} • {segment.duration}
+              </div>
+              <div className="text-sm mt-1">
+                {depTime.split(',')[1]?.trim()} Depart from {segment.origin?.name} ({segment.origin?.iata_code})
+                {segment.origin_terminal && `, Terminal ${segment.origin_terminal}`}
+              </div>
+              <div className="text-sm">
+                {arrTime.split(',')[1]?.trim()} Arrive at {segment.destination?.name} ({segment.destination?.iata_code})
+                {segment.destination_terminal && `, Terminal ${segment.destination_terminal}`}
+              </div>
+              <div className="text-sm mt-1">
+                {slice.cabin_class || 'Economy'} • {segment.marketing_carrier?.name} • {segment.aircraft?.name || ''}
+              </div>
+              <div className="text-sm">
+                {segment.passengers?.[0]?.baggages?.length > 0 
+                  ? `${segment.passengers[0].baggages.length} bag(s) included` 
+                  : 'Bags included'}
+              </div>
+            </div>
+          );
+        })}
       </div>
+    ))}
+
+    {/* Fallback if no real slices (shouldn't happen now) */}
+    {!selectedOffer?.slices?.length && (
+      <div className="text-sm text-zinc-400">Flight details loading...</div>
     )}
   </div>
 </div>
