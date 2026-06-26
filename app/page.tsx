@@ -636,30 +636,63 @@ const [familyName, setFamilyName] = useState('');
   <div className="mb-8">
     <div className="font-bold mb-3">Paying now, or later?</div>
 
-    {/* Warning when extras are selected */}
-    {(selectedBags > 0 || selectedSeat) && (
-      <div className="mb-3 text-sm text-yellow-400">
-        Hold is not available when you have selected extra bags or seats.
-      </div>
-    )}
-
-    <div className="flex gap-4">
-      <button onClick={bookNow} className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold">
+    <div className="flex gap-4 mb-6">
+      {/* Pay Now Button */}
+      <button 
+        onClick={() => setPaymentMethod('payNow')}
+        className={`flex-1 py-4 rounded-2xl font-bold transition-all ${
+          paymentMethod === 'payNow' 
+            ? 'bg-emerald-500 ring-2 ring-emerald-400' 
+            : 'bg-zinc-700 hover:bg-zinc-600'
+        }`}
+      >
         Pay now
       </button>
 
+      {/* Hold Button */}
       <button 
-        onClick={showHoldConfirmation} 
+        onClick={() => setPaymentMethod('hold')}
         disabled={selectedBags > 0 || selectedSeat}
-        className={`flex-1 py-4 rounded-2xl font-bold ${
-          (selectedBags > 0 || selectedSeat) 
-            ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed' 
-            : 'bg-zinc-700'
+        className={`flex-1 py-4 rounded-2xl font-bold transition-all ${
+          paymentMethod === 'hold' 
+            ? 'bg-emerald-500 ring-2 ring-emerald-400' 
+            : (selectedBags > 0 || selectedSeat) 
+              ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed' 
+              : 'bg-zinc-700 hover:bg-zinc-600'
         }`}
       >
         Hold order (pay later)
       </button>
     </div>
+
+    {/* Show form + bottom button only when Pay Now is selected */}
+    {paymentMethod === 'payNow' && (
+      <>
+        {/* Your existing form fields go here (contact, passengers, passport) */}
+        
+        <button 
+          onClick={bookNow}
+          disabled={!isFormComplete()}
+          className={`w-full py-4 rounded-2xl font-bold text-lg mt-4 transition-all ${
+            isFormComplete() 
+              ? 'bg-emerald-500 hover:bg-emerald-600' 
+              : 'bg-zinc-700 cursor-not-allowed opacity-60'
+          }`}
+        >
+          Pay now and confirm booking
+        </button>
+      </>
+    )}
+
+    {/* Hold flow */}
+    {paymentMethod === 'hold' && (
+      <button 
+        onClick={showHoldConfirmation} 
+        className="w-full bg-emerald-500 py-4 rounded-2xl font-bold"
+      >
+        Confirm Hold
+      </button>
+    )}
   </div>
 )}
 
