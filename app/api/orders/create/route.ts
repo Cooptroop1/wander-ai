@@ -8,7 +8,6 @@ const duffel = new Duffel({
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-
     const isHold = body.type === 'hold';
 
     const orderData: any = {
@@ -18,7 +17,6 @@ export async function POST(request: Request) {
       services: body.services || [],
     };
 
-    // Only add payment for instant bookings
     if (!isHold) {
       orderData.payments = [
         {
@@ -40,12 +38,19 @@ export async function POST(request: Request) {
     });
 
   } catch (error: any) {
-    console.error('Duffel API Error:', error);
+    // Log the full error so we can see the real reason
+    console.error('=== DUFFEL ERROR ===');
+    console.error(JSON.stringify(error, null, 2));
+
+    const duffelError = error.errors?.[0]?.title || 
+                        error.errors?.[0]?.message || 
+                        error.message || 
+                        'Unknown error from Duffel';
 
     return NextResponse.json({
       success: false,
-      error: error.message || 'Unknown error from Duffel',
-      details: error.errors || null, // This often contains the real reason
+      error: duffelError,
+      fullError: error.errors || error.message,
     }, { status: 500 });
   }
 }
