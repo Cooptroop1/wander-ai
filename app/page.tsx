@@ -1,5 +1,5 @@
 'use client';
-  
+
 import React, { useState } from 'react';
 
 export default function DuffelCloneHome() {
@@ -187,44 +187,25 @@ const [gender, setGender] = useState('');
 
   
 const confirmHold = () => {
-  if (!selectedOffer) return;
-
-  const legs = selectedOffer.slices || [];
+  const legs = selectedOffer?.slices || [];
 
   const newTrip = {
-    id: selectedOffer.id || 'ORD' + Date.now(),
+    id: selectedOffer?.id || 'ORD' + Date.now(),
     status: 'On hold',
-    total: selectedOffer.total_amount || '£0.00',
-    currency: selectedOffer.total_currency || 'GBP',
-    airline: selectedOffer.owner?.name || 'Duffel Airways',
+    total: selectedOffer?.total_amount || '£158.00',
+    currency: selectedOffer?.total_currency || 'GBP',
+    airline: selectedOffer?.owner?.name || 'Duffel Airways',
     created: new Date().toLocaleString('en-GB'),
     holdUntil: '28 Jun 2026',
     extraBags: selectedBags,
     selectedSeat: selectedSeat,
     flights: legs.map((slice: any, index: number) => {
-      const segment = slice.segments && slice.segments[0];
-      const dep = segment?.departing_at ? segment.departing_at.substring(0, 10) : '';
-      const depTime = segment?.departing_at ? segment.departing_at.substring(11, 16) : '';
-      const arrTime = segment?.arriving_at ? segment.arriving_at.substring(11, 16) : '';
-      const airlineName = segment?.marketing_carrier?.name || 'Duffel Airways';
-      const aircraft = segment?.aircraft?.name || '';
-      const flightNumber = segment?.marketing_carrier_flight_number || '';
-
+      const segment = slice?.segments?.[0];
       return {
-        date: dep,
-        time: `${depTime} - ${arrTime}`,
-        route: `${slice.origin} - ${slice.destination}`,
-        status: 'On hold',
-        airline: airlineName,
-        aircraft: aircraft,
-        flightNumber: flightNumber,
-        origin: slice.origin,
-        destination: slice.destination,
-        depTerminal: segment?.origin_terminal || '',
-        arrTerminal: segment?.destination_terminal || '',
-        duration: slice.duration || '',
-        cabin: slice.cabin_class || 'economy',
-        bags: '1 carry-on bag • 1 checked bag'
+        date: segment ? segment.departing_at.substring(0, 10) : '26 Jun 2026',
+        time: segment ? `${segment.departing_at.substring(11, 16)} - ${segment.arriving_at.substring(11, 16)}` : '19:21 - 22:39',
+        route: `${slice?.origin || 'STN'} - ${slice?.destination || 'MAD'}`,
+        status: 'On hold'
       };
     }),
     passenger: {
@@ -674,27 +655,22 @@ const confirmHold = () => {
       <div className="text-sm mb-6">Space expires in 3 days. After this the space will be released and you will need to rebook.</div>
 
       <div className="bg-zinc-800 p-4 rounded-2xl mb-6">
-        <div className="grid grid-cols-3 gap-4 text-sm mb-4">
+        <div className="grid grid-cols-3 gap-4 text-sm">
           <div>25 Jun 2026 23:38 BST<br />Booked</div>
-          <div>27 Jun 2026 23:16 BST<br />Price hold expires<br /><span className="text-emerald-400">£{myTrips[myTrips.length - 1]?.total || '0.00'}</span></div>
+          <div>27 Jun 2026 23:16 BST<br />Price hold expires<br /><span className="text-emerald-400">£158.00</span></div>
           <div>28 Jun 2026 23:16 BST<br />Space hold expires</div>
         </div>
 
-        {/* Dynamic flights from the held trip */}
+        {/* Dynamic Flights from the last held trip */}
         {myTrips[myTrips.length - 1]?.flights.map((f: any, index: number) => (
-          <div key={index} className="mb-4 border-t border-zinc-700 pt-4">
-            <div className="font-bold mb-1">{f.date} • Flight to {f.destination}</div>
-            <div>{f.time} • {f.cabin} • {f.airline} • {f.duration} • {f.route} • Non-stop</div>
-            <div className="text-sm text-zinc-400 mt-1">
-              {f.depTerminal ? `${f.depTerminal} ` : ''}Depart {f.origin} Terminal {f.depTerminal || ''}<br />
-              {f.arrTerminal ? `${f.arrTerminal} ` : ''}Arrive {f.destination} Terminal {f.arrTerminal || ''}
-            </div>
-            <div className="text-sm mt-1">{f.aircraft} • {f.flightNumber}</div>
-            <div className="text-sm">{f.bags}</div>
+          <div key={index} className="mt-4 border-t border-zinc-700 pt-4">
+            <div className="font-bold">{f.date} • Flight to {f.route.split(' - ')[1]}</div>
+            <div>{f.time} • Basic • Duffel Airways • {f.route} • Non-stop</div>
+            <div className="text-sm text-zinc-400">Depart / Arrive details</div>
           </div>
         ))}
 
-        <div className="text-sm mt-4">
+        <div className="text-sm mt-6">
           Order change policy: This order is not changeable<br />
           Order refund policy: This order is not refundable
         </div>
@@ -710,9 +686,9 @@ const confirmHold = () => {
 
         <div className="mt-6">
           <div className="font-bold mb-2">Summary</div>
-          <div>Order ID: {myTrips[myTrips.length - 1]?.id}</div>
+          <div>Order ID: {myTrips[myTrips.length - 1]?.id || 'off_0000...'}</div>
           <div>Status: On hold</div>
-          <div>Airline: {myTrips[myTrips.length - 1]?.airline}</div>
+          <div>Airline: Duffel Airways</div>
           <div>James Cooper created this order. {new Date().toLocaleString('en-GB')}</div>
         </div>
       </div>
