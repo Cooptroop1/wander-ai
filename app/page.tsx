@@ -139,59 +139,16 @@ const [gender, setGender] = useState('');
 
   return emailValid && phoneValid && givenNameValid && familyNameValid && dobValid && passportValid;
 };
-
-  const passengerList = [
-  {
-    id: 'pas_1',
-    title: title || 'mr',
-    given_name: givenName,
-    family_name: familyName,
-    born_on: bornOn,
-    gender: gender || 'm',
-    email: email,
-    phone_number: phone,
-    passport_number: passportNumber,
-    passport_expiry_date: passportExpiry,
-  },
-];
-
-const res = await fetch('/api/orders/create', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    offerId: selectedOffer.id,
-    passengers: passengerList,     // ← Send this array
-    services: [],
-    finalAmount: getDynamicTotal(),
-    currency: selectedOffer.total_currency || 'GBP',
-  }),
-});
   
   const bookNow = async () => {
-  if (!selectedOffer || !isFormComplete()) return;
-
-  const passengerList = [
-    {
-      id: 'pas_1',
-      title: title || 'mr',
-      given_name: givenName,
-      family_name: familyName,
-      born_on: bornOn,
-      gender: gender || 'm',
-      email: email,
-      phone_number: phone,
-      passport_number: passportNumber,
-      passport_expiry_date: passportExpiry,
-    },
-  ];
-
-  try {
+  if (!selectedOffer) return;
+    try {
     const res = await fetch('/api/orders/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         offerId: selectedOffer.id,
-        passengers: passengerList,
+        passengers,
         services: [],
         finalAmount: getDynamicTotal(),
         currency: selectedOffer.total_currency || 'GBP',
@@ -199,41 +156,42 @@ const res = await fetch('/api/orders/create', {
     });
 
     const result = await res.json();
-
-    if (result.success) {
-      const newTrip = {
-        id: result.order.id,
-        status: 'Booked',
-        total: getDynamicTotal(),
-        currency: selectedOffer.total_currency || 'GBP',
-        airline: selectedOffer.owner?.name || 'Duffel Airways',
-        created: new Date().toLocaleString('en-GB'),
-        extraBags: selectedBags,
-        selectedSeat: selectedSeat,
-        booking_reference: result.booking_reference,
-        flights: [
-          { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'Confirmed' },
-          { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'Confirmed' }
-        ],
-        passenger: {
-          name: `${givenName} ${familyName}`,
-          dob: bornOn,
-          gender: gender === 'm' ? 'Male' : 'Female',
-          email,
-          phone,
-        },
-      };
-
-      setMyTrips([...myTrips, newTrip]);
-      alert(`✅ Booking confirmed!\nReference: ${result.booking_reference}`);
-      closeCheckout();
-      setCurrentView('myTrips');
-    } else {
-      alert('Booking failed: ' + (result.error || JSON.stringify(result)));
-    }
+    alert(JSON.stringify(result, null, 2)); // This will show us the full response
   } catch (err) {
-    alert('Error creating booking: ' + err);
+    alert('Error: ' + err);
   }
+};
+
+  const showHoldConfirmation = () => setShowHoldInfo(true);
+
+  
+const confirmHold = () => {
+  const newTrip = {
+    id: selectedOffer?.id || 'ORD' + Date.now(),
+    status: 'On hold',
+    total: selectedOffer?.total_amount || '£158.00',
+    currency: selectedOffer?.total_currency || 'GBP',
+    airline: selectedOffer?.owner?.name || 'Duffel Airways',
+    created: new Date().toLocaleString('en-GB'),
+    holdUntil: '28 Jun 2026',
+    extraBags: 0,
+    selectedSeat: null,
+    flights: [
+      { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
+      { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
+    ],
+    passenger: {
+      name: `${givenName || 'James'} ${familyName || 'Cooper'}`,
+      dob: bornOn || '04/12/1978',
+      gender: gender === 'm' ? 'Male' : 'Female',
+      email: email || 'jcooper4888@aol.co.uk',
+      phone: phone || '+447368841330'
+    }
+  };
+
+  setMyTrips([...myTrips, newTrip]);
+  setShowHoldInfo(false);
+  setShowOrderHeld(true);
 };
 
   const openTripDetail = (trip: any) => {
