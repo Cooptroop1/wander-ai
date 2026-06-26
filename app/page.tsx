@@ -187,25 +187,50 @@ const [gender, setGender] = useState('');
 
   
 const confirmHold = () => {
-  const legs = selectedOffer?.slices || [];
+  if (!selectedOffer) {
+    alert("No offer selected");
+    return;
+  }
+
+  const legs = selectedOffer.slices || [];
 
   const newTrip = {
-    id: selectedOffer?.id || 'ORD' + Date.now(),
+    id: selectedOffer.id || 'ORD' + Date.now(),
     status: 'On hold',
-    total: selectedOffer?.total_amount || '£158.00',
-    currency: selectedOffer?.total_currency || 'GBP',
-    airline: selectedOffer?.owner?.name || 'Duffel Airways',
+    total: selectedOffer.total_amount || '0.00',
+    currency: selectedOffer.total_currency || 'GBP',
+    airline: selectedOffer.owner?.name || 'Duffel Airways',
     created: new Date().toLocaleString('en-GB'),
     holdUntil: '28 Jun 2026',
     extraBags: selectedBags,
     selectedSeat: selectedSeat,
-    flights: legs.map((slice: any, index: number) => {
-      const segment = slice?.segments?.[0];
+    flights: legs.map((slice: any) => {
+      const segment = (slice.segments && slice.segments[0]) || {};
+
+      // Safe function to get airport code (handles string or object)
+      const getCode = (val: any) => {
+        if (!val) return '';
+        if (typeof val === 'string') return val;
+        return val.iata_code || val.code || '';
+      };
+
       return {
-        date: segment ? segment.departing_at.substring(0, 10) : '26 Jun 2026',
-        time: segment ? `${segment.departing_at.substring(11, 16)} - ${segment.arriving_at.substring(11, 16)}` : '19:21 - 22:39',
-        route: `${slice?.origin || 'STN'} - ${slice?.destination || 'MAD'}`,
-        status: 'On hold'
+        date: segment.departing_at ? segment.departing_at.substring(0, 10) : '',
+        time: segment.departing_at && segment.arriving_at 
+          ? `${segment.departing_at.substring(11, 16)} - ${segment.arriving_at.substring(11, 16)}` 
+          : '',
+        route: `${getCode(slice.origin)} - ${getCode(slice.destination)}`,
+        status: 'On hold',
+        airline: segment.marketing_carrier?.name || 'Duffel Airways',
+        aircraft: segment.aircraft?.name || '',
+        flightNumber: segment.marketing_carrier_flight_number || '',
+        origin: getCode(slice.origin),
+        destination: getCode(slice.destination),
+        depTerminal: segment.origin_terminal || '',
+        arrTerminal: segment.destination_terminal || '',
+        duration: slice.duration || '',
+        cabin: slice.cabin_class || 'economy',
+        bags: '1 carry-on bag • 1 checked bag'
       };
     }),
     passenger: {
