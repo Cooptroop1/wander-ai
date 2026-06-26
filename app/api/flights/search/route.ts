@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log("Received search body:", body);
-
     const { from, to, departDate, returnDate, passengers = 1, cabinClass = 'economy' } = body;
 
     if (!from || !to || !departDate) {
@@ -13,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     const duffelToken = process.env.DUFFEL_ACCESS_TOKEN;
     if (!duffelToken) {
-      return NextResponse.json({ success: false, error: "Duffel token not set in Vercel" }, { status: 500 });
+      return NextResponse.json({ success: false, error: "Duffel token not set" }, { status: 500 });
     }
 
     const slices = [
@@ -38,6 +36,7 @@ export async function POST(request: NextRequest) {
         passengers: Array.from({ length: passengers }, () => ({ type: "adult" })),
         cabin_class: cabinClass,
         return_available_services: true,
+        limit: 20,                    // ← Limit to 50 offers max
       }
     };
 
@@ -54,7 +53,6 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
 
     if (!res.ok) {
-      console.error("Duffel error:", data);
       return NextResponse.json({ success: false, error: data.errors?.[0]?.message || JSON.stringify(data) }, { status: res.status });
     }
 
@@ -62,13 +60,12 @@ export async function POST(request: NextRequest) {
       success: true,
       offers: data.data?.offers || [],
       raw: data,
-      message: '✅ Real Duffel offers loaded!',
+      message: `✅ Loaded ${data.data?.offers?.length || 0} real Duffel offers!`,
     });
   } catch (err: any) {
-    console.error("Search route error:", err);
     return NextResponse.json({
       success: false,
-      error: err.message || 'Unknown server error',
+      error: err.message || 'Server error',
     }, { status: 500 });
   }
 }
