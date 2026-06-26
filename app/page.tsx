@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function DuffelCloneHome() {
   const [currentView, setCurrentView] = useState<'search' | 'myTrips' | 'tripDetail'>('search');
@@ -194,7 +195,6 @@ const confirmHold = async () => {
 
   const legs = selectedOffer.slices || [];
 
-  // Build clean flights array
   const flightsData = legs.map((slice: any) => {
     const segment = (slice.segments && slice.segments[0]) || {};
     const marketing = segment.marketing_carrier || {};
@@ -248,7 +248,7 @@ const confirmHold = async () => {
   // Save to local state (for immediate popup)
   setMyTrips([...myTrips, newTrip]);
 
-  // Save to Supabase (so it appears in real My Trips page)
+  // Save to Supabase
   try {
     const { error } = await supabase.from('bookings').insert({
       duffel_order_id: selectedOffer.id,
