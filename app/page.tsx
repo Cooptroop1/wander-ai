@@ -279,7 +279,7 @@ const confirmHold = () => {
           <button onClick={() => selectOffer(o)} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
         </div>
 
-        {legs.map((slice, sliceIndex) => {
+        {legs.map((slice: any, sliceIndex: number) => {
           const segment = slice && slice.segments && slice.segments[0];
           const airline = segment && segment.marketing_carrier ? segment.marketing_carrier.name : 'Duffel Airways';
           const depTime = segment ? formatTime(segment.departing_at) : 'N/A';
