@@ -279,21 +279,18 @@ const confirmHold = () => {
           <button onClick={() => selectOffer(o)} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
         </div>
 
-        {legs.map((slice: any, sliceIndex: number) => {
-          const segment = slice && slice.segments && slice.segments[0];
-          const airline = segment && segment.marketing_carrier ? segment.marketing_carrier.name : 'Duffel Airways';
-          const depTime = segment ? formatTime(segment.departing_at) : 'N/A';
-          const arrTime = segment ? formatTime(segment.arriving_at) : 'N/A';
-          const duration = slice && slice.duration ? slice.duration : 'N/A';
-          const stops = segment && slice.segments ? slice.segments.length - 1 : 0;
-          const cabin = slice && slice.cabin_class ? slice.cabin_class : 'economy';
+        {legs.map((slice, sliceIndex) => {
+          const segment = slice?.segments?.[0];
+          const dep = segment?.departing_at ? segment.departing_at.substring(11, 16) : 'N/A';
+          const arr = segment?.arriving_at ? segment.arriving_at.substring(11, 16) : 'N/A';
+          const airline = segment?.marketing_carrier?.name || 'Duffel Airways';
           return (
             <div key={sliceIndex} className="mb-3 border-l-4 border-emerald-500 pl-4">
               <div className="font-semibold">
-                Leg {sliceIndex + 1}: {depTime} → {arrTime} • {duration} • {stops === 0 ? 'Non-stop' : stops + ' stop'}
+                Leg {sliceIndex + 1}: {dep} → {arr} • {slice?.duration || 'N/A'} • {slice?.segments?.length === 1 ? 'Non-stop' : 'Stop(s)'}
               </div>
               <div className="text-sm text-zinc-400">
-                {airline} • {cabin} • {slice ? slice.origin : '---'} → {slice ? slice.destination : '---'}
+                {airline} • {slice?.cabin_class || 'economy'} • {slice?.origin || '---'} → {slice?.destination || '---'}
               </div>
             </div>
           );
