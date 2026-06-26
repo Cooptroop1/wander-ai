@@ -9,20 +9,25 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const response = await duffel.orders.create({
-      type: 'instant',
+    const orderPayload: any = {
+      type: body.type || 'instant',           // 'instant' or 'hold'
       selected_offers: [body.offerId],
       passengers: body.passengers,
       services: body.services || [],
-      payments: [
+    };
+
+    // Only add payments for instant orders
+    if (body.type !== 'hold') {
+      orderPayload.payments = [
         {
           type: 'balance',
           currency: body.currency,
           amount: body.finalAmount,
         },
-      ],
-    });
+      ];
+    }
 
+    const response = await duffel.orders.create(orderPayload);
     const order = response.data;
 
     return NextResponse.json({
