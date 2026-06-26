@@ -279,7 +279,7 @@ const confirmHold = () => {
           <button onClick={() => selectOffer(o)} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
         </div>
 
-        {legs.map((slice, sliceIndex) => {
+        {legs.map((slice: any, sliceIndex: number) => {
           const segment = slice?.segments?.[0];
           const dep = segment?.departing_at ? segment.departing_at.substring(11, 16) : 'N/A';
           const arr = segment?.arriving_at ? segment.arriving_at.substring(11, 16) : 'N/A';
