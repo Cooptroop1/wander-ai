@@ -139,6 +139,33 @@ const [gender, setGender] = useState('');
 
   return emailValid && phoneValid && givenNameValid && familyNameValid && dobValid && passportValid;
 };
+
+  const passengerList = [
+  {
+    id: 'pas_1',
+    title: title || 'mr',
+    given_name: givenName,
+    family_name: familyName,
+    born_on: bornOn,
+    gender: gender || 'm',
+    email: email,
+    phone_number: phone,
+    passport_number: passportNumber,
+    passport_expiry_date: passportExpiry,
+  },
+];
+
+const res = await fetch('/api/orders/create', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    offerId: selectedOffer.id,
+    passengers: passengerList,     // ← Send this array
+    services: [],
+    finalAmount: getDynamicTotal(),
+    currency: selectedOffer.total_currency || 'GBP',
+  }),
+});
   
   const bookNow = async () => {
   if (!selectedOffer) return;
