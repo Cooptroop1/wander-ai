@@ -141,24 +141,21 @@ const [gender, setGender] = useState('');
 };
   
   const bookNow = async () => {
-  if (!selectedOffer || !isFormComplete()) return;
-
-  const services: any[] = [];
+  if (!selectedOffer) return;
 
   const passengers = [
-  {
-    title: title || 'mr',
-    given_name: givenName,
-    family_name: familyName,
-    born_on: bornOn,
-    gender: gender || 'm',
-    email: email,
-    phone_number: phone,
-    passport_number: passportNumber,
-    passport_expiry_date: passportExpiry,
-    passport_country_code: passportCountry,
-  },
-];
+    {
+      title: "mr",
+      given_name: "James",
+      family_name: "Cooper",
+      born_on: "1978-12-04",
+      gender: "m",
+      email: "jcooper4888@aol.co.uk",
+      phone_number: "+447368841330",
+      passport_number: "123456789",
+      passport_expiry_date: "2030-12-31",
+    },
+  ];
 
   try {
     const res = await fetch('/api/orders/create', {
@@ -167,47 +164,16 @@ const [gender, setGender] = useState('');
       body: JSON.stringify({
         offerId: selectedOffer.id,
         passengers,
-        services,
+        services: [],
         finalAmount: getDynamicTotal(),
         currency: selectedOffer.total_currency || 'GBP',
       }),
     });
 
     const result = await res.json();
-
-    if (result.success) {
-      const newTrip = {
-        id: result.order.id,
-        status: 'Booked',
-        total: getDynamicTotal(),
-        currency: selectedOffer.total_currency || 'GBP',
-        airline: selectedOffer.owner?.name || 'Duffel Airways',
-        created: new Date().toLocaleString('en-GB'),
-        extraBags: selectedBags,
-        selectedSeat: selectedSeat,
-        booking_reference: result.booking_reference,
-        flights: [
-          { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'Confirmed' },
-          { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'Confirmed' }
-        ],
-        passenger: {
-          name: `${givenName} ${familyName}`,
-          dob: bornOn,
-          gender: gender === 'm' ? 'Male' : 'Female',
-          email,
-          phone,
-        },
-      };
-
-      setMyTrips([...myTrips, newTrip]);
-      alert(`✅ Booking confirmed!\nReference: ${result.booking_reference}`);
-      closeCheckout();
-      setCurrentView('myTrips');
-    } else {
-      alert('Booking failed: ' + (result.error || JSON.stringify(result)));
-    }
+    alert(JSON.stringify(result, null, 2)); // This will show us the full response
   } catch (err) {
-    alert('Error creating booking');
+    alert('Error: ' + err);
   }
 };
 
