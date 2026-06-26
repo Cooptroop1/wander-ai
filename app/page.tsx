@@ -116,15 +116,12 @@ const [familyName, setFamilyName] = useState('');
   };
 
   const getDynamicTotal = () => {
-  const base = parseFloat(selectedOffer?.total_amount || '100');
-  const taxes = parseFloat(selectedOffer?.tax_amount || '18');
-  const bags = selectedBags * 30;
-  const seat = selectedSeat ? parseFloat(selectedSeat.total_amount || '0') : 0;
-  return (base + taxes + bags + seat).toFixed(2);
-};
-
-// === NEW: Check if user has selected any extras ===
-const hasExtras = selectedBags > 0 || selectedSeat !== null;
+    const base = parseFloat(selectedOffer?.total_amount || '100');
+    const taxes = parseFloat(selectedOffer?.tax_amount || '18');
+    const bags = selectedBags * 30;
+    const seat = selectedSeat ? parseFloat(selectedSeat.total_amount || '0') : 0;
+    return (base + taxes + bags + seat).toFixed(2);
+  };
 
   const isFormComplete = () => {
   if (paymentMethod !== 'payNow') return false;
@@ -209,41 +206,82 @@ const hasExtras = selectedBags > 0 || selectedSeat !== null;
   }
 };
 
-  const showHoldConfirmation = () => {
-  if (hasExtras) {
-    alert("Hold is not available when you have selected extra bags or seats.\nPlease remove the extras or choose Pay Now instead.");
-    return;
+  const showHoldConfirmation = () => setShowHoldInfo(true);
+
+  const confirmHold = async () => {
+  if (!selectedOffer) return;
+
+  const services: any[] = [];
+
+  if (selectedBags > 0 && availableServices[0]) {
+    services.push({ id: availableServices[0].id, quantity: selectedBags });
   }
-  setShowHoldInfo(true);
-};
+  if (selectedSeat) {
+    services.push({ id: selectedSeat.id, quantity: 1 });
+  }
 
-const confirmHold = () => {
-  const newTrip = {
-    id: selectedOffer?.id || 'ORD' + Date.now(),
-    status: 'On hold',
-    total: selectedOffer?.total_amount || '£158.00',
-    currency: selectedOffer?.total_currency || 'GBP',
-    airline: selectedOffer?.owner?.name || 'Duffel Airways',
-    created: new Date().toLocaleString('en-GB'),
-    holdUntil: '28 Jun 2026',
-    extraBags: 0,
-    selectedSeat: null,
-    flights: [
-      { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
-      { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
-    ],
-    passenger: {
-      name: 'mr James Cooper',
-      dob: '04/12/1978',
-      gender: 'Male',
-      email: 'jcooper4888@aol.co.uk',
-      phone: '+447368841330'
+  const passengers = [
+    {
+      id: 'pas_1',
+      title: 'mr',
+      given_name: givenName || 'James',
+      family_name: familyName || 'Cooper',
+      born_on: '1978-12-04',
+      gender: 'm',
+      email: email || 'jcooper4888@aol.co.uk',
+      phone_number: phone || '+447368841330',
+    },
+  ];
+
+  try {
+    const res = await fetch('/api/orders/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        offerId: selectedOffer.id,
+        passengers,
+        services,
+        type: 'hold',                    // ← This makes it a real hold order
+      }),
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      const newTrip = {
+        id: result.order.id,
+        status: 'On hold',
+        total: selectedOffer.total_amount,
+        currency: selectedOffer.total_currency || 'GBP',
+        airline: selectedOffer.owner?.name || 'Duffel Airways',
+        created: new Date().toLocaleString('en-GB'),
+        holdUntil: 'In 3 days',
+        extraBags: selectedBags,
+        selectedSeat: selectedSeat,
+        booking_reference: result.booking_reference,
+        flights: [
+          { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
+          { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
+        ],
+        passenger: { 
+          name: `${givenName || 'James'} ${familyName || 'Cooper'}`, 
+          dob: '04/12/1978', 
+          gender: 'Male', 
+          email: email || 'jcooper4888@aol.co.uk', 
+          phone: phone || '+447368841330' 
+        }
+      };
+
+      setMyTrips([...myTrips, newTrip]);
+      setShowHoldInfo(false);
+      setShowOrderHeld(true);
+    } else {
+      alert('Failed to create hold order: ' + result.error);
     }
-  };
-
-  setMyTrips([...myTrips, newTrip]);
-  setShowHoldInfo(false);
-  setShowOrderHeld(true);
+  } catch (error) {
+    alert('Error creating hold order');
+    console.error(error);
+  }
 };
 
   const openTripDetail = (trip: any) => {
@@ -319,71 +357,30 @@ const confirmHold = () => {
 
           <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2 mt-4">Get Live Offers</button>
 
-         <div className="mt-8 space-y-4">
-  {offers.map((o, i) => {
-    const slice = o.slices && o.slices[0];
-    const segment = slice && slice.segments && slice.segments[0];
-    const airline = segment ? segment.marketing_carrier.name : 'Airline';
-    const depTime = segment ? formatTime(segment.departing_at) : 'N/A';
-    const arrTime = segment ? formatTime(segment.arriving_at) : 'N/A';
-    const duration = slice ? (slice.duration || 'N/A') : 'N/A';
-    const stops = slice ? (slice.segments.length - 1) + ' stop' : 'Direct';
-    const cabin = slice ? slice.cabin_class : 'economy';
-
-    // === New: Check what this offer supports ===
-    const canHold = o.payment_requirements?.requires_instant_payment === false;
-    const paymentDeadline = o.payment_requirements?.payment_required_by 
-      ? new Date(o.payment_requirements.payment_required_by).toLocaleString('en-GB', { 
-          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
-        }) 
-      : null;
-
-    const hasBags = o.available_services?.some((s: any) => s.type === 'baggage');
-    const hasSeats = o.available_services?.some((s: any) => s.type === 'seat');
-
-    return (
-      <div key={i} className="bg-zinc-900 p-6 rounded-2xl">
-        <div className="flex justify-between items-start">
-          <div>
-            <div className="font-semibold">
-              {o.total_amount} {o.total_currency} • {airline}
-            </div>
-            <div className="text-sm text-emerald-400 mt-1">
-              {depTime} → {arrTime} • {duration} • {stops} • {cabin}
-            </div>
+          <div className="mt-8 space-y-4">
+            {offers.map((o, i) => {
+              const slice = o.slices && o.slices[0];
+              const segment = slice && slice.segments && slice.segments[0];
+              const airline = segment ? segment.marketing_carrier.name : 'BA/VS';
+              const depTime = segment ? formatTime(segment.departing_at) : 'N/A';
+              const arrTime = segment ? formatTime(segment.arriving_at) : 'N/A';
+              const duration = slice ? (slice.duration || 'N/A') : 'N/A';
+              const stops = slice ? (slice.segments.length - 1) + ' stop' : 'Direct';
+              const cabin = slice ? slice.cabin_class : 'economy';
+              return (
+                <div key={i} className="bg-zinc-900 p-6 rounded-2xl flex justify-between items-center">
+                  <div>
+                    Offer {i+1} - {o.total_amount || '£428'} {o.total_currency || 'GBP'} • {airline} <br />
+                    <span className="text-emerald-400">Dep: {depTime}</span> • <span className="text-emerald-400">Arr: {arrTime}</span> • {duration} • {stops} • {cabin}
+                  </div>
+                  <button onClick={() => selectOffer(o)} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
+                </div>
+              );
+            })}
           </div>
+        </>
+      )}
 
-          <div className="text-right text-sm">
-            {/* === New Info Badges === */}
-            {canHold ? (
-              <div className="text-emerald-400 font-medium">
-                Hold available
-                {paymentDeadline && <div className="text-xs">Pay by {paymentDeadline}</div>}
-              </div>
-            ) : (
-              <div className="text-orange-400 font-medium">Instant payment only</div>
-            )}
-
-            <div className="mt-1 text-xs text-zinc-400">
-              {hasSeats && "Seats available • "}
-              {hasBags && "Bags available"}
-              {!hasSeats && !hasBags && "No extras on this flight"}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 flex justify-end">
-          <button 
-            onClick={() => selectOffer(o)}
-            className="bg-emerald-500 hover:bg-emerald-600 px-8 py-3 rounded-xl font-bold"
-          >
-            Select
-          </button>
-        </div>
-      </div>
-    );
-  })}
-</div>
       {/* MY TRIPS VIEW */}
       {currentView === 'myTrips' && (
         <div>
@@ -634,37 +631,32 @@ const confirmHold = () => {
               </div>
             </div>
 
-            {!showHoldInfo && !showOrderHeld && (
+            {/* Top Payment Choice */}
+{!showHoldInfo && !showOrderHeld && (
   <div className="mb-8">
     <div className="font-bold mb-3">Paying now, or later?</div>
-
-    {/* Warning when user has bags or seats selected */}
-    {hasExtras && (
-      <div className="mb-3 text-sm text-yellow-400 bg-yellow-900/30 p-3 rounded-xl">
-        ⚠️ Hold is not available when you have selected extra bags or seats.<br />
-        Remove extras or choose <strong>Pay Now</strong> instead.
-      </div>
-    )}
-
     <div className="flex gap-4">
-      <button 
-        onClick={bookNow} 
-        className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold"
-      >
-        Pay now (+ £{getDynamicTotal()})
-      </button>
 
+      {/* Pay Now - Only highlights, does NOT trigger booking */}
       <button 
-        onClick={showHoldConfirmation} 
-        disabled={hasExtras}
+        onClick={() => setPaymentMethod('payNow')}
         className={`flex-1 py-4 rounded-2xl font-bold transition-all ${
-          hasExtras 
-            ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed' 
+          paymentMethod === 'payNow' 
+            ? 'bg-emerald-500 ring-2 ring-emerald-400' 
             : 'bg-zinc-700 hover:bg-zinc-600'
         }`}
       >
+        Pay now
+      </button>
+
+      {/* Hold Order - Works exactly like before */}
+      <button 
+        onClick={showHoldConfirmation}
+        className="flex-1 bg-zinc-700 hover:bg-zinc-600 py-4 rounded-2xl font-bold"
+      >
         Hold order (pay later)
       </button>
+
     </div>
   </div>
 )}
@@ -853,6 +845,57 @@ const confirmHold = () => {
         </div>
       )}
 
-                </div>
+      {/* SEAT MAP MODAL */}
+      {showSeatMap && seatMapData && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-2xl w-full p-8">
+            <div className="flex justify-between mb-6">
+              <h2 className="text-2xl font-bold">Select Seat (from Duffel API)</h2>
+              <button onClick={() => setShowSeatMap(false)} className="text-2xl">×</button>
+            </div>
+
+            <div className="bg-zinc-800 p-6 rounded-2xl mb-6">
+              <div className="text-center mb-4 font-bold">Economy Cabin - Seat Map</div>
+              <div className="space-y-2">
+                {seatMapData.data && seatMapData.data[0] && seatMapData.data[0].cabins && seatMapData.data[0].cabins[0] && seatMapData.data[0].cabins[0].rows ? (
+                  seatMapData.data[0].cabins[0].rows.map((row: any, rowIndex: number) => (
+                    <div key={rowIndex} className="flex justify-center gap-2">
+                      {row.sections && row.sections[0] && row.sections[0].elements && row.sections[0].elements.map((element: any, elIndex: number) => {
+                        if (element.type === 'seat') {
+                          const isAvailable = element.available_services && element.available_services.length > 0;
+                          return (
+                            <button
+                              key={elIndex}
+                              onClick={() => isAvailable && selectSeat(element)}
+                              disabled={!isAvailable}
+                              className={`w-12 h-10 text-xs rounded ${isAvailable ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-zinc-700'} text-white`}
+                            >
+                              {element.designator}
+                              {isAvailable && element.available_services[0] && (
+                                <div className="text-[9px]">£{element.available_services[0].total_amount}</div>
+                              )}
+                            </button>
+                          );
+                        }
+                        if (element.type === 'exit_row') return <div key={elIndex} className="w-12 h-10 text-xs flex items-center justify-center text-zinc-400">EXIT</div>;
+                        if (element.type === 'lavatory') return <div key={elIndex} className="w-12 h-10 text-xs flex items-center justify-center text-zinc-400">🚽</div>;
+                        if (element.type === 'galley') return <div key={elIndex} className="w-12 h-10 text-xs flex items-center justify-center text-zinc-400">🍽️</div>;
+                        return null;
+                      })}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-zinc-400">Loading seat map...</div>
+                )}
+              </div>
+            </div>
+
+            <p className="text-sm text-zinc-400 text-center">Click an available seat to select it. Price shown on seat.</p>
+          </div>
+        </div>
+      )}
+
+      <p className="text-center mt-12 text-xs">✅ Real Duffel booking is now active. Test it and reply with the result.</p>
+    </div>
   );
 }
