@@ -35,6 +35,8 @@ export default function DuffelCloneHome() {
 
 // === NEW STATES FOR PAYMENT FLOW ===
   // === ADD THESE FORM STATES ===
+const [passportNumber, setPassportNumber] = useState('');
+const [passportExpiry, setPassportExpiry] = useState('');
 const [paymentMethod, setPaymentMethod] = useState<'payNow' | 'hold' | null>(null);
 const [email, setEmail] = useState('');
 const [phone, setPhone] = useState('');
@@ -131,9 +133,10 @@ const [gender, setGender] = useState('');
   const phoneValid = phone.trim().length >= 10;
   const givenNameValid = givenName.trim().length >= 2;
   const familyNameValid = familyName.trim().length >= 2;
-  const dobValid = bornOn.length === 10; // Duffel requires YYYY-MM-DD
+  const dobValid = bornOn.length === 10;
+  const passportValid = passportNumber.trim().length > 5 && passportExpiry.length === 10;
 
-  return emailValid && phoneValid && givenNameValid && familyNameValid && dobValid;
+  return emailValid && phoneValid && givenNameValid && familyNameValid && dobValid && passportValid;
 };
   
   const bookNow = async () => {
@@ -158,16 +161,18 @@ const [gender, setGender] = useState('');
   }
 
   const passengers = [
-    {
-      title: title || 'mr',
-      given_name: givenName,
-      family_name: familyName,
-      born_on: bornOn,
-      gender: gender || 'm',
-      email: email,
-      phone_number: phone,
-    },
-  ];
+  {
+    title: title || 'mr',
+    given_name: givenName,
+    family_name: familyName,
+    born_on: bornOn,
+    gender: gender || 'm',
+    email: email,
+    phone_number: phone,
+    passport_number: passportNumber,
+    passport_expiry_date: passportExpiry,
+  },
+];
 
   try {
     const res = await fetch('/api/orders/create', {
@@ -863,13 +868,29 @@ const [gender, setGender] = useState('');
 </div>
 
                 <div className="mb-8">
-                  <div className="font-bold mb-3">Passport details</div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <select className="p-3 bg-zinc-800 rounded-xl"><option>United Kingdom (GB)</option><option>Spain (ES)</option></select>
-                    <input type="text" placeholder="Passport number" className="p-3 bg-zinc-800 rounded-xl" />
-                    <input type="date" placeholder="Expiry date" className="p-3 bg-zinc-800 rounded-xl" />
-                  </div>
-                </div>
+  <div className="font-bold mb-3">Passport details</div>
+  <div className="grid grid-cols-2 gap-4">
+    <select className="p-3 bg-zinc-800 rounded-xl">
+      <option>United Kingdom (GB)</option>
+      <option>Spain (ES)</option>
+    </select>
+
+    <input 
+      type="text" 
+      placeholder="Passport number*" 
+      value={passportNumber} 
+      onChange={(e) => setPassportNumber(e.target.value)} 
+      className="p-3 bg-zinc-800 rounded-xl" 
+    />
+
+    <input 
+      type="date" 
+      value={passportExpiry} 
+      onChange={(e) => setPassportExpiry(e.target.value)} 
+      className="p-3 bg-zinc-800 rounded-xl" 
+    />
+  </div>
+</div>
 
                 {/* Bottom Action Button - Only active when "Pay now" is selected at the top */}
 {!showHoldInfo && !showOrderHeld && paymentMethod === 'payNow' && (
