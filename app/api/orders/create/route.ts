@@ -9,38 +9,43 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const orderPayload: any = {
-      type: body.type || 'instant',           // 'instant' or 'hold'
+    const isHold = body.type === 'hold';
+
+    const orderData: any = {
+      type: isHold ? 'hold' : 'instant',
       selected_offers: [body.offerId],
       passengers: body.passengers,
       services: body.services || [],
     };
 
-    // Only add payments for instant orders
-    if (body.type !== 'hold') {
-      orderPayload.payments = [
+    // Only add payment for instant bookings
+    if (!isHold) {
+      orderData.payments = [
         {
           type: 'balance',
-          currency: body.currency,
+          currency: body.currency || 'GBP',
           amount: body.finalAmount,
         },
       ];
     }
 
-    const response = await duffel.orders.create(orderPayload);
+    const response = await duffel.orders.create(orderData);
     const order = response.data;
 
     return NextResponse.json({
       success: true,
-      order: order,
+      order,
       booking_reference: order.booking_reference,
       id: order.id,
     });
+
   } catch (error: any) {
-    console.error('Duffel order error:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to create order' },
-      { status: 500 }
-    );
+    console.error('Duffel API Error:', error);
+
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Unknown error from Duffel',
+      details: error.errors || null, // This often contains the real reason
+    }, { status: 500 });
   }
 }
