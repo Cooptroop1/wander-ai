@@ -140,16 +140,22 @@ const [familyName, setFamilyName] = useState('');
   const finalAmount = getDynamicTotal();
   const services: any[] = [];
 
-  if (selectedBags > 0 && availableServices[0]) {
-    services.push({ id: availableServices[0].id, quantity: selectedBags });
+  if (selectedBags > 0 && availableServices.length > 0) {
+    services.push({
+      id: availableServices[0].id,
+      quantity: selectedBags
+    });
   }
+
   if (selectedSeat) {
-    services.push({ id: selectedSeat.id, quantity: 1 });
+    services.push({
+      id: selectedSeat.id,
+      quantity: 1
+    });
   }
 
   const passengers = [
     {
-      id: 'pas_1',
       title: 'mr',
       given_name: givenName,
       family_name: familyName,
@@ -200,9 +206,8 @@ const [familyName, setFamilyName] = useState('');
     } else {
       alert('Booking failed: ' + (result.error || 'Unknown error'));
     }
-  } catch (error) {
+  } catch (err) {
     alert('Error creating booking');
-    console.error(error);
   }
 };
 
