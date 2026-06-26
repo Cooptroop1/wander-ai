@@ -268,82 +268,76 @@ const confirmHold = async () => {
     return;
   }
 
-  const legs = selectedOffer.slices || [];
-
-  const getCode = (val: any) => {
-    if (!val) return '';
-    if (typeof val === 'string') return val;
-    return val.iata_code || val.code || '';
-  };
-
-  const flightsData = legs.map((slice: any) => {
-    const segment = (slice.segments && slice.segments[0]) || {};
-    const marketing = segment.marketing_carrier || {};
-
-    return {
-      date: segment.departing_at ? segment.departing_at.substring(0, 10) : '',
-      time: segment.departing_at && segment.arriving_at 
-        ? `${segment.departing_at.substring(11, 16)} - ${segment.arriving_at.substring(11, 16)}` 
-        : '',
-      route: `${getCode(slice.origin)} - ${getCode(slice.destination)}`,
-      status: 'On hold',
-      airline: marketing.name || 'Duffel Airways',
-      aircraft: segment.aircraft?.name || '',
-      flightNumber: segment.marketing_carrier_flight_number || '',
-      origin: getCode(slice.origin),
-      destination: getCode(slice.destination),
-      depTerminal: segment.origin_terminal || '',
-      arrTerminal: segment.destination_terminal || '',
-      duration: slice.duration || '',
-      cabin: slice.cabin_class || 'economy',
-      bags: '1 carry-on bag • 1 checked bag'
-    };
-  });
-
-  const newTrip = {
-    id: selectedOffer.id || 'ORD' + Date.now(),
-    status: 'On hold',
-    total: selectedOffer.total_amount || '0.00',
-    currency: selectedOffer.total_currency || 'GBP',
-    airline: selectedOffer.owner?.name || 'Duffel Airways',
-    created: new Date().toLocaleString('en-GB'),
-    holdUntil: '28 Jun 2026',
-    extraBags: selectedBags,
-    selectedSeat: selectedSeat,
-    flights: flightsData,
-    passenger: {
-      name: 'mr James Cooper',
-      dob: '04/12/1978',
-      gender: 'Male',
+  // Build passengers (you can improve this later to come from a form)
+  const passengers = [
+    {
+      title: 'mr',
+      given_name: 'James',
+      family_name: 'Cooper',
+      born_on: '1978-12-04',
+      gender: 'm',
       email: 'jcooper4888@aol.co.uk',
-      phone: '+447368841330'
+      phone_number: '+447368841330',
+    },
+  ];
+
+  try {
+    const res = await fetch('/api/orders/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        offerId: selectedOffer.id,
+        passengers,
+        type: 'hold',           // ← Important: tell the route we want a hold
+      }),
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      console.error('Duffel error:', result);
+      alert('Failed to create hold: ' + (result.error || 'Unknown error'));
+      return;
     }
-  };
 
-  // Save to Supabase
-  const { error } = await supabase.from('bookings').insert({
-    duffel_order_id: selectedOffer.id,
-    user_id: user.id,
-    status: 'on_hold',
-    total: parseFloat(selectedOffer.total_amount) || 0,
-    currency: selectedOffer.total_currency || 'GBP',
-    airline: selectedOffer.owner?.name || 'Duffel Airways',
-    origin: flightsData[0]?.origin || '',
-    destination: flightsData[0]?.destination || '',
-    departure_date: flightsData[0]?.date || '',
-    return_date: flightsData[1]?.date || null,
-  });
+    const order = result.order;
 
-  if (error) {
-    console.error('Supabase save error:', error);
-    alert('Failed to save hold: ' + error.message);
-    return;
+    // Save to Supabase (only the reference + user)
+    await supabase.from('bookings').insert({
+      duffel_order_id: order.id,
+      user_id: user.id,
+      status: 'on_hold',
+      total: parseFloat(order.total_amount),
+      currency: order.total_currency,
+      airline: order.owner?.name || 'Duffel Airways',
+      origin: order.slices?.[0]?.origin || '',
+      destination: order.slices?.[0]?.destination || '',
+      departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
+    });
+
+    // Update local state so it shows immediately
+    const newTrip = {
+      id: order.id,
+      status: 'On hold',
+      total: order.total_amount,
+      currency: order.total_currency,
+      airline: order.owner?.name || 'Duffel Airways',
+      created: new Date().toLocaleString('en-GB'),
+      holdUntil: '28 Jun 2026',
+      extraBags: 0,
+      selectedSeat: null,
+      flights: [],
+      passenger: passengers[0],
+    };
+
+    setMyTrips([...myTrips, newTrip]);
+    setShowHoldInfo(false);
+    setShowOrderHeld(true);
+
+  } catch (err: any) {
+    console.error(err);
+    alert('Something went wrong creating the hold');
   }
-
-  // Update local state so it appears immediately
-  setMyTrips([...myTrips, newTrip]);
-  setShowHoldInfo(false);
-  setShowOrderHeld(true);
 };
 
   const openTripDetail = (trip: any) => {
