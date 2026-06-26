@@ -186,13 +186,44 @@ const [gender, setGender] = useState('');
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
   
-const confirmHold = () => {
+const confirmHold = async () => {
   if (!selectedOffer) {
     alert("No offer selected");
     return;
   }
 
   const legs = selectedOffer.slices || [];
+
+  // Build clean flights array
+  const flightsData = legs.map((slice: any) => {
+    const segment = (slice.segments && slice.segments[0]) || {};
+    const marketing = segment.marketing_carrier || {};
+
+    const getCode = (val: any) => {
+      if (!val) return '';
+      if (typeof val === 'string') return val;
+      return val.iata_code || val.code || '';
+    };
+
+    return {
+      date: segment.departing_at ? segment.departing_at.substring(0, 10) : '',
+      time: segment.departing_at && segment.arriving_at 
+        ? `${segment.departing_at.substring(11, 16)} - ${segment.arriving_at.substring(11, 16)}` 
+        : '',
+      route: `${getCode(slice.origin)} - ${getCode(slice.destination)}`,
+      status: 'On hold',
+      airline: marketing.name || 'Duffel Airways',
+      aircraft: segment.aircraft?.name || '',
+      flightNumber: segment.marketing_carrier_flight_number || '',
+      origin: getCode(slice.origin),
+      destination: getCode(slice.destination),
+      depTerminal: segment.origin_terminal || '',
+      arrTerminal: segment.destination_terminal || '',
+      duration: slice.duration || '',
+      cabin: slice.cabin_class || 'economy',
+      bags: '1 carry-on bag • 1 checked bag'
+    };
+  });
 
   const newTrip = {
     id: selectedOffer.id || 'ORD' + Date.now(),
@@ -204,35 +235,7 @@ const confirmHold = () => {
     holdUntil: '28 Jun 2026',
     extraBags: selectedBags,
     selectedSeat: selectedSeat,
-    flights: legs.map((slice: any) => {
-      const segment = (slice.segments && slice.segments[0]) || {};
-
-      // Safe function to get airport code (handles string or object)
-      const getCode = (val: any) => {
-        if (!val) return '';
-        if (typeof val === 'string') return val;
-        return val.iata_code || val.code || '';
-      };
-
-      return {
-        date: segment.departing_at ? segment.departing_at.substring(0, 10) : '',
-        time: segment.departing_at && segment.arriving_at 
-          ? `${segment.departing_at.substring(11, 16)} - ${segment.arriving_at.substring(11, 16)}` 
-          : '',
-        route: `${getCode(slice.origin)} - ${getCode(slice.destination)}`,
-        status: 'On hold',
-        airline: segment.marketing_carrier?.name || 'Duffel Airways',
-        aircraft: segment.aircraft?.name || '',
-        flightNumber: segment.marketing_carrier_flight_number || '',
-        origin: getCode(slice.origin),
-        destination: getCode(slice.destination),
-        depTerminal: segment.origin_terminal || '',
-        arrTerminal: segment.destination_terminal || '',
-        duration: slice.duration || '',
-        cabin: slice.cabin_class || 'economy',
-        bags: '1 carry-on bag • 1 checked bag'
-      };
-    }),
+    flights: flightsData,
     passenger: {
       name: 'mr James Cooper',
       dob: '04/12/1978',
@@ -242,7 +245,30 @@ const confirmHold = () => {
     }
   };
 
+  // Save to local state (for immediate popup)
   setMyTrips([...myTrips, newTrip]);
+
+  // Save to Supabase (so it appears in real My Trips page)
+  try {
+    const { error } = await supabase.from('bookings').insert({
+      duffel_order_id: selectedOffer.id,
+      status: 'on_hold',
+      total: parseFloat(selectedOffer.total_amount) || 0,
+      currency: selectedOffer.total_currency || 'GBP',
+      airline: selectedOffer.owner?.name || 'Duffel Airways',
+      origin: flightsData[0]?.origin || '',
+      destination: flightsData[0]?.destination || '',
+      departure_date: flightsData[0]?.date || '',
+      return_date: flightsData[1]?.date || null,
+    });
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+    }
+  } catch (err) {
+    console.error('Failed to save to Supabase:', err);
+  }
+
   setShowHoldInfo(false);
   setShowOrderHeld(true);
 };
