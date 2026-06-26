@@ -1,7 +1,7 @@
 'use client';
-   
+  
 import React, { useState } from 'react';
- 
+
 export default function DuffelCloneHome() {
   const [currentView, setCurrentView] = useState<'search' | 'myTrips' | 'tripDetail'>('search');
   const [selectedTrip, setSelectedTrip] = useState<any>(null);
@@ -47,12 +47,6 @@ const [title, setTitle] = useState('');
 const [bornOn, setBornOn] = useState('');
 const [gender, setGender] = useState('');
 
-const getAirportCode = (airport: any): string => {
-  if (!airport) return '';
-  if (typeof airport === 'string') return airport;
-  return airport.iata_code || airport.code || '';
-};
-   
   const fetchSuggestions = async (query: string, setSuggestions: any, setShow: any) => {
     if (query.length < 2) {
       setSuggestions([]);
@@ -66,7 +60,7 @@ const getAirportCode = (airport: any): string => {
 
   const handleRealSearch = async () => {
   if (!from || !to || !depart) {
-    alert("Please fill from, to and departure date");
+    alert("Please fill from, to, and departure date");
     return;
   }
 
@@ -88,11 +82,12 @@ const getAirportCode = (airport: any): string => {
 
     if (data.success) {
       setOffers(data.offers || []);
+      alert(`✅ Loaded ${data.offers.length} real Duffel offers!`);
     } else {
       alert('Search failed: ' + (data.error || JSON.stringify(data)));
     }
   } catch (err) {
-    alert('Search error');
+    alert('Search error: ' + (err as Error).message);
   }
 };
 
@@ -192,41 +187,41 @@ const getAirportCode = (airport: any): string => {
 
   
 const confirmHold = () => {
-  if (!selectedOffer) {
-    alert("No offer selected");
-    return;
-  }
+  if (!selectedOffer) return;
 
   const legs = selectedOffer.slices || [];
 
   const newTrip = {
     id: selectedOffer.id || 'ORD' + Date.now(),
     status: 'On hold',
-    total: selectedOffer.total_amount || '0.00',
+    total: selectedOffer.total_amount || '£0.00',
     currency: selectedOffer.total_currency || 'GBP',
     airline: selectedOffer.owner?.name || 'Duffel Airways',
     created: new Date().toLocaleString('en-GB'),
     holdUntil: '28 Jun 2026',
-    extraBags: 0,
-    selectedSeat: null,
-    flights: legs.map((slice: any) => {
-      const segment = (slice.segments && slice.segments[0]) || {};
-      const marketing = segment.marketing_carrier || {};
+    extraBags: selectedBags,
+    selectedSeat: selectedSeat,
+    flights: legs.map((slice: any, index: number) => {
+      const segment = slice.segments && slice.segments[0];
+      const dep = segment?.departing_at ? segment.departing_at.substring(0, 10) : '';
+      const depTime = segment?.departing_at ? segment.departing_at.substring(11, 16) : '';
+      const arrTime = segment?.arriving_at ? segment.arriving_at.substring(11, 16) : '';
+      const airlineName = segment?.marketing_carrier?.name || 'Duffel Airways';
+      const aircraft = segment?.aircraft?.name || '';
+      const flightNumber = segment?.marketing_carrier_flight_number || '';
 
       return {
-        date: segment.departing_at ? segment.departing_at.substring(0, 10) : '',
-        time: segment.departing_at && segment.arriving_at 
-          ? `${segment.departing_at.substring(11, 16)} - ${segment.arriving_at.substring(11, 16)}` 
-          : '',
-        route: `${slice.origin || ''} - ${slice.destination || ''}`,
+        date: dep,
+        time: `${depTime} - ${arrTime}`,
+        route: `${slice.origin} - ${slice.destination}`,
         status: 'On hold',
-        airline: marketing.name || 'Duffel Airways',
-        aircraft: segment.aircraft?.name || '',
-        flightNumber: segment.marketing_carrier_flight_number || '',
-        origin: slice.origin || '',
-        destination: slice.destination || '',
-        depTerminal: segment.origin_terminal || '',
-        arrTerminal: segment.destination_terminal || '',
+        airline: airlineName,
+        aircraft: aircraft,
+        flightNumber: flightNumber,
+        origin: slice.origin,
+        destination: slice.destination,
+        depTerminal: segment?.origin_terminal || '',
+        arrTerminal: segment?.destination_terminal || '',
         duration: slice.duration || '',
         cabin: slice.cabin_class || 'economy',
         bags: '1 carry-on bag • 1 checked bag'
@@ -685,13 +680,14 @@ const confirmHold = () => {
           <div>28 Jun 2026 23:16 BST<br />Space hold expires</div>
         </div>
 
+        {/* Dynamic flights from the held trip */}
         {myTrips[myTrips.length - 1]?.flights.map((f: any, index: number) => (
           <div key={index} className="mb-4 border-t border-zinc-700 pt-4">
             <div className="font-bold mb-1">{f.date} • Flight to {f.destination}</div>
             <div>{f.time} • {f.cabin} • {f.airline} • {f.duration} • {f.route} • Non-stop</div>
             <div className="text-sm text-zinc-400 mt-1">
-              Depart {f.origin} {f.depTerminal ? `Terminal ${f.depTerminal}` : ''}<br />
-              Arrive {f.destination} {f.arrTerminal ? `Terminal ${f.arrTerminal}` : ''}
+              {f.depTerminal ? `${f.depTerminal} ` : ''}Depart {f.origin} Terminal {f.depTerminal || ''}<br />
+              {f.arrTerminal ? `${f.arrTerminal} ` : ''}Arrive {f.destination} Terminal {f.arrTerminal || ''}
             </div>
             <div className="text-sm mt-1">{f.aircraft} • {f.flightNumber}</div>
             <div className="text-sm">{f.bags}</div>
