@@ -1,41 +1,57 @@
-
 import { NextRequest, NextResponse } from 'next/server';
-import { Duffel } from '@duffel/api';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { from = 'LHR', to = 'JFK', departDate = '2026-07-15' } = body;
+    const { from, to, departDate, returnDate, passengers = 1, cabinClass = 'economy' } = body;
 
-    const duffel = new Duffel({
-      token: process.env.DUFFEL_ACCESS_TOKEN!,
+    const duffelToken = process.env.DUFFEL_ACCESS_TOKEN;
+    if (!duffelToken) {
+      return NextResponse.json({ success: false, error: "Duffel token not set" }, { status: 500 });
+    }
+
+    const res = await fetch('https://api.duffel.com/air/offer_requests', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${duffelToken}`,
+        'Duffel-Version': 'v2',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        slices: [
+          {
+            origin: from,
+            destination: to,
+            departure_date: departDate,
+          },
+          ...(returnDate ? [{
+            origin: to,
+            destination: from,
+            departure_date: returnDate,
+          }] : []),
+        ],
+        passengers: Array.from({ length: passengers }, () => ({ type: "adult" })),
+        cabin_class: cabinClass,
+        return_available_services: true,
+      }),
     });
 
-    const response = await duffel.offerRequests.create({
-      slices: [{
-        origin: from,
-        destination: to,
-        departure_date: departDate,
-      } as any],
-      passengers: [{ type: 'adult' }],
-      cabin_class: 'economy',
-      return_offers: true,
-    });
+    const data = await res.json();
 
-    const data = response as any;  // ← fixed for TS
+    if (!res.ok) {
+      return NextResponse.json({ success: false, error: data }, { status: res.status });
+    }
 
     return NextResponse.json({
       success: true,
-      offers: data.offers || data.data?.offers || [],
-      raw: data,  // for debugging — you can see full response
-      message: '✅ Real Duffel API data! (check console for full details)',
+      offers: data.data?.offers || [],
+      raw: data,
+      message: '✅ Real Duffel offers loaded!',
     });
-
-  } catch (error: any) {
+  } catch (err: any) {
     return NextResponse.json({
       success: false,
-      error: error.message,
-      tip: 'Check DUFFEL_ACCESS_TOKEN is correct in Vercel and redeploy. Use sandbox token.',
+      error: err.message || 'Server error in search',
     }, { status: 500 });
   }
 }
