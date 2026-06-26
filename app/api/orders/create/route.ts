@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const response = await duffel.orders.create({
-      type: 'instant',                    // ← must be 'instant'
+      type: body.type === 'hold' ? 'pay_later' : 'instant',
       selected_offers: [body.offerId],
       passengers: body.passengers,
       // Do NOT include payments → this creates a hold
