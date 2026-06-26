@@ -40,6 +40,9 @@ const [email, setEmail] = useState('');
 const [phone, setPhone] = useState('');
 const [givenName, setGivenName] = useState('');
 const [familyName, setFamilyName] = useState('');
+const [title, setTitle] = useState('mr');
+const [bornOn, setBornOn] = useState('1978-12-04');
+const [gender, setGender] = useState('m');
 
   const fetchSuggestions = async (query: string, setSuggestions: any, setShow: any) => {
     if (query.length < 2) {
@@ -794,49 +797,63 @@ const [familyName, setFamilyName] = useState('');
 
             {!showHoldInfo && !showOrderHeld && (
               <>
-                <div className="mb-8">
+                {/* Contact & Passenger Details */}
+<div className="mb-8">
   <div className="font-bold mb-3">Contact details</div>
   <div className="grid grid-cols-2 gap-4">
     <input 
       type="email" 
       placeholder="Email*" 
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
-      className="p-3 bg-zinc-800 rounded-xl" 
+      value={email} 
+      onChange={(e) => setEmail(e.target.value)} 
+      className="p-3 bg-zinc-800 rounded-xl col-span-2" 
     />
     <input 
       type="tel" 
-      placeholder="Phone number*" 
-      value={phone}
-      onChange={(e) => setPhone(e.target.value)}
-      className="p-3 bg-zinc-800 rounded-xl" 
+      placeholder="Phone number* (e.g. +447368841330)" 
+      value={phone} 
+      onChange={(e) => setPhone(e.target.value)} 
+      className="p-3 bg-zinc-800 rounded-xl col-span-2" 
     />
   </div>
 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-  <select className="p-3 bg-zinc-800 rounded-xl">
-    <option>Mr</option><option>Ms</option><option>Mrs</option><option>Miss</option><option>Dr</option>
-  </select>
-  <input 
-    type="text" 
-    placeholder="Given name*" 
-    value={givenName}
-    onChange={(e) => setGivenName(e.target.value)}
-    className="p-3 bg-zinc-800 rounded-xl" 
-  />
-  <input 
-    type="text" 
-    placeholder="Family name*" 
-    value={familyName}
-    onChange={(e) => setFamilyName(e.target.value)}
-    className="p-3 bg-zinc-800 rounded-xl" 
-  />
-  <input type="date" className="p-3 bg-zinc-800 rounded-xl" />
-  <select className="p-3 bg-zinc-800 rounded-xl">
-    <option>Male</option><option>Female</option>
-  </select>
-</div>
+<div className="mb-8">
+  <div className="font-bold mb-3">Passengers • Adult 1</div>
+  <div className="grid grid-cols-2 gap-4">
+    <select value={title} onChange={(e) => setTitle(e.target.value)} className="p-3 bg-zinc-800 rounded-xl">
+      <option value="mr">Mr</option>
+      <option value="ms">Ms</option>
+      <option value="mrs">Mrs</option>
+      <option value="miss">Miss</option>
+      <option value="dr">Dr</option>
+    </select>
+    
+    <input 
+      type="text" 
+      placeholder="Given name*" 
+      value={givenName} 
+      onChange={(e) => setGivenName(e.target.value)} 
+      className="p-3 bg-zinc-800 rounded-xl" 
+    />
+    <input 
+      type="text" 
+      placeholder="Family name*" 
+      value={familyName} 
+      onChange={(e) => setFamilyName(e.target.value)} 
+      className="p-3 bg-zinc-800 rounded-xl" 
+    />
+    <input 
+      type="date" 
+      value={bornOn} 
+      onChange={(e) => setBornOn(e.target.value)} 
+      className="p-3 bg-zinc-800 rounded-xl" 
+    />
+    <select value={gender} onChange={(e) => setGender(e.target.value)} className="p-3 bg-zinc-800 rounded-xl">
+      <option value="m">Male</option>
+      <option value="f">Female</option>
+    </select>
+  </div>
 
                 <div className="mb-8">
                   <div className="font-bold mb-3">Passport details</div>
