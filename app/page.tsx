@@ -898,7 +898,7 @@ const confirmHold = () => {
               </div>
             </div>
 
-                        <p className="text-sm text-zinc-400 text-center">Click an available seat to select it. Price shown on seat.</p>
+                                    <p className="text-sm text-zinc-400 text-center">Click an available seat to select it. Price shown on seat.</p>
           </div>
         </div>
       )}
