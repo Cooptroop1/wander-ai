@@ -5,15 +5,11 @@ import { supabase } from '@/lib/supabase';
 
 export default function MyTrips() {
   const [bookings, setBookings] = useState<any[]>([]);
-  const [status, setStatus] = useState('Starting...');
-  const [supabaseUrl, setSupabaseUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState('Loading...');
 
-  const load = async () => {
-    setStatus('Fetching...');
-
-    // Show which Supabase project the frontend is actually using
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'NO URL FOUND';
-    setSupabaseUrl(url);
+  const loadTrips = async () => {
+    setStatus('Fetching from Supabase...');
 
     const { data, error } = await supabase
       .from('bookings')
@@ -22,44 +18,52 @@ export default function MyTrips() {
 
     if (error) {
       setStatus('ERROR: ' + error.message);
-      console.error('Supabase error:', error);
+      console.error(error);
     } else {
       setBookings(data || []);
-      setStatus(`Loaded ${data ? data.length : 0} rows from Supabase`);
+      setStatus(`Loaded ${data ? data.length : 0} trips`);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
-    load();
+    loadTrips();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white p-8">
+        <h1 className="text-3xl font-bold mb-8">My Trips</h1>
+        <p>{status}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-8">
-      <h1 className="text-3xl font-bold mb-6">My Trips - DEBUG</h1>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">My Trips</h1>
 
-      <div className="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl mb-8 space-y-2 text-sm">
-        <p><strong>Status:</strong> {status}</p>
-        <p><strong>Supabase URL (frontend is using):</strong> {supabaseUrl}</p>
-        <p><strong>Rows found:</strong> {bookings.length}</p>
+        <button onClick={loadTrips} className="bg-emerald-600 px-6 py-2 rounded-xl mb-8">
+          Refresh
+        </button>
+
+        <p className="mb-4 text-emerald-400">{status}</p>
+
+        {bookings.length === 0 ? (
+          <p className="text-zinc-400">Still 0. Check the Supabase table directly in the dashboard.</p>
+        ) : (
+          <div className="space-y-4">
+            {bookings.map((b, i) => (
+              <div key={i} className="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl">
+                <div className="font-semibold">{b.origin} → {b.destination}</div>
+                <div className="text-sm text-zinc-400">{b.airline} • {b.status} • £{b.total}</div>
+                <div className="text-xs text-zinc-500 mt-1">user_id: {b.user_id || 'MISSING'}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-
-      <button onClick={load} className="bg-emerald-600 px-6 py-2 rounded-xl mb-8">
-        Refresh
-      </button>
-
-      {bookings.length > 0 && (
-        <div className="space-y-4">
-          {bookings.map((b, i) => (
-            <div key={i} className="bg-zinc-900 p-4 rounded-xl text-xs">
-              <pre>{JSON.stringify(b, null, 2)}</pre>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {bookings.length === 0 && (
-        <p className="text-red-400">Still showing 0. Check the debug box above.</p>
-      )}
     </div>
   );
 }
