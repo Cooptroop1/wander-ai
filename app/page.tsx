@@ -164,82 +164,34 @@ const [gender, setGender] = useState('');
 
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
-  const confirmHold = async () => {
-  if (!selectedOffer) return;
-
-  const services: any[] = [];
-
-  if (selectedBags > 0 && availableServices[0]) {
-    services.push({ id: availableServices[0].id, quantity: selectedBags });
-  }
-  if (selectedSeat) {
-    services.push({ id: selectedSeat.id, quantity: 1 });
-  }
-
-  const passengerList = [
-  {
-    id: 'pas_1',
-    title: title || 'mr',
-    given_name: givenName,
-    family_name: familyName,
-    born_on: bornOn,
-    gender: gender || 'm',
-    email: email,
-    phone_number: phone,
-    passport_number: passportNumber,
-    passport_expiry_date: passportExpiry,
-  },
-];
-
-const res = await fetch('/api/orders/create', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    offerId: selectedOffer.id,
-    passengers: passengerList,     // ← Send the array, not the number
-    services: [],
-    finalAmount: getDynamicTotal(),
-    currency: selectedOffer.total_currency || 'GBP',
-  }),
-});
-
-    const result = await res.json();
-
-    if (result.success) {
-      const newTrip = {
-        id: result.order.id,
-        status: 'On hold',
-        total: selectedOffer.total_amount,
-        currency: selectedOffer.total_currency || 'GBP',
-        airline: selectedOffer.owner?.name || 'Duffel Airways',
-        created: new Date().toLocaleString('en-GB'),
-        holdUntil: 'In 3 days',
-        extraBags: selectedBags,
-        selectedSeat: selectedSeat,
-        booking_reference: result.booking_reference,
-        flights: [
-          { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
-          { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
-        ],
-        passenger: { 
-          name: `${givenName || 'James'} ${familyName || 'Cooper'}`, 
-          dob: '04/12/1978', 
-          gender: 'Male', 
-          email: email || 'jcooper4888@aol.co.uk', 
-          phone: phone || '+447368841330' 
-        }
-      };
-
-      setMyTrips([...myTrips, newTrip]);
-      setShowHoldInfo(false);
-      setShowOrderHeld(true);
-    } else {
-      alert('Failed to create hold order: ' + result.error);
+  
+const confirmHold = () => {
+  const newTrip = {
+    id: selectedOffer?.id || 'ORD' + Date.now(),
+    status: 'On hold',
+    total: selectedOffer?.total_amount || '£158.00',
+    currency: selectedOffer?.total_currency || 'GBP',
+    airline: selectedOffer?.owner?.name || 'Duffel Airways',
+    created: new Date().toLocaleString('en-GB'),
+    holdUntil: '28 Jun 2026',
+    extraBags: 0,
+    selectedSeat: null,
+    flights: [
+      { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
+      { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
+    ],
+    passenger: {
+      name: `${givenName || 'James'} ${familyName || 'Cooper'}`,
+      dob: bornOn || '04/12/1978',
+      gender: gender === 'm' ? 'Male' : 'Female',
+      email: email || 'jcooper4888@aol.co.uk',
+      phone: phone || '+447368841330'
     }
-  } catch (error) {
-    alert('Error creating hold order');
-    console.error(error);
-  }
+  };
+
+  setMyTrips([...myTrips, newTrip]);
+  setShowHoldInfo(false);
+  setShowOrderHeld(true);
 };
 
   const openTripDetail = (trip: any) => {
