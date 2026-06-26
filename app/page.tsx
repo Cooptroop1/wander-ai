@@ -116,12 +116,15 @@ const [familyName, setFamilyName] = useState('');
   };
 
   const getDynamicTotal = () => {
-    const base = parseFloat(selectedOffer?.total_amount || '100');
-    const taxes = parseFloat(selectedOffer?.tax_amount || '18');
-    const bags = selectedBags * 30;
-    const seat = selectedSeat ? parseFloat(selectedSeat.total_amount || '0') : 0;
-    return (base + taxes + bags + seat).toFixed(2);
-  };
+  const base = parseFloat(selectedOffer?.total_amount || '100');
+  const taxes = parseFloat(selectedOffer?.tax_amount || '18');
+  const bags = selectedBags * 30;
+  const seat = selectedSeat ? parseFloat(selectedSeat.total_amount || '0') : 0;
+  return (base + taxes + bags + seat).toFixed(2);
+};
+
+// === NEW: Check if user has selected any extras ===
+const hasExtras = selectedBags > 0 || selectedSeat !== null;
 
   const isFormComplete = () => {
   if (paymentMethod !== 'payNow') return false;
@@ -206,71 +209,43 @@ const [familyName, setFamilyName] = useState('');
   }
 };
 
-  const showHoldConfirmation = () => setShowHoldInfo(true);
-
-  const confirmHold = async () => {
-  if (!selectedOffer) return;
-
-  const services: any[] = [];
-
-  if (selectedBags > 0 && availableServices[0]) {
-    services.push({ id: availableServices[0].id, quantity: selectedBags });
+  const showHoldConfirmation = () => {
+  if (hasExtras) {
+    alert("Hold is not available when you have selected extra bags or seats.\nPlease remove the extras or choose Pay Now instead.");
+    return;
   }
-  if (selectedSeat) {
-    services.push({ id: selectedSeat.id, quantity: 1 });
-  }
+  setShowHoldInfo(true);
+};
 
-  const passengers = [
-    {
-      id: 'pas_1',
-      title: 'mr',
-      given_name: givenName || 'James',
-      family_name: familyName || 'Cooper',
-      born_on: '1978-12-04',
-      gender: 'm',
-      email: email || 'jcooper4888@aol.co.uk',
-      phone_number: phone || '+447368841330',
-    },
-  ];
+const confirmHold = () => {
+  // We do NOT send services to Duffel when holding (Duffel rule)
+  const newTrip = {
+    id: selectedOffer?.id || 'ORD' + Date.now(),
+    status: 'On hold',
+    total: selectedOffer?.total_amount || '£158.00',
+    currency: selectedOffer?.total_currency || 'GBP',
+    airline: selectedOffer?.owner?.name || 'Duffel Airways',
+    created: new Date().toLocaleString('en-GB'),
+    holdUntil: '28 Jun 2026',
+    extraBags: 0,
+    selectedSeat: null,
+    flights: [
+      { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
+      { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
+    ],
+    passenger: {
+      name: 'mr James Cooper',
+      dob: '04/12/1978',
+      gender: 'Male',
+      email: 'jcooper4888@aol.co.uk',
+      phone: '+447368841330'
+    }
+  };
 
-  try {
-    const res = await fetch('/api/orders/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        offerId: selectedOffer.id,
-        passengers,
-        services,
-        type: 'hold',                    // ← This makes it a real hold order
-      }),
-    });
-
-    const result = await res.json();
-
-    if (result.success) {
-      const newTrip = {
-        id: result.order.id,
-        status: 'On hold',
-        total: selectedOffer.total_amount,
-        currency: selectedOffer.total_currency || 'GBP',
-        airline: selectedOffer.owner?.name || 'Duffel Airways',
-        created: new Date().toLocaleString('en-GB'),
-        holdUntil: 'In 3 days',
-        extraBags: selectedBags,
-        selectedSeat: selectedSeat,
-        booking_reference: result.booking_reference,
-        flights: [
-          { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'On hold' },
-          { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'On hold' }
-        ],
-        passenger: { 
-          name: `${givenName || 'James'} ${familyName || 'Cooper'}`, 
-          dob: '04/12/1978', 
-          gender: 'Male', 
-          email: email || 'jcooper4888@aol.co.uk', 
-          phone: phone || '+447368841330' 
-        }
-      };
+  setMyTrips([...myTrips, newTrip]);
+  setShowHoldInfo(false);
+  setShowOrderHeld(true);
+};
 
       setMyTrips([...myTrips, newTrip]);
       setShowHoldInfo(false);
@@ -672,32 +647,37 @@ const [familyName, setFamilyName] = useState('');
               </div>
             </div>
 
-            {/* Top Payment Choice */}
-{!showHoldInfo && !showOrderHeld && (
+            {!showHoldInfo && !showOrderHeld && (
   <div className="mb-8">
     <div className="font-bold mb-3">Paying now, or later?</div>
-    <div className="flex gap-4">
 
-      {/* Pay Now - Only highlights, does NOT trigger booking */}
+    {/* Warning when user has bags or seats selected */}
+    {hasExtras && (
+      <div className="mb-3 text-sm text-yellow-400 bg-yellow-900/30 p-3 rounded-xl">
+        ⚠️ Hold is not available when you have selected extra bags or seats.<br />
+        Remove extras or choose <strong>Pay Now</strong> instead.
+      </div>
+    )}
+
+    <div className="flex gap-4">
       <button 
-        onClick={() => setPaymentMethod('payNow')}
+        onClick={bookNow} 
+        className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold"
+      >
+        Pay now (+ £{getDynamicTotal()})
+      </button>
+
+      <button 
+        onClick={showHoldConfirmation} 
+        disabled={hasExtras}
         className={`flex-1 py-4 rounded-2xl font-bold transition-all ${
-          paymentMethod === 'payNow' 
-            ? 'bg-emerald-500 ring-2 ring-emerald-400' 
+          hasExtras 
+            ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed' 
             : 'bg-zinc-700 hover:bg-zinc-600'
         }`}
       >
-        Pay now
-      </button>
-
-      {/* Hold Order - Works exactly like before */}
-      <button 
-        onClick={showHoldConfirmation}
-        className="flex-1 bg-zinc-700 hover:bg-zinc-600 py-4 rounded-2xl font-bold"
-      >
         Hold order (pay later)
       </button>
-
     </div>
   </div>
 )}
