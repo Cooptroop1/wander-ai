@@ -6,13 +6,9 @@ import { supabase } from '@/lib/supabase';
 export default function MyTrips() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [status, setStatus] = useState('Loading...');
-  const [url, setUrl] = useState('');
 
   useEffect(() => {
-    const check = async () => {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'NO URL FOUND';
-      setUrl(supabaseUrl);
-
+    const load = async () => {
       const { data, error } = await supabase
         .from('bookings')
         .select('*');
@@ -21,26 +17,37 @@ export default function MyTrips() {
         setStatus('ERROR: ' + error.message);
       } else {
         setBookings(data || []);
-        setStatus(`Found ${data ? data.length : 0} rows`);
+        setStatus('LOADED ' + (data ? data.length : 0) + ' ROWS');
       }
     };
-    check();
+    load();
   }, []);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white p-8">
-      <h1 className="text-3xl font-bold mb-8">My Trips - TEST</h1>
-
-      <div className="bg-red-900 border border-red-500 p-6 rounded-2xl mb-8">
-        <p className="font-bold">Frontend Supabase URL:</p>
-        <p className="font-mono text-sm break-all">{url}</p>
-        <p className="mt-4">Status: {status}</p>
-        <p>Rows: {bookings.length}</p>
+    <div className="min-h-screen bg-black text-white p-8">
+      {/* BIG OBVIOUS MARKER - YOU CANNOT MISS THIS */}
+      <div className="bg-red-600 text-white text-center py-6 mb-8 rounded-2xl">
+        <h1 className="text-5xl font-black">🚨 MY TRIPS TEST PAGE - VERSION 999 🚨</h1>
+        <p className="text-2xl mt-2">If you see this red box, the NEW file is working</p>
       </div>
 
-      <button onClick={() => window.location.reload()} className="bg-emerald-600 px-6 py-2 rounded-xl">
-        Refresh Page
-      </button>
+      <div className="max-w-4xl mx-auto">
+        <p className="text-2xl mb-4">Status: <span className="font-bold text-yellow-400">{status}</span></p>
+        <p className="text-2xl mb-8">Rows found: <span className="font-bold text-yellow-400">{bookings.length}</span></p>
+
+        <button 
+          onClick={() => window.location.reload()} 
+          className="bg-white text-black px-8 py-4 rounded-2xl text-xl font-bold mb-8"
+        >
+          CLICK TO REFRESH
+        </button>
+
+        {bookings.length > 0 && (
+          <div className="bg-zinc-900 p-6 rounded-2xl">
+            <pre className="text-xs overflow-auto">{JSON.stringify(bookings, null, 2)}</pre>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
