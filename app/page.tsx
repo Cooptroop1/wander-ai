@@ -218,7 +218,6 @@ const hasExtras = selectedBags > 0 || selectedSeat !== null;
 };
 
 const confirmHold = () => {
-  // We do NOT send services to Duffel when holding (Duffel rule)
   const newTrip = {
     id: selectedOffer?.id || 'ORD' + Date.now(),
     status: 'On hold',
@@ -241,6 +240,11 @@ const confirmHold = () => {
       phone: '+447368841330'
     }
   };
+
+  setMyTrips([...myTrips, newTrip]);
+  setShowHoldInfo(false);
+  setShowOrderHeld(true);
+};
 
   const openTripDetail = (trip: any) => {
     setSelectedTrip(trip);
