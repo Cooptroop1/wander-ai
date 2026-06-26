@@ -1,97 +1,93 @@
-// app/my-trips/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import TicketModal from '@/components/TicketModal';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
-type Booking = {
+interface Trip {
   id: string;
-  duffelId: string;
+  duffel_order_id: string;
+  status: string;
+  total: number;
+  currency: string;
+  airline: string;
   origin: string;
   destination: string;
-  departure: string;
-  arrival: string;
-  total: number;
-  passengers: number;
-  segments: any[];
-};
+  departure_date: string;
+  return_date: string | null;
+  created_at: string;
+}
 
 export default function MyTrips() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch('/api/bookings', { cache: 'no-store' });
-        const data = await res.json();
-        setBookings(data.bookings || []);
-      } catch {}
+  useEffect(() => {
+    const fetchTrips = async () => {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching trips:', error);
+      } else {
+        setTrips(data || []);
+      }
       setLoading(false);
     };
-    load();
-    const i = setInterval(load, 7000);
-    return () => clearInterval(i);
+
+    fetchTrips();
   }, []);
 
-  const openTicket = (booking: Booking) => setSelectedBooking(booking);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white p-6">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">My Trips</h1>
+          <p>Loading your trips...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white py-8">
-      <div className="max-w-5xl mx-auto px-4">
-        <h1 className="text-4xl font-semibold mb-2">My Trips</h1>
-        <button 
-  onClick={() => window.location.href = '/'}
-  className="mb-6 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-2xl flex items-center gap-2"
->
-  ← Back to World Map / Book New Flight
-</button>
-        <p className="text-zinc-600 mb-8">All bookings • Powered by Duffel • Real DB sync</p>
+    <div className="min-h-screen bg-zinc-950 text-white p-6">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">My Trips</h1>
 
-        {loading ? (
-          <div className="text-center py-20">Loading your trips...</div>
-        ) : bookings.length === 0 ? (
-          <div className="text-center py-20 text-zinc-400">No trips yet • Book your first flight above</div>
+        {trips.length === 0 ? (
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 text-center">
+            <p className="text-zinc-400">You don&apos;t have any trips yet.</p>
+            <p className="text-sm text-zinc-500 mt-2">Hold or book a flight to see it here.</p>
+          </div>
         ) : (
-          <div className="grid gap-4">
-            {bookings.map((b) => (
-              <Card className="flex items-center justify-between p-6 bg-zinc-900 border border-zinc-700">
-                <div className="flex gap-6 items-center">
-                  <div className="text-4xl">✈️</div>
-                  <div>
-                    <div className="font-semibold text-lg">
-                      {b.origin} → {b.destination} • {b.departure.split(' ')[0]}
-                    </div>
-                    <div className="text-sm text-zinc-500">
-                      {b.segments[0]?.airline} {b.segments[0]?.flight} • {b.passengers} passenger • £{b.total}
-                    </div>
-                    <div className="text-emerald-600 text-xs font-medium">✓ Confirmed • Ticket ready</div>
+          <div className="space-y-4">
+            {trips.map((trip) => (
+              <div
+                key={trip.id}
+                className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 flex justify-between items-center"
+              >
+                <div>
+                  <div className="font-semibold text-lg">
+                    {trip.origin} → {trip.destination}
+                  </div>
+                  <div className="text-sm text-zinc-400 mt-1">
+                    {trip.departure_date} {trip.return_date ? `→ ${trip.return_date}` : ''}
+                  </div>
+                  <div className="text-sm text-zinc-500 mt-1">
+                    {trip.airline} • {trip.status}
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Button variant="outline" onClick={() => openTicket(b)}>
-                    View Ticket
-                  </Button>
-                  <Button variant="default" onClick={() => window.open(`/ticket/${b.id}`, '_blank')}>
-                    Download PDF
-                  </Button>
+
+                <div className="text-right">
+                  <div className="font-semibold">£{trip.total}</div>
+                  <div className="text-xs text-emerald-400 mt-1">On hold</div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}
-
-        <div className="mt-12 text-center text-xs text-zinc-400">
-          New bookings from PaymentStep appear here instantly • Fully synced with mock DB + localStorage
-        </div>
       </div>
-
-      {selectedBooking && (
-        <TicketModal booking={selectedBooking} onClose={() => setSelectedBooking(null)} />
-      )}
     </div>
   );
 }
