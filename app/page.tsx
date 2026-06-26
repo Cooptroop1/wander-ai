@@ -268,39 +268,26 @@ const confirmHold = () => {
           <button onClick={handleRealSearch} className="bg-white text-black px-6 py-2 mt-4">Get Live Offers</button>
 
           <div className="mt-8 space-y-4">
-  {offers.map((o, i) => {
-    const legs = o.slices || [];
-    return (
-      <div key={i} className="bg-zinc-900 p-6 rounded-2xl">
-        <div className="flex justify-between items-center mb-4">
-          <div className="font-bold">
-            Offer {i+1} - {o.total_amount || '£428'} {o.total_currency || 'GBP'} • {legs.length} leg{legs.length > 1 ? 's' : ''}
+            {offers.map((o, i) => {
+              const slice = o.slices && o.slices[0];
+              const segment = slice && slice.segments && slice.segments[0];
+              const airline = segment ? segment.marketing_carrier.name : 'BA/VS';
+              const depTime = segment ? formatTime(segment.departing_at) : 'N/A';
+              const arrTime = segment ? formatTime(segment.arriving_at) : 'N/A';
+              const duration = slice ? (slice.duration || 'N/A') : 'N/A';
+              const stops = slice ? (slice.segments.length - 1) + ' stop' : 'Direct';
+              const cabin = slice ? slice.cabin_class : 'economy';
+              return (
+                <div key={i} className="bg-zinc-900 p-6 rounded-2xl flex justify-between items-center">
+                  <div>
+                    Offer {i+1} - {o.total_amount || '£428'} {o.total_currency || 'GBP'} • {airline} <br />
+                    <span className="text-emerald-400">Dep: {depTime}</span> • <span className="text-emerald-400">Arr: {arrTime}</span> • {duration} • {stops} • {cabin}
+                  </div>
+                  <button onClick={() => selectOffer(o)} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
+                </div>
+              );
+            })}
           </div>
-          <button onClick={() => selectOffer(o)} className="bg-emerald-500 px-8 py-3 rounded-xl font-bold">Select + Bags/Seats</button>
-        </div>
-
-        {legs.map((slice: any, sliceIndex: number) => {
-          const segment = slice?.segments?.[0];
-          const dep = segment?.departing_at ? segment.departing_at.substring(11, 16) : 'N/A';
-          const arr = segment?.arriving_at ? segment.arriving_at.substring(11, 16) : 'N/A';
-          const airline = segment?.marketing_carrier?.name || 'Duffel Airways';
-          return (
-            <div key={sliceIndex} className="mb-3 border-l-4 border-emerald-500 pl-4">
-              <div className="font-semibold">
-                Leg {sliceIndex + 1}: {dep} → {arr} • {slice?.duration || 'N/A'} • {slice?.segments?.length === 1 ? 'Non-stop' : 'Stop(s)'}
-              </div>
-              <div className="text-sm text-zinc-400">
-                {airline} • {slice?.cabin_class || 'economy'} • {slice?.origin || '---'} → {slice?.destination || '---'}
-              </div>
-            </div>
-          );
-        })}
-
-        <div className="text-xs text-emerald-400 mt-2">Real Duffel data • Click Select to book</div>
-      </div>
-    );
-  })}
-</div>
         </>
       )}
 
