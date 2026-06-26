@@ -268,7 +268,6 @@ const confirmHold = async () => {
     return;
   }
 
-  // Build passengers (you can improve this later to come from a form)
   const passengers = [
     {
       title: 'mr',
@@ -288,21 +287,22 @@ const confirmHold = async () => {
       body: JSON.stringify({
         offerId: selectedOffer.id,
         passengers,
-        type: 'hold',           // ← Important: tell the route we want a hold
+        type: 'hold',
       }),
     });
 
     const result = await res.json();
 
-    if (!result.success) {
-      console.error('Duffel error:', result);
-      alert('Failed to create hold: ' + (result.error || 'Unknown error'));
+    if (!result.success || !result.order) {
+      console.error('Duffel hold failed:', result);
+      const msg = result.error?.title || result.error?.message || result.error || 'Unknown error';
+      alert('Failed to create hold: ' + msg);
       return;
     }
 
     const order = result.order;
 
-    // Save to Supabase (only the reference + user)
+    // Save to Supabase
     await supabase.from('bookings').insert({
       duffel_order_id: order.id,
       user_id: user.id,
@@ -315,7 +315,7 @@ const confirmHold = async () => {
       departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
     });
 
-    // Update local state so it shows immediately
+    // Update local state
     const newTrip = {
       id: order.id,
       status: 'On hold',
