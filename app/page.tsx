@@ -270,14 +270,13 @@ const confirmHold = async () => {
 
   const passengers = [
     {
-  
-      title: 'mr',
-      given_name: 'James',
-      family_name: 'Cooper',
-      born_on: '1978-12-04',
-      gender: 'm',
-      email: 'jcooper4888@aol.co.uk',
-      phone_number: '+447368841330',
+      title: title || 'mr',
+      given_name: givenName || 'James',
+      family_name: familyName || 'Cooper',
+      born_on: bornOn || '1978-12-04',
+      gender: gender || 'm',
+      email: email || 'jcooper4888@aol.co.uk',
+      phone_number: phone || '+447368841330',
     },
   ];
 
@@ -288,23 +287,20 @@ const confirmHold = async () => {
       body: JSON.stringify({
         offerId: selectedOffer.id,
         passengers,
-        type: 'hold',
-        
       }),
     });
 
     const result = await res.json();
 
-    if (!result.success || !result.order) {
-      console.error('Duffel hold failed:', result);
-      const msg = result.error?.title || result.error?.message || result.error || 'Unknown error';
-      alert('Failed to create hold: ' + msg);
+    if (!result.success) {
+      const msg = result.error?.title || result.error?.message || 'Unknown error';
+      alert('Duffel failed: ' + msg);
+      console.error(result);
       return;
     }
 
     const order = result.order;
 
-    // Save to Supabase
     await supabase.from('bookings').insert({
       duffel_order_id: order.id,
       user_id: user.id,
@@ -317,7 +313,6 @@ const confirmHold = async () => {
       departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
     });
 
-    // Update local state
     const newTrip = {
       id: order.id,
       status: 'On hold',
