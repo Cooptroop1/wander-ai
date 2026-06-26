@@ -242,18 +242,6 @@ const confirmHold = () => {
     }
   };
 
-      setMyTrips([...myTrips, newTrip]);
-      setShowHoldInfo(false);
-      setShowOrderHeld(true);
-    } else {
-      alert('Failed to create hold order: ' + result.error);
-    }
-  } catch (error) {
-    alert('Error creating hold order');
-    console.error(error);
-  }
-};
-
   const openTripDetail = (trip: any) => {
     setSelectedTrip(trip);
     setCurrentView('tripDetail');
