@@ -133,8 +133,6 @@ const [familyName, setFamilyName] = useState('');
 
   return emailValid && phoneValid && givenNameValid && familyNameValid;
 };
-
-const bookNow = async () => {
   
   const bookNow = async () => {
   if (!selectedOffer || !isFormComplete()) return;
