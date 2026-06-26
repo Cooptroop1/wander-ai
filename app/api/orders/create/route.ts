@@ -23,7 +23,7 @@ export async function POST(request: Request) {
           type: 'balance',
           currency: body.currency || 'GBP',
           amount: body.finalAmount,
-        },
+        }, 
       ];
     }
 
