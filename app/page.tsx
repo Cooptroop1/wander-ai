@@ -270,7 +270,7 @@ const confirmHold = async () => {
 
   const passengers = [
     {
-      id: `passenger_${Date.now()}`,     // ← Make it unique every time
+      id: crypto.randomUUID(),
       title: 'mr',
       given_name: 'James',
       family_name: 'Cooper',
