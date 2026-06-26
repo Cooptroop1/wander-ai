@@ -162,7 +162,7 @@ const [gender, setGender] = useState('');
       title: 'mr',
       given_name: givenName,
       family_name: familyName,
-      born_on: ,
+      born_on: bornOn,
       gender: 'm',
       email: email,
       phone_number: phone,
