@@ -142,22 +142,7 @@ const [gender, setGender] = useState('');
   
   const bookNow = async () => {
   if (!selectedOffer) return;
-
-  const passengers = [
-    {
-      title: "mr",
-      given_name: "James",
-      family_name: "Cooper",
-      born_on: "1978-12-04",
-      gender: "m",
-      email: "jcooper4888@aol.co.uk",
-      phone_number: "+447368841330",
-      passport_number: "123456789",
-      passport_expiry_date: "2030-12-31",
-    },
-  ];
-
-  try {
+    try {
     const res = await fetch('/api/orders/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -192,17 +177,19 @@ const [gender, setGender] = useState('');
   }
 
   const passengers = [
-    {
-      id: 'pas_1',
-      title: 'mr',
-      given_name: givenName || 'James',
-      family_name: familyName || 'Cooper',
-      born_on: '1978-12-04',
-      gender: 'm',
-      email: email || 'jcooper4888@aol.co.uk',
-      phone_number: phone || '+447368841330',
-    },
-  ];
+  {
+    id: 'pas_1',                    // ← Required by Duffel
+    title: title || 'mr',
+    given_name: givenName,
+    family_name: familyName,
+    born_on: bornOn,
+    gender: gender || 'm',
+    email: email,
+    phone_number: phone,
+    passport_number: passportNumber,
+    passport_expiry_date: passportExpiry,
+  },
+];
 
   try {
     const res = await fetch('/api/orders/create', {
