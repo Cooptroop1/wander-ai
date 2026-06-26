@@ -176,9 +176,9 @@ const [gender, setGender] = useState('');
     services.push({ id: selectedSeat.id, quantity: 1 });
   }
 
-  const passengers = [
+  const passengerList = [
   {
-    id: 'pas_1',                    // ← Required by Duffel
+    id: 'pas_1',
     title: title || 'mr',
     given_name: givenName,
     family_name: familyName,
@@ -191,17 +191,17 @@ const [gender, setGender] = useState('');
   },
 ];
 
-  try {
-    const res = await fetch('/api/orders/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        offerId: selectedOffer.id,
-        passengers,
-        services,
-        type: 'hold',                    // ← This makes it a real hold order
-      }),
-    });
+const res = await fetch('/api/orders/create', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    offerId: selectedOffer.id,
+    passengers: passengerList,     // ← Send the array, not the number
+    services: [],
+    finalAmount: getDynamicTotal(),
+    currency: selectedOffer.total_currency || 'GBP',
+  }),
+});
 
     const result = await res.json();
 
