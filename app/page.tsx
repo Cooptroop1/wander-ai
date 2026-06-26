@@ -37,7 +37,14 @@ export default function DuffelCloneHome() {
   const [paymentMethod, setPaymentMethod] = useState<'payNow' | 'hold' | null>(null);
 
   const isFormComplete = () => {
-  return paymentMethod === 'payNow';
+  if (paymentMethod !== 'payNow') return false;
+
+  const emailValid = email.trim().length > 5 && email.includes('@');
+  const phoneValid = phone.trim().length >= 8;
+  const givenNameValid = givenName.trim().length >= 2;
+  const familyNameValid = familyName.trim().length >= 2;
+
+  return emailValid && phoneValid && givenNameValid && familyNameValid;
 };
 
   const fetchSuggestions = async (query: string, setSuggestions: any, setShow: any) => {
@@ -548,11 +555,13 @@ export default function DuffelCloneHome() {
               </div>
             </div>
 
-            {/* Top Payment Choice - Just highlights, does NOT book yet */}
+            {/* Top Payment Choice */}
 {!showHoldInfo && !showOrderHeld && (
   <div className="mb-8">
     <div className="font-bold mb-3">Paying now, or later?</div>
     <div className="flex gap-4">
+
+      {/* Pay Now - Only highlights, does NOT trigger booking */}
       <button 
         onClick={() => setPaymentMethod('payNow')}
         className={`flex-1 py-4 rounded-2xl font-bold transition-all ${
@@ -563,16 +572,15 @@ export default function DuffelCloneHome() {
       >
         Pay now
       </button>
+
+      {/* Hold Order - Works exactly like before */}
       <button 
-        onClick={() => setPaymentMethod('hold')}
-        className={`flex-1 py-4 rounded-2xl font-bold transition-all ${
-          paymentMethod === 'hold' 
-            ? 'bg-emerald-500 ring-2 ring-emerald-400' 
-            : 'bg-zinc-700 hover:bg-zinc-600'
-        }`}
+        onClick={showHoldConfirmation}
+        className="flex-1 bg-zinc-700 hover:bg-zinc-600 py-4 rounded-2xl font-bold"
       >
         Hold order (pay later)
       </button>
+
     </div>
   </div>
 )}
