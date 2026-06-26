@@ -123,77 +123,90 @@ const [familyName, setFamilyName] = useState('');
     return (base + taxes + bags + seat).toFixed(2);
   };
 
+  const isFormComplete = () => {
+  if (paymentMethod !== 'payNow') return false;
+
+  const emailValid = email.trim().length > 5 && email.includes('@');
+  const phoneValid = phone.trim().length >= 8;
+  const givenNameValid = givenName.trim().length >= 2;
+  const familyNameValid = familyName.trim().length >= 2;
+
+  return emailValid && phoneValid && givenNameValid && familyNameValid;
+};
+
+const bookNow = async () => {
+  
   const bookNow = async () => {
-    if (!selectedOffer) return;
+  if (!selectedOffer || !isFormComplete()) return;
 
-    const finalAmount = getDynamicTotal();
-    const services: any[] = [];
+  const finalAmount = getDynamicTotal();
+  const services: any[] = [];
 
-    if (selectedBags > 0 && availableServices[0]) {
-      services.push({ id: availableServices[0].id, quantity: selectedBags });
+  if (selectedBags > 0 && availableServices[0]) {
+    services.push({ id: availableServices[0].id, quantity: selectedBags });
+  }
+  if (selectedSeat) {
+    services.push({ id: selectedSeat.id, quantity: 1 });
+  }
+
+  const passengers = [
+    {
+      id: 'pas_1',
+      title: 'mr',
+      given_name: givenName,
+      family_name: familyName,
+      born_on: '1978-12-04',
+      gender: 'm',
+      email: email,
+      phone_number: phone,
+    },
+  ];
+
+  try {
+    const res = await fetch('/api/orders/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        offerId: selectedOffer.id,
+        passengers,
+        services,
+        finalAmount,
+        currency: selectedOffer.total_currency || 'GBP',
+      }),
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      const newTrip = {
+        id: result.order.id,
+        status: 'Booked',
+        total: finalAmount,
+        currency: selectedOffer.total_currency || 'GBP',
+        airline: selectedOffer.owner?.name || 'Duffel Airways',
+        created: new Date().toLocaleString('en-GB'),
+        extraBags: selectedBags,
+        selectedSeat: selectedSeat,
+        booking_reference: result.booking_reference,
+        flights: [
+          { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'Confirmed' },
+          { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'Confirmed' }
+        ],
+        passenger: { name: `${givenName} ${familyName}`, dob: '04/12/1978', gender: 'Male', email, phone }
+      };
+
+      setMyTrips([...myTrips, newTrip]);
+      alert(`✅ Booking confirmed!\nReference: ${result.booking_reference}`);
+      closeCheckout();
+      setCurrentView('myTrips');
+    } else {
+      alert('Booking failed: ' + (result.error || 'Unknown error'));
     }
-    if (selectedSeat) {
-      services.push({ id: selectedSeat.id, quantity: 1 });
-    }
-
-    const passengers = [
-      {
-        id: 'pas_1',
-        title: 'mr',
-        given_name: 'James',
-        family_name: 'Cooper',
-        born_on: '1978-12-04',
-        gender: 'm',
-        email: 'jcooper4888@aol.co.uk',
-        phone_number: '+447368841330',
-      },
-    ];
-
-    try {
-      const res = await fetch('/api/orders/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          offerId: selectedOffer.id,
-          passengers,
-          services,
-          finalAmount,
-          currency: selectedOffer.total_currency || 'GBP',
-        }),
-      });
-
-      const result = await res.json();
-
-      if (result.success) {
-        const newTrip = {
-          id: result.order.id,
-          status: 'Booked',
-          total: finalAmount,
-          currency: selectedOffer.total_currency || 'GBP',
-          airline: selectedOffer.owner?.name || 'Duffel Airways',
-          created: new Date().toLocaleString('en-GB'),
-          extraBags: selectedBags,
-          selectedSeat: selectedSeat,
-          booking_reference: result.booking_reference,
-          flights: [
-            { date: '26 Jun 2026', time: '19:21 - 22:39', route: 'STN - MAD', status: 'Confirmed' },
-            { date: '27 Jun 2026', time: '20:07 - 21:25', route: 'MAD - STN', status: 'Confirmed' }
-          ],
-          passenger: { name: 'mr James Cooper', dob: '04/12/1978', gender: 'Male', email: 'jcooper4888@aol.co.uk', phone: '+447368841330' }
-        };
-
-        setMyTrips([...myTrips, newTrip]);
-        alert(`✅ Real booking created!\nBooking Reference: ${result.booking_reference}`);
-        closeCheckout();
-        setCurrentView('myTrips');
-      } else {
-        alert('Booking failed: ' + (result.error || 'Unknown error'));
-      }
-    } catch (error) {
-      alert('Error creating real booking. Check console for details.');
-      console.error(error);
-    }
-  };
+  } catch (error) {
+    alert('Error creating booking');
+    console.error(error);
+  }
+};
 
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
