@@ -193,11 +193,11 @@ const confirmHold = async () => {
     return;
   }
 
-  // Get current logged in user
+  // Check if user is logged in
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    alert("You must be logged in to hold a flight");
+    alert("Please log in first to hold a flight");
     return;
   }
 
@@ -258,7 +258,7 @@ const confirmHold = async () => {
   // Save to Supabase with user_id
   const { error } = await supabase.from('bookings').insert({
     duffel_order_id: selectedOffer.id,
-    user_id: user.id,                    // ← This links it to the logged-in user
+    user_id: user.id,                    // ← Links the hold to the logged-in user
     status: 'on_hold',
     total: parseFloat(selectedOffer.total_amount) || 0,
     currency: selectedOffer.total_currency || 'GBP',
@@ -270,7 +270,7 @@ const confirmHold = async () => {
   });
 
   if (error) {
-    console.error('Supabase insert error:', error);
+    console.error('Supabase error:', error);
     alert('Failed to save hold: ' + error.message);
   }
 
@@ -295,8 +295,47 @@ const confirmHold = async () => {
   };
 
   return (
+    
     <div className="min-h-screen bg-zinc-950 text-white p-6">
       <div className="flex justify-between mb-6">
+        {/* ========== TEMP LOGIN (remove later) ========== */}
+<div className="mb-6 p-4 bg-zinc-900 rounded-2xl border border-zinc-700">
+  <div className="font-bold mb-3 text-emerald-400">Login (temporary for testing)</div>
+  <div className="flex gap-2">
+    <input 
+      type="email" 
+      placeholder="Email" 
+      className="flex-1 p-3 bg-zinc-800 rounded-xl text-white"
+      id="login-email"
+    />
+    <input 
+      type="password" 
+      placeholder="Password" 
+      className="flex-1 p-3 bg-zinc-800 rounded-xl text-white"
+      id="login-password"
+    />
+    <button 
+      onClick={async () => {
+        const email = (document.getElementById('login-email') as HTMLInputElement).value;
+        const password = (document.getElementById('login-password') as HTMLInputElement).value;
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          alert(error.message);
+        } else {
+          alert('Logged in successfully!');
+        }
+      }}
+      className="bg-emerald-500 hover:bg-emerald-600 px-8 rounded-xl font-bold"
+    >
+      Login
+    </button>
+  </div>
+  <p className="text-xs text-zinc-400 mt-2">
+    Use an email + password you created in Supabase Auth
+  </p>
+</div>
+{/* ========== END TEMP LOGIN ========== */}
         <div className="flex gap-2">
           <button onClick={() => setCurrentView('search')} className={`px-6 py-2 rounded-xl ${currentView === 'search' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Search</button>
           <button onClick={() => setCurrentView('myTrips')} className={`px-6 py-2 rounded-xl ${currentView === 'myTrips' ? 'bg-sky-500' : 'bg-zinc-800'}`}>My Trips ({myTrips.length})</button>
