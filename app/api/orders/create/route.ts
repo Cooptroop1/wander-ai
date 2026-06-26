@@ -9,29 +9,33 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    console.log('=== Creating hold order ===');
+    console.log('Offer ID:', body.offerId);
+    console.log('Passengers:', JSON.stringify(body.passengers, null, 2));
+
     const response = await duffel.orders.create({
-      type: body.type || 'hold',
+      type: 'hold',
       selected_offers: [body.offerId],
       passengers: body.passengers,
-      services: body.services || [],
     });
-
-    const order = response.data;
 
     return NextResponse.json({
       success: true,
-      order,
-      booking_reference: order.booking_reference,
-      id: order.id,
+      order: response.data,
     });
 
   } catch (error: any) {
     console.error('=== DUFFEL ERROR ===');
     console.error(JSON.stringify(error, null, 2));
 
+    // Try to extract the exact missing field
+    const duffelError = error.errors?.[0];
+    
     return NextResponse.json({
       success: false,
-      error: error.errors?.[0] || error.message,
+      error: duffelError?.title || duffelError?.message || error.message,
+      details: duffelError,
+      fullError: error.errors || error.message,
     }, { status: 500 });
   }
 }
