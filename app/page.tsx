@@ -179,11 +179,11 @@ const confirmHold = () => {
     extraBags: selectedBags,
     selectedSeat: selectedSeat,
     flights: legs.map((slice: any, index: number) => {
-      const segment = slice.segments && slice.segments[0];
+      const segment = slice?.segments?.[0];
       return {
         date: segment ? segment.departing_at.substring(0, 10) : '26 Jun 2026',
         time: segment ? `${segment.departing_at.substring(11, 16)} - ${segment.arriving_at.substring(11, 16)}` : '19:21 - 22:39',
-        route: `${slice.origin} - ${slice.destination}`,
+        route: `${slice?.origin || 'STN'} - ${slice?.destination || 'MAD'}`,
         status: 'On hold'
       };
     }),
