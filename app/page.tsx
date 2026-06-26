@@ -853,7 +853,7 @@ const confirmHold = () => {
         </div>
       )}
 
-      {/* SEAT MAP MODAL */}
+            {/* SEAT MAP MODAL */}
       {showSeatMap && seatMapData && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-2xl w-full p-8">
@@ -898,12 +898,12 @@ const confirmHold = () => {
               </div>
             </div>
 
-                                    <p className="text-sm text-zinc-400 text-center">Click an available seat to select it. Price shown on seat.</p>
+            <p className="text-sm text-zinc-400 text-center">Click an available seat to select it. Price shown on seat.</p>
           </div>
         </div>
       )}
 
-      {/* Final message outside the modal */}
+      {/* Final message outside everything */}
       <p className="text-center mt-12 text-xs">✅ Real Duffel booking is now active. Test it and reply with the result.</p>
     </div>
   );
