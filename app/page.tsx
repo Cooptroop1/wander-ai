@@ -1,7 +1,7 @@
 'use client';
    
 import React, { useState } from 'react';
-
+ 
 export default function DuffelCloneHome() {
   const [currentView, setCurrentView] = useState<'search' | 'myTrips' | 'tripDetail'>('search');
   const [selectedTrip, setSelectedTrip] = useState<any>(null);
