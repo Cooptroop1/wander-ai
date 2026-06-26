@@ -193,6 +193,14 @@ const confirmHold = async () => {
     return;
   }
 
+  // Get current logged in user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    alert("You must be logged in to hold a flight");
+    return;
+  }
+
   const legs = selectedOffer.slices || [];
 
   const getCode = (val: any) => {
@@ -247,10 +255,10 @@ const confirmHold = async () => {
 
   setMyTrips([...myTrips, newTrip]);
 
-  // Save to Supabase with better logging
-  console.log('Attempting to insert into Supabase...');
-  const { data, error } = await supabase.from('bookings').insert({
+  // Save to Supabase with user_id
+  const { error } = await supabase.from('bookings').insert({
     duffel_order_id: selectedOffer.id,
+    user_id: user.id,                    // ← This links it to the logged-in user
     status: 'on_hold',
     total: parseFloat(selectedOffer.total_amount) || 0,
     currency: selectedOffer.total_currency || 'GBP',
@@ -262,10 +270,8 @@ const confirmHold = async () => {
   });
 
   if (error) {
-    console.error('SUPABASE INSERT ERROR:', error);
-    alert('Failed to save to Supabase: ' + error.message);
-  } else {
-    console.log('Successfully saved to Supabase:', data);
+    console.error('Supabase insert error:', error);
+    alert('Failed to save hold: ' + error.message);
   }
 
   setShowHoldInfo(false);
