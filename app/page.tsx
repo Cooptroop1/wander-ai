@@ -34,18 +34,12 @@ export default function DuffelCloneHome() {
   const [seatMapData, setSeatMapData] = useState<any>(null);
 
 // === NEW STATES FOR PAYMENT FLOW ===
-  const [paymentMethod, setPaymentMethod] = useState<'payNow' | 'hold' | null>(null);
-
-  const isFormComplete = () => {
-  if (paymentMethod !== 'payNow') return false;
-
-  const emailValid = email.trim().length > 5 && email.includes('@');
-  const phoneValid = phone.trim().length >= 8;
-  const givenNameValid = givenName.trim().length >= 2;
-  const familyNameValid = familyName.trim().length >= 2;
-
-  return emailValid && phoneValid && givenNameValid && familyNameValid;
-};
+  // === ADD THESE FORM STATES ===
+const [paymentMethod, setPaymentMethod] = useState<'payNow' | 'hold' | null>(null);
+const [email, setEmail] = useState('');
+const [phone, setPhone] = useState('');
+const [givenName, setGivenName] = useState('');
+const [familyName, setFamilyName] = useState('');
 
   const fetchSuggestions = async (query: string, setSuggestions: any, setShow: any) => {
     if (query.length < 2) {
@@ -690,23 +684,48 @@ export default function DuffelCloneHome() {
             {!showHoldInfo && !showOrderHeld && (
               <>
                 <div className="mb-8">
-                  <div className="font-bold mb-3">Contact details</div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <input type="email" placeholder="Email*" className="p-3 bg-zinc-800 rounded-xl" />
-                    <input type="tel" placeholder="Phone number*" className="p-3 bg-zinc-800 rounded-xl" />
-                  </div>
-                </div>
+  <div className="font-bold mb-3">Contact details</div>
+  <div className="grid grid-cols-2 gap-4">
+    <input 
+      type="email" 
+      placeholder="Email*" 
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      className="p-3 bg-zinc-800 rounded-xl" 
+    />
+    <input 
+      type="tel" 
+      placeholder="Phone number*" 
+      value={phone}
+      onChange={(e) => setPhone(e.target.value)}
+      className="p-3 bg-zinc-800 rounded-xl" 
+    />
+  </div>
+</div>
 
-                <div className="mb-8">
-                  <div className="font-bold mb-3">Passengers • Adult 1</div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <select className="p-3 bg-zinc-800 rounded-xl"><option>Mr</option><option>Ms</option><option>Mrs</option><option>Miss</option><option>Dr</option></select>
-                    <input type="text" placeholder="Given name*" className="p-3 bg-zinc-800 rounded-xl" />
-                    <input type="text" placeholder="Family name*" className="p-3 bg-zinc-800 rounded-xl" />
-                    <input type="date" className="p-3 bg-zinc-800 rounded-xl" />
-                    <select className="p-3 bg-zinc-800 rounded-xl"><option>Male</option><option>Female</option></select>
-                  </div>
-                </div>
+                <div className="grid grid-cols-2 gap-4">
+  <select className="p-3 bg-zinc-800 rounded-xl">
+    <option>Mr</option><option>Ms</option><option>Mrs</option><option>Miss</option><option>Dr</option>
+  </select>
+  <input 
+    type="text" 
+    placeholder="Given name*" 
+    value={givenName}
+    onChange={(e) => setGivenName(e.target.value)}
+    className="p-3 bg-zinc-800 rounded-xl" 
+  />
+  <input 
+    type="text" 
+    placeholder="Family name*" 
+    value={familyName}
+    onChange={(e) => setFamilyName(e.target.value)}
+    className="p-3 bg-zinc-800 rounded-xl" 
+  />
+  <input type="date" className="p-3 bg-zinc-800 rounded-xl" />
+  <select className="p-3 bg-zinc-800 rounded-xl">
+    <option>Male</option><option>Female</option>
+  </select>
+</div>
 
                 <div className="mb-8">
                   <div className="font-bold mb-3">Passport details</div>
