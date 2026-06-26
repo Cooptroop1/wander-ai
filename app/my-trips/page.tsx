@@ -9,12 +9,12 @@ export default function MyTrips() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Listen for auth changes (login/logout)
+    // Listen for login/logout changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
           setUser(session.user);
-          await loadUserTrips(session.user.id);
+          await fetchUserTrips(session.user.id);
         } else {
           setUser(null);
           setBookings([]);
@@ -23,22 +23,26 @@ export default function MyTrips() {
       }
     );
 
-    // Check current session on page load
-    const checkSession = async () => {
+    // Check current session when page loads
+    const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (session?.user) {
         setUser(session.user);
-        await loadUserTrips(session.user.id);
+        await fetchUserTrips(session.user.id);
+      } else {
+        setUser(null);
+        setBookings([]);
       }
       setLoading(false);
     };
 
-    checkSession();
+    checkUser();
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const loadUserTrips = async (userId: string) => {
+  const fetchUserTrips = async (userId: string) => {
     const { data, error } = await supabase
       .from('bookings')
       .select('*')
@@ -46,14 +50,19 @@ export default function MyTrips() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error loading trips:', error);
+      console.error('Error fetching trips:', error);
     } else {
       setBookings(data || []);
     }
   };
 
   if (loading) {
-    return <div className="p-8 text-white">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white p-8">
+        <h1 className="text-3xl font-bold mb-8">My Trips</h1>
+        <p className="text-zinc-400">Loading your trips...</p>
+      </div>
+    );
   }
 
   if (!user) {
@@ -61,7 +70,7 @@ export default function MyTrips() {
       <div className="min-h-screen bg-zinc-950 text-white p-8">
         <h1 className="text-3xl font-bold mb-8">My Trips</h1>
         <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 text-center">
-          <p>Please log in to see your trips.</p>
+          <p className="text-lg">Please log in to view your trips.</p>
         </div>
       </div>
     );
@@ -75,14 +84,37 @@ export default function MyTrips() {
         {bookings.length === 0 ? (
           <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 text-center">
             <p className="text-zinc-400">You don&apos;t have any trips yet.</p>
+            <p className="text-sm text-zinc-500 mt-2">
+              Hold a flight while logged in and it will appear here.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {bookings.map((b, i) => (
-              <div key={i} className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6">
-                <div>{b.origin} → {b.destination}</div>
-                <div className="text-sm text-zinc-400">{b.airline} • {b.status}</div>
-                <div>£{b.total}</div>
+            {bookings.map((booking, index) => (
+              <div 
+                key={index} 
+                className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-semibold text-lg">
+                      {booking.origin} → {booking.destination}
+                    </div>
+                    <div className="text-sm text-zinc-400 mt-1">
+                      {booking.departure_date}
+                      {booking.return_date && ` → ${booking.return_date}`}
+                    </div>
+                    <div className="text-sm text-zinc-500 mt-1">
+                      {booking.airline} • {booking.status}
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="font-semibold">
+                      {booking.currency} {booking.total}
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
