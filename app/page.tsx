@@ -270,6 +270,7 @@ const confirmHold = async () => {
 
   const passengers = [
     {
+      id: 'passenger_0',
       title: 'mr',
       given_name: 'James',
       family_name: 'Cooper',
