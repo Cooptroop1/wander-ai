@@ -854,6 +854,7 @@ const [gender, setGender] = useState('m');
       <option value="f">Female</option>
     </select>
   </div>
+</div>
 
                 <div className="mb-8">
                   <div className="font-bold mb-3">Passport details</div>
