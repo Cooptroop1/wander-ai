@@ -674,22 +674,27 @@ const confirmHold = () => {
       <div className="text-sm mb-6">Space expires in 3 days. After this the space will be released and you will need to rebook.</div>
 
       <div className="bg-zinc-800 p-4 rounded-2xl mb-6">
-        <div className="grid grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-3 gap-4 text-sm mb-4">
           <div>25 Jun 2026 23:38 BST<br />Booked</div>
-          <div>27 Jun 2026 23:16 BST<br />Price hold expires<br /><span className="text-emerald-400">£158.00</span></div>
+          <div>27 Jun 2026 23:16 BST<br />Price hold expires<br /><span className="text-emerald-400">£{myTrips[myTrips.length - 1]?.total || '0.00'}</span></div>
           <div>28 Jun 2026 23:16 BST<br />Space hold expires</div>
         </div>
 
-        {/* Dynamic Flights from the last held trip */}
+        {/* Dynamic flights from the held trip */}
         {myTrips[myTrips.length - 1]?.flights.map((f: any, index: number) => (
-          <div key={index} className="mt-4 border-t border-zinc-700 pt-4">
-            <div className="font-bold">{f.date} • Flight to {f.route.split(' - ')[1]}</div>
-            <div>{f.time} • Basic • Duffel Airways • {f.route} • Non-stop</div>
-            <div className="text-sm text-zinc-400">Depart / Arrive details</div>
+          <div key={index} className="mb-4 border-t border-zinc-700 pt-4">
+            <div className="font-bold mb-1">{f.date} • Flight to {f.destination}</div>
+            <div>{f.time} • {f.cabin} • {f.airline} • {f.duration} • {f.route} • Non-stop</div>
+            <div className="text-sm text-zinc-400 mt-1">
+              {f.depTerminal ? `${f.depTerminal} ` : ''}Depart {f.origin} Terminal {f.depTerminal || ''}<br />
+              {f.arrTerminal ? `${f.arrTerminal} ` : ''}Arrive {f.destination} Terminal {f.arrTerminal || ''}
+            </div>
+            <div className="text-sm mt-1">{f.aircraft} • {f.flightNumber}</div>
+            <div className="text-sm">{f.bags}</div>
           </div>
         ))}
 
-        <div className="text-sm mt-6">
+        <div className="text-sm mt-4">
           Order change policy: This order is not changeable<br />
           Order refund policy: This order is not refundable
         </div>
@@ -705,9 +710,9 @@ const confirmHold = () => {
 
         <div className="mt-6">
           <div className="font-bold mb-2">Summary</div>
-          <div>Order ID: {myTrips[myTrips.length - 1]?.id || 'off_0000...'}</div>
+          <div>Order ID: {myTrips[myTrips.length - 1]?.id}</div>
           <div>Status: On hold</div>
-          <div>Airline: Duffel Airways</div>
+          <div>Airline: {myTrips[myTrips.length - 1]?.airline}</div>
           <div>James Cooper created this order. {new Date().toLocaleString('en-GB')}</div>
         </div>
       </div>
