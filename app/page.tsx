@@ -390,8 +390,6 @@ const handleBookWithDuffel = async () => {
             <button onClick={() => setJourneyType('return')} className={`px-6 py-2 rounded-xl ${journeyType === 'return' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Return</button>
             <button onClick={() => setJourneyType('multi_city')} className={`px-6 py-2 rounded-xl ${journeyType === 'multi_city' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Multi-city</button>
           </div>
-          {currentView === 'search' && (
-  <>
     {/* TEMP TEST BUTTON - DELETE THIS WHOLE BLOCK LATER */}
     <div className="p-4 bg-yellow-100 border border-yellow-400 rounded mb-4">
       <p className="font-bold mb-2">Quick Test - Create Duffel Link</p>
