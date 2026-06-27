@@ -537,7 +537,7 @@ const handleBookWithDuffel = async () => {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto p-8">
             <div className="flex justify-between mb-6">
-              <button onClick={handlePayNow} className="bg-emerald-500 py-4 rounded-2xl font-bold w-full">
+              <button onClick={handleBookWithDuffel} className="bg-emerald-500 py-4 rounded-2xl font-bold w-full">
   Pay Now with Test Card
 </button>
               <h2 className="text-2xl font-bold">Checkout</h2>
@@ -743,7 +743,7 @@ const handleBookWithDuffel = async () => {
                   This price will be guaranteed 2 days. After this, the guarantee will expire and the price may change.
                 </div>
                 <div className="flex gap-4">
-                  <button onClick={confirmHold} className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold">Confirm hold</button>
+                  <button onClick={handleBookWithDuffel} className="flex-1 bg-emerald-500 py-4 rounded-2xl font-bold">Confirm hold</button>
                   <button onClick={() => setShowHoldInfo(false)} className="flex-1 bg-zinc-700 py-4 rounded-2xl">Cancel</button>
                 </div>
               </div>
