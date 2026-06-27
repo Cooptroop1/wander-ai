@@ -390,7 +390,44 @@ const handleBookWithDuffel = async () => {
             <button onClick={() => setJourneyType('return')} className={`px-6 py-2 rounded-xl ${journeyType === 'return' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Return</button>
             <button onClick={() => setJourneyType('multi_city')} className={`px-6 py-2 rounded-xl ${journeyType === 'multi_city' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Multi-city</button>
           </div>
+          {currentView === 'search' && (
+  <>
+    {/* TEMP TEST BUTTON - DELETE THIS WHOLE BLOCK LATER */}
+    <div className="p-4 bg-yellow-100 border border-yellow-400 rounded mb-4">
+      <p className="font-bold mb-2">Quick Test - Create Duffel Link</p>
+      <button
+        onClick={async () => {
+          const testOfferId = "off_xxxxxxxxxxxxxxxxxxxxxxxx"; // ← paste real offer ID here
 
+          const res = await fetch('/api/duffel/create-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              selected_offers: [testOfferId],
+            }),
+          });
+
+          const result = await res.json();
+
+          if (result.success) {
+            alert("Link created! Opening now...");
+            window.open(result.link_url, "_blank");
+          } else {
+            alert("Error: " + result.error);
+            console.error(result);
+          }
+        }}
+        className="px-4 py-2 bg-black text-white rounded"
+      >
+        Create Test Link
+      </button>
+      <p className="text-xs mt-2 text-gray-600">
+        1. Search for flights first<br />
+        2. Copy an offer ID (starts with off_) from console<br />
+        3. Paste it above then click
+      </p>
+    </div>
+    {/* END TEMP TEST BUTTON */}
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="relative col-span-1">
               <input type="text" value={fromSearch} onChange={(e) => { setFromSearch(e.target.value); fetchSuggestions(e.target.value, setFromSuggestions, setShowFromDropdown); }} className="p-4 bg-zinc-800 rounded-2xl w-full" placeholder="Origin (type london or madrid)" />
