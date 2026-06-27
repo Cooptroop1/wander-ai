@@ -163,18 +163,6 @@ const handleLogout = async () => {
     }
   };
 
-  };
-
-  // ==================== HELPER FUNCTION ====================
-  const formatDuration = (isoDuration: string) => {
-    if (!isoDuration) return '';
-    const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
-    if (!match) return isoDuration;
-    const hours = match[1] ? `${match[1]}h` : '';
-    const minutes = match[2] ? `${match[2]}m` : '';
-    return `${hours} ${minutes}`.trim();
-  };
-  
   return (
         <div className="min-h-screen bg-zinc-950 text-white">
       {/* Header */}
@@ -418,7 +406,7 @@ const handleLogout = async () => {
 )}
       </div>
 
-     {/* Flight Details Modal - Improved */}
+     {/* Flight Details Modal */}
 {selectedFlight && (
   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
     <div className="bg-zinc-900 rounded-3xl w-full max-w-5xl border border-zinc-700 overflow-hidden flex flex-col max-h-[92vh]">
@@ -440,15 +428,15 @@ const handleLogout = async () => {
       {/* Scrollable Content */}
       <div className="p-8 overflow-y-auto flex-1">
         
-        {/* Outbound + Return */}
+        {/* Outbound + Return side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          {/* OUTBOUND */}
+          {/* Outbound */}
           {selectedFlight.slices?.[0] && (
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full text-xs font-semibold tracking-wider">OUTBOUND</div>
-                <div className="text-xs text-zinc-500">{formatDuration(selectedFlight.slices[0].duration)}</div>
+                <div className="text-xs text-zinc-500">{selectedFlight.slices[0].duration}</div>
               </div>
               
               {selectedFlight.slices[0].segments?.map((segment: any, idx: number) => (
@@ -487,19 +475,19 @@ const handleLogout = async () => {
 
                   <div className="pt-3 border-t border-zinc-800 flex justify-between text-xs text-zinc-400">
                     <div>{segment.marketing_carrier?.name}</div>
-                    <div>{formatDuration(segment.duration)} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
+                    <div>{segment.duration} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* RETURN */}
+          {/* Return */}
           {selectedFlight.slices?.[1] && (
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-xs font-semibold tracking-wider">RETURN</div>
-                <div className="text-xs text-zinc-500">{formatDuration(selectedFlight.slices[1].duration)}</div>
+                <div className="text-xs text-zinc-500">{selectedFlight.slices[1].duration}</div>
               </div>
               
               {selectedFlight.slices[1].segments?.map((segment: any, idx: number) => (
@@ -538,7 +526,7 @@ const handleLogout = async () => {
 
                   <div className="pt-3 border-t border-zinc-800 flex justify-between text-xs text-zinc-400">
                     <div>{segment.marketing_carrier?.name}</div>
-                    <div>{formatDuration(segment.duration)} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
+                    <div>{segment.duration} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
                   </div>
                 </div>
               ))}
@@ -547,30 +535,7 @@ const handleLogout = async () => {
 
         </div>
 
-        {/* Baggage & Conditions Section */}
-        <div className="mt-6 bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
-          <div className="text-sm font-semibold mb-3 text-zinc-300">Baggage & Fare Conditions</div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="bg-zinc-900 rounded-xl p-4">
-              <div className="text-emerald-400 text-xs tracking-widest mb-1">CARRY-ON BAGGAGE</div>
-              <div className="font-medium">1 × 10kg included</div>
-              <div className="text-xs text-zinc-400 mt-1">Standard personal item + carry-on</div>
-            </div>
-            
-            <div className="bg-zinc-900 rounded-xl p-4">
-              <div className="text-emerald-400 text-xs tracking-widest mb-1">CHECKED BAGGAGE</div>
-              <div className="font-medium">Not included</div>
-              <div className="text-xs text-zinc-400 mt-1">Can be added during booking on Duffel</div>
-            </div>
-          </div>
-
-          <div className="mt-4 text-xs text-zinc-400">
-            Exact baggage allowance will be shown on the Duffel booking page.
-          </div>
-        </div>
-
-        {/* Price */}
+        {/* Price - full width under the flights */}
         <div className="mt-6 bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex justify-between items-center">
           <div>
             <div className="text-sm text-zinc-400">Total price for all passengers</div>
@@ -583,20 +548,22 @@ const handleLogout = async () => {
 
       </div>
 
-      {/* Footer */}
-      <div className="px-8 py-6 border-t border-zinc-800 flex justify-end gap-3 flex-shrink-0">
+      {/* Footer Buttons */}
+      <div className="px-8 py-6 bg-zinc-950 border-t border-zinc-800 flex gap-4 flex-shrink-0">
         <button 
-          onClick={() => setSelectedFlight(null)}
-          className="px-6 py-3 rounded-2xl border border-zinc-700 hover:bg-zinc-800 text-sm font-medium"
+          onClick={() => setSelectedFlight(null)} 
+          className="flex-1 py-4 rounded-2xl border border-zinc-700 hover:bg-zinc-800 font-medium transition active:scale-[0.985]"
         >
           Cancel
         </button>
         <button 
-          onClick={() => createDuffelLink(selectedFlight.id)}
-          disabled={bookingLoading}
-          className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 rounded-2xl text-sm font-semibold flex items-center gap-2"
+          onClick={() => {
+            createDuffelLink(selectedFlight.id);
+            setSelectedFlight(null);
+          }} 
+          className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-2xl font-bold text-lg transition active:scale-[0.985]"
         >
-          {bookingLoading ? 'Creating link...' : 'Book on Duffel →'}
+          Book on Duffel →
         </button>
       </div>
 
