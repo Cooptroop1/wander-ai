@@ -651,15 +651,16 @@ const confirmHold = async () => {
           )}
         </div>
       )}
-<button onClick={handlePayNow} className="bg-emerald-500 py-4 rounded-2xl font-bold w-full">
-  Pay Now with Test Card
-</button>
+
       
       {/* CHECKOUT MODAL */}
       {showCheckout && selectedOffer && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto p-8">
             <div className="flex justify-between mb-6">
+              <button onClick={handlePayNow} className="bg-emerald-500 py-4 rounded-2xl font-bold w-full">
+  Pay Now with Test Card
+</button>
               <h2 className="text-2xl font-bold">Checkout</h2>
               <button onClick={closeCheckout} className="text-2xl">×</button>
             </div>
