@@ -1,8 +1,8 @@
 'use client';
- 
+
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 
 interface Order {
   id: string;
@@ -23,7 +23,11 @@ function SuccessContent() {
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
 
-  const supabase = createClientComponentClient();
+  // Create Supabase client directly (no extra package needed)
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   useEffect(() => {
     if (!orderId) {
@@ -34,7 +38,7 @@ function SuccessContent() {
 
     const fetchAndSaveOrder = async () => {
       try {
-        // 1. Fetch order from Duffel
+        // Fetch order from Duffel
         const res = await fetch(`/api/duffel/get-order?order_id=${orderId}`);
         const result = await res.json();
 
@@ -47,40 +51,37 @@ function SuccessContent() {
         const orderData = result.order;
         setOrder(orderData);
 
-        // 2. Get current user
+        // Get current logged in user
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.warn('No user logged in - booking not saved to account');
-          setLoading(false);
-          return;
-        }
 
-        // 3. Delete old rows for this user + this order (as you requested)
-        await supabase
-          .from('bookings')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('duffel_order_id', orderData.id);
+        if (user) {
+          // Delete old rows for this user + order
+          await supabase
+            .from('bookings')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('duffel_order_id', orderData.id);
 
-        // 4. Insert fresh booking record
-        const { error: insertError } = await supabase.from('bookings').insert({
-          user_id: user.id,
-          duffel_order_id: orderData.id,
-          booking_reference: orderData.booking_reference,
-          status: orderData.status,
-          total_amount: orderData.total_amount,
-          total_currency: orderData.total_currency,
-          slices: orderData.slices,
-          passengers: orderData.passengers,
-          raw_order: orderData,           // keep full data just in case
-          created_at: new Date().toISOString(),
-        });
+          // Insert new booking
+          const { error: insertError } = await supabase.from('bookings').insert({
+            user_id: user.id,
+            duffel_order_id: orderData.id,
+            booking_reference: orderData.booking_reference,
+            status: orderData.status,
+            total_amount: orderData.total_amount,
+            total_currency: orderData.total_currency,
+            slices: orderData.slices,
+            passengers: orderData.passengers,
+            raw_order: orderData,
+          });
 
-        if (insertError) {
-          console.error('Failed to save booking:', insertError);
+          if (!insertError) {
+            setSaved(true);
+          } else {
+            console.error('Insert error:', insertError);
+          }
         } else {
-          setSaved(true);
-          console.log('Booking saved to Supabase');
+          console.warn('User not logged in - booking not linked to account');
         }
 
       } catch (err: any) {
@@ -95,74 +96,61 @@ function SuccessContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl">Saving your booking...</p>
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+        <p className="text-xl">Saving your booking to My Trips...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
+          <h1 className="text-2xl font-bold text-red-500 mb-4">Error</h1>
           <p>{error}</p>
         </div>
       </div>
     );
   }
 
-  if (!order) {
-    return <div>No order found</div>;
-  }
+  if (!order) return <div>No order found</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-8">
-      <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center mb-8">
-        <h1 className="text-3xl font-bold text-green-700 mb-2">Booking Confirmed!</h1>
-        <p className="text-green-600">Thank you for your booking.</p>
-        {saved && <p className="text-sm text-green-600 mt-2">✓ Saved to your My Trips</p>}
+    <div className="max-w-3xl mx-auto p-8 bg-zinc-950 text-white min-h-screen">
+      <div className="bg-emerald-950 border border-emerald-800 rounded-3xl p-8 text-center mb-8">
+        <h1 className="text-3xl font-bold text-emerald-400 mb-2">Booking Confirmed!</h1>
+        <p className="text-emerald-300">Thank you for your booking.</p>
+        {saved && <p className="text-sm text-emerald-400 mt-2">✓ Saved to your My Trips</p>}
       </div>
 
-      <div className="bg-white border rounded-xl p-6 shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Booking Details</h2>
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
+        <h2 className="text-xl font-semibold mb-6">Booking Details</h2>
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-6 text-sm">
           <div>
-            <p className="text-gray-500">Booking Reference (PNR)</p>
-            <p className="font-mono text-2xl font-bold tracking-wider">{order.booking_reference}</p>
+            <p className="text-zinc-400 text-xs tracking-widest">BOOKING REFERENCE (PNR)</p>
+            <p className="font-mono text-3xl font-bold tracking-[3px] mt-1">{order.booking_reference}</p>
           </div>
           <div>
-            <p className="text-gray-500">Status</p>
-            <p className="font-semibold capitalize text-lg">{order.status}</p>
+            <p className="text-zinc-400 text-xs tracking-widest">STATUS</p>
+            <p className="font-semibold text-xl capitalize mt-1">{order.status}</p>
           </div>
           <div>
-            <p className="text-gray-500">Total Paid</p>
-            <p className="font-semibold text-lg">{order.total_currency} {order.total_amount}</p>
+            <p className="text-zinc-400 text-xs tracking-widest">TOTAL PAID</p>
+            <p className="font-semibold text-2xl mt-1">{order.total_currency} {order.total_amount}</p>
           </div>
           <div>
-            <p className="text-gray-500">Order ID</p>
-            <p className="font-mono text-xs break-all text-gray-600">{order.id}</p>
+            <p className="text-zinc-400 text-xs tracking-widest">ORDER ID</p>
+            <p className="font-mono text-xs break-all text-zinc-400 mt-1">{order.id}</p>
           </div>
-        </div>
-
-        <div className="mt-6 pt-6 border-t text-sm text-gray-600">
-          A confirmation email has been sent with your e-ticket.<br />
-          To manage or cancel this booking, use the <strong>Booking Reference (PNR)</strong> above on the airline’s website.
         </div>
       </div>
 
-      <div className="mt-8 flex justify-center gap-4">
-        <a 
-          href="/my-trips" 
-          className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-medium"
-        >
+      <div className="mt-8 flex gap-4 justify-center">
+        <a href="/my-trips" className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-semibold">
           View My Trips →
         </a>
-        <a 
-          href="/" 
-          className="px-6 py-3 border border-zinc-300 hover:bg-zinc-50 rounded-2xl font-medium"
-        >
+        <a href="/" className="px-8 py-4 border border-zinc-700 hover:bg-zinc-900 rounded-2xl font-medium">
           Search more flights
         </a>
       </div>
@@ -172,11 +160,7 @@ function SuccessContent() {
 
 export default function SuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading booking details...</p>
-      </div>
-    }>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
       <SuccessContent />
     </Suspense>
   );
