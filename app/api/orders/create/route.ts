@@ -1,4 +1,8 @@
-import { duffel } from "@/lib/duffel"; // Make sure this path matches your project
+import { Duffel } from '@duffel/api';
+
+const duffel = new Duffel({
+  token: process.env.DUFFEL_ACCESS_TOKEN!,
+});
 
 export async function POST(request: Request) {
   try {
@@ -6,11 +10,11 @@ export async function POST(request: Request) {
 
     let orderPayload: any;
 
-    // If the frontend sent a full payload from DuffelAncilaries component, use it
+    // Support payload from Duffel Ancillaries component
     if (body.payload) {
       orderPayload = body.payload;
     } 
-    // Fallback for old/manual flow or simple Pay Now / Hold
+    // Fallback for manual / old flow
     else {
       orderPayload = {
         type: body.type || "instant",
@@ -18,24 +22,21 @@ export async function POST(request: Request) {
         passengers: body.passengers || [],
       };
 
-      // Only add payments for instant orders
       if (orderPayload.type === "instant") {
         orderPayload.payments = body.payments || [
           {
             type: "balance",
             currency: "GBP",
-            amount: body.finalAmount || body.payload?.total_amount,
+            amount: body.finalAmount,
           },
         ];
       }
 
-      // Optional: add services if sent manually
       if (body.services && body.services.length > 0) {
         orderPayload.services = body.services;
       }
     }
 
-    // Create the order with Duffel
     const orderResponse = await duffel.orders.create(orderPayload);
 
     return Response.json({
