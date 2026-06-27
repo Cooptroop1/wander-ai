@@ -58,7 +58,6 @@ export default function WanderAI() {
       if (data.success && data.seat_maps?.length > 0) {
         setSeatMaps(data.seat_maps);
       } else {
-        console.log('No seat maps for this offer — showing bags only');
         setSeatMaps([]);
       }
 
@@ -202,7 +201,7 @@ export default function WanderAI() {
                   <DuffelAncillaries
                     debug={true}
                     offer={selectedOffer}
-                    seat_maps={seatMaps}
+                    {...(seatMaps.length > 0 ? { seat_maps: seatMaps } : {})}
                     services={availableServices}
                     passengers={[passenger]}
                     onPayloadReady={handlePayloadReady}
@@ -230,7 +229,7 @@ export default function WanderAI() {
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Proper implementation • seat_maps only when available
+          Proper implementation (no empty seat_maps prop)
         </p>
       </div>
     </div>
