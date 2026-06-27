@@ -76,47 +76,61 @@ export default function WanderAI() {
   };
 
   const handlePayNow = async () => {
-    if (!selectedOffer || !ancillariesPayload) {
-      alert('Please complete bags/seats selection first');
+  if (!selectedOffer || !ancillariesPayload) {
+    alert('Please complete bags/seats selection first');
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    // Build payload ourselves - use our passenger + services from ancillaries
+    const orderPayload = {
+      type: 'instant',
+      selected_offers: [selectedOffer.id],
+      passengers: [
+        {
+          id: 'pax_1',                    // must match what we passed to the component
+          given_name: givenName,
+          family_name: familyName,
+          gender: gender,
+          title: title,
+          born_on: bornOn,
+          email: email,
+          phone_number: phone,
+        },
+      ],
+      services: ancillariesPayload.services || [],
+      payments: ancillariesPayload.payments || [],
+    };
+
+    const res = await fetch('/api/orders/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payload: orderPayload }),
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      alert('Booking failed: ' + (result.error || 'Unknown error'));
+      console.error('Full Duffel error:', result.details || result);
       return;
     }
 
-    setLoading(true);
+    alert(`✅ Booked successfully! Order ID: ${result.order.id}`);
+    setShowCheckout(false);
+    setAncillariesPayload(null);
+    setSelectedOffer(null);
+    setSeatMaps([]);
 
-    try {
-      const orderPayload = {
-        ...ancillariesPayload,
-        type: 'instant',
-        selected_offers: [selectedOffer.id],
-      };
-
-      const res = await fetch('/api/orders/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payload: orderPayload }),
-      });
-
-      const result = await res.json();
-
-      if (!result.success) {
-        alert('Booking failed: ' + (result.error || 'Unknown error'));
-        console.error(result);
-        return;
-      }
-
-      alert(`✅ Booked successfully! Order ID: ${result.order.id}`);
-      setShowCheckout(false);
-      setAncillariesPayload(null);
-      setSelectedOffer(null);
-      setSeatMaps([]);
-
-    } catch (err: any) {
-      console.error(err);
-      alert('Error creating booking');
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (err: any) {
+    console.error(err);
+    alert('Error creating booking');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const passenger = {
     id: 'pax_1',
