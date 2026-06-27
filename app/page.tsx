@@ -272,16 +272,13 @@ const handlePayNow = async () => {
   try {
     let orderPayload: any;
 
-    // Use payload from Duffel Ancillaries component if available
     if (ancillariesPayload && ancillariesPayload.data) {
       orderPayload = {
         ...ancillariesPayload.data,
         type: "instant",
         selected_offers: [selectedOffer.id],
       };
-    } 
-    // Fallback basic payload
-    else {
+    } else {
       orderPayload = {
         type: "instant",
         selected_offers: [selectedOffer.id],
@@ -291,7 +288,7 @@ const handlePayNow = async () => {
             given_name: givenName || "James",
             family_name: familyName || "Cooper",
             born_on: bornOn || "1978-12-04",
-            gender: (gender as "m" | "f" | "other") || "m",
+            gender: (gender as "m" | "f" | "other") || "m",   // ← Fixed here
             email: email || "jcooper4888@aol.co.uk",
             phone_number: phone || "+447368841330",
           },
@@ -766,7 +763,7 @@ const confirmHold = async () => {
           {
             given_name: givenName || "James",
             family_name: familyName || "Cooper",
-            gender: gender || "m",
+            gender: (gender as "m" | "f" | "other") || "m",
             title: title || "mr",
             born_on: bornOn || "1978-12-04",
             email: email || "jcooper4888@aol.co.uk",
