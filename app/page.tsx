@@ -198,14 +198,24 @@ export default function WanderAI() {
               <div className="mb-8">
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
-                  <DuffelAncillaries
-                    debug={true}
-                    offer={selectedOffer}
-                    {...(seatMaps.length > 0 ? { seat_maps: seatMaps } : {})}
-                    services={availableServices}
-                    passengers={[passenger]}
-                    onPayloadReady={handlePayloadReady}
-                  />
+                  {seatMaps.length > 0 ? (
+                    <DuffelAncillaries
+                      debug={true}
+                      offer={selectedOffer}
+                      seat_maps={seatMaps}
+                      services={availableServices}
+                      passengers={[passenger]}
+                      onPayloadReady={handlePayloadReady}
+                    />
+                  ) : (
+                    <DuffelAncillaries
+                      debug={true}
+                      offer={selectedOffer}
+                      services={availableServices}
+                      passengers={[passenger]}
+                      onPayloadReady={handlePayloadReady}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -229,7 +239,7 @@ export default function WanderAI() {
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Proper implementation (no empty seat_maps prop)
+          Proper implementation (conditional seat_maps)
         </p>
       </div>
     </div>
