@@ -61,20 +61,20 @@ const handleLogout = async () => {
 
   // Airport suggestions
   const fetchSuggestions = async (query: string, setSuggestions: any, setShow: any) => {
-    if (query.length < 2) {
-      setSuggestions([]);
-      setShow(false);
-      return;
-    }
-    try {
-      const res = await fetch(`/api/airports?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      setSuggestions(data.slice(0, 8));
-      setShow(true);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  if (query.length < 2) {
+    setSuggestions([]);
+    setShow(false);
+    return;
+  }
+  try {
+    const res = await fetch(`/api/places/suggestions?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    setSuggestions(data.places?.slice(0, 8) || []);   // ← Note the .places
+    setShow(true);
+  } catch (e) {
+    console.error(e);
+  }
+};
 
   // Search flights
   const handleRealSearch = async () => {
