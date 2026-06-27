@@ -78,36 +78,37 @@ const handleLogout = async () => {
 
   // Search flights
   const handleRealSearch = async () => {
-    if (!from || !to || !depart) {
-      alert('Please fill in From, To and Departure date');
-      return;
-    }
+  if (!from || !to || !depart) {
+    alert('Please fill in From, To and Departure date');
+    return;
+  }
 
-    try {
-      const res = await fetch('/api/duffel/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          origin: from,
-          destination: to,
-          departure_date: depart,
-          return_date: journeyType === 'return' ? returnDate : undefined,
-          passengers,
-          cabin_class: cabinClass,
-        }),
-      });
+  try {
+    const res = await fetch('/api/flights/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: from,
+        to: to,
+        departDate: depart,
+        returnDate: journeyType === 'return' ? returnDate : undefined,
+        passengers: passengers,
+        cabinClass: cabinClass,
+      }),
+    });
 
-      const data = await res.json();
-      if (data.offers) {
-        setOffers(data.offers);
-      } else {
-        alert('No flights found');
-      }
-    } catch (error) {
-      console.error(error);
-      alert('Search failed');
+    const data = await res.json();
+
+    if (data.success && data.offers && data.offers.length > 0) {
+      setOffers(data.offers);
+    } else {
+      alert(data.error || 'No flights found');
     }
-  };
+  } catch (error) {
+    console.error(error);
+    alert('Search failed');
+  }
+};
 
   // Create Duffel Link and redirect
   const createDuffelLink = async (offerId: string) => {
