@@ -264,13 +264,13 @@ const handleLogout = async () => {
         )}
       </div>
 
-      {/* Flight Details Modal */}
+     {/* Flight Details Modal */}
 {selectedFlight && (
   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-    <div className="bg-zinc-900 rounded-3xl w-full max-w-2xl border border-zinc-700 overflow-hidden">
+    <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl border border-zinc-700 overflow-hidden flex flex-col max-h-[92vh]">
       
-      {/* Header */}
-      <div className="px-8 pt-8 pb-6 border-b border-zinc-800 flex justify-between items-center">
+      {/* Header - stays at top */}
+      <div className="px-8 pt-8 pb-6 border-b border-zinc-800 flex justify-between items-center flex-shrink-0">
         <div>
           <h2 className="text-2xl font-bold">Flight Details</h2>
           <p className="text-zinc-400 text-sm mt-1">Review before booking</p>
@@ -283,7 +283,8 @@ const handleLogout = async () => {
         </button>
       </div>
 
-      <div className="p-8 space-y-8">
+      {/* Scrollable content area */}
+      <div className="p-8 space-y-8 overflow-y-auto flex-1">
         
         {/* Outbound */}
         {selectedFlight.slices?.[0] && (
@@ -388,8 +389,8 @@ const handleLogout = async () => {
 
       </div>
 
-      {/* Actions */}
-      <div className="px-8 py-6 bg-zinc-950 border-t border-zinc-800 flex gap-4">
+      {/* Footer - stays at bottom */}
+      <div className="px-8 py-6 bg-zinc-950 border-t border-zinc-800 flex gap-4 flex-shrink-0">
         <button 
           onClick={() => setSelectedFlight(null)} 
           className="flex-1 py-4 rounded-2xl border border-zinc-700 hover:bg-zinc-800 font-medium transition"
