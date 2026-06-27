@@ -9,7 +9,7 @@ export default function WanderAI() {
   const [departureDate, setDepartureDate] = useState('2026-07-15');
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-const availableServices = seatMaps.length > 0 ? ['bags', 'seats'] : ['bags'];
+
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [seatMaps, setSeatMaps] = useState<any[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -130,7 +130,7 @@ const availableServices = seatMaps.length > 0 ? ['bags', 'seats'] : ['bags'];
     phone_number: phone,
   };
 
-  // Only request seats if we have seat maps
+  // Only request seats if we actually have seat maps
   const availableServices = seatMaps.length > 0 ? ['bags', 'seats'] : ['bags'];
 
   return (
