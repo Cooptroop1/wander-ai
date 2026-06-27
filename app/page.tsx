@@ -36,18 +36,28 @@ export default function WanderAI() {
   const [selectedFlight, setSelectedFlight] = useState<any>(null);
 
   // Load user
-  React.useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    getUser();
-  }, [supabase]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+ React.useEffect(() => {
+  // Get current user
+  const getUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
   };
+  getUser();
+
+  // Listen for auth changes (fixes Google login redirect)
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      setUser(session?.user ?? null);
+    }
+  );
+
+  return () => subscription.unsubscribe();
+}, []);
+
+const handleLogout = async () => {
+  await supabase.auth.signOut();
+  setUser(null);
+};
 
   // Airport suggestions
   const fetchSuggestions = async (query: string, setSuggestions: any, setShow: any) => {
