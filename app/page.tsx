@@ -200,7 +200,7 @@ export default function WanderAI() {
               <div className="mb-8">
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
-                  {/* @ts-ignore */}
+                  {/* @ts-ignore - Duffel web component */}
                   <duffel-ancillaries ref={ancillariesRef}></duffel-ancillaries>
                 </div>
               </div>
@@ -225,7 +225,7 @@ export default function WanderAI() {
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Using official Duffel Web Component
+          Clean build • Duffel Web Component
         </p>
       </div>
     </div>
