@@ -9,7 +9,7 @@ export default function WanderAI() {
   const [departureDate, setDepartureDate] = useState('2026-07-15');
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-
+const availableServices = seatMaps.length > 0 ? ['bags', 'seats'] : ['bags'];
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [seatMaps, setSeatMaps] = useState<any[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -52,29 +52,27 @@ export default function WanderAI() {
     setSeatMaps([]);
 
     try {
-      // Fetch seat maps first (as recommended by Duffel)
       const res = await fetch(`/api/seat-maps?offer_id=${offer.id}`);
       const data = await res.json();
 
-      if (data.success) {
-        setSeatMaps(data.seat_maps || []);
+      if (data.success && data.seat_maps?.length > 0) {
+        setSeatMaps(data.seat_maps);
       } else {
-        console.warn('No seat maps available for this offer');
+        console.log('No seat maps for this offer — showing bags only');
         setSeatMaps([]);
       }
 
       setShowCheckout(true);
     } catch (err) {
-      console.error('Failed to fetch seat maps:', err);
+      console.error('Seat maps fetch failed:', err);
       setSeatMaps([]);
-      setShowCheckout(true); // still open modal even without seat maps
+      setShowCheckout(true);
     } finally {
       setLoading(false);
     }
   };
 
   const handlePayloadReady = (data: any, metadata: any) => {
-    console.log('Ancillaries payload ready:', data);
     setAncillariesPayload(data);
   };
 
@@ -132,6 +130,9 @@ export default function WanderAI() {
     phone_number: phone,
   };
 
+  // Only request seats if we have seat maps
+  const availableServices = seatMaps.length > 0 ? ['bags', 'seats'] : ['bags'];
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
       <div className="max-w-5xl mx-auto">
@@ -180,7 +181,6 @@ export default function WanderAI() {
           </div>
         )}
 
-        {/* CHECKOUT MODAL */}
         {showCheckout && selectedOffer && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto">
             <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl p-8">
@@ -203,8 +203,8 @@ export default function WanderAI() {
                   <DuffelAncillaries
                     debug={true}
                     offer={selectedOffer}
-                    seat_maps={seatMaps}
-                    services={['bags', 'seats']}
+                    seat_maps={seatMaps.length > 0 ? seatMaps : undefined}
+                    services={availableServices}
                     passengers={[passenger]}
                     onPayloadReady={handlePayloadReady}
                   />
@@ -231,7 +231,7 @@ export default function WanderAI() {
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Following Duffel official guide (offer + seat_maps)
+          Proper implementation • seat_maps only when available
         </p>
       </div>
     </div>
