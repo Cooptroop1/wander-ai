@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const DUFFEL_API_KEY = process.env.DUFFEL_API_KEY;
+const DUFFEL_ACCESS_TOKEN = process.env.DUFFEL_ACCESS_TOKEN || process.env.DUFFEL_API_KEY;
 const DUFFEL_API_URL = 'https://api.duffel.com';
 
 export async function POST(request: NextRequest) {
-  if (!DUFFEL_API_KEY) {
+  if (!DUFFEL_ACCESS_TOKEN) {
     return NextResponse.json(
-      { success: false, error: 'Duffel API key not configured' },
+      { success: false, error: 'Duffel API key not configured (DUFFEL_ACCESS_TOKEN)' },
       { status: 500 }
     );
   }
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(`${DUFFEL_API_URL}/air/orders`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${DUFFEL_API_KEY}`,
+        'Authorization': `Bearer ${DUFFEL_ACCESS_TOKEN}`,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Duffel-Version': 'v2',
