@@ -254,115 +254,27 @@ useEffect(() => {
 
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
-const createCustomerUser = async () => {
-  const uniqueEmail = `test+${Date.now()}@example.com`;
-
-  const res = await fetch('/api/duffel/create-customer-user', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: uniqueEmail,
-      given_name: givenName || 'James',
-      family_name: familyName || 'Cooper',
-      phone_number: phone || '+447700000000',
-    }),
-  });
-
-  const result = await res.json();
-  if (!result.success) {
-    throw new Error(result.error);
-  }
-  return result.customerUser.id;
-};
-
-const handlePayNow = async () => {
+const handleBookWithDuffel = async () => {
   if (!selectedOffer) return;
 
   try {
-    const customerUserId = await createCustomerUser();
-
-    const passengers = [{
-      user_id: customerUserId,
-      title: title || 'mr',
-      given_name: givenName || 'James',
-      family_name: familyName || 'Cooper',
-      born_on: bornOn || '1990-01-01',
-      gender: gender || 'm',
-      email: email || 'test@example.com',
-      phone_number: phone || '+447700000000',
-    }];
-
-    const payload = {
-      type: 'hold',
-      selected_offers: [selectedOffer.id],
-      passengers,
-      services: [],
-      users: [customerUserId],
-    };
-
-    const res = await fetch('/api/orders/create', {
+    const res = await fetch('/api/duffel/create-link', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ payload }),
+      body: JSON.stringify({
+        selected_offers: [selectedOffer.id],
+      }),
     });
 
     const result = await res.json();
 
     if (!result.success) {
-      alert('Booking failed: ' + result.error);
-      console.error(result.details);
+      alert('Failed to create booking link: ' + result.error);
       return;
     }
 
-    alert('✅ Hold created! Order ID: ' + result.order.id);
-    setShowCheckout(false);
-
-  } catch (err: any) {
-    alert('Error: ' + err.message);
-  }
-};
-
-const confirmHold = async () => {
-  if (!selectedOffer) return;
-
-  try {
-    const customerUserId = await createCustomerUser();
-
-    const passengers = [{
-      user_id: customerUserId,
-      title: title || 'mr',
-      given_name: givenName || 'James',
-      family_name: familyName || 'Cooper',
-      born_on: bornOn || '1990-01-01',
-      gender: gender || 'm',
-      email: email || 'test@example.com',
-      phone_number: phone || '+447700000000',
-    }];
-
-    const payload = {
-      type: 'hold',
-      selected_offers: [selectedOffer.id],
-      passengers,
-      services: [],
-      users: [customerUserId],
-    };
-
-    const res = await fetch('/api/orders/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ payload }),
-    });
-
-    const result = await res.json();
-
-    if (!result.success) {
-      alert('Hold failed: ' + result.error);
-      return;
-    }
-
-    alert('✅ Hold created! Order ID: ' + result.order.id);
-    setShowHoldInfo(false);
-    setShowOrderHeld(true);
+    // Redirect user to Duffel's hosted checkout
+    window.location.href = result.link_url;
 
   } catch (err: any) {
     alert('Error: ' + err.message);
