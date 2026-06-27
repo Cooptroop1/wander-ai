@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { DuffelAncillaries } from '@duffel/components';
+import React, { useState, useRef, useEffect } from 'react';
+import Script from 'next/script';
 
 export default function WanderAI() {
   const [origin, setOrigin] = useState('LHR');
@@ -21,6 +21,11 @@ export default function WanderAI() {
   const [bornOn, setBornOn] = useState('');
   const [gender, setGender] = useState<'m' | 'f'>('m');
   const [title, setTitle] = useState<'mr' | 'mrs' | 'ms' | 'miss' | 'dr'>('mr');
+
+  const ancillariesRef = useRef<any>(null);
+
+  // Load Duffel Web Component script
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   const searchFlights = async () => {
     setLoading(true);
@@ -50,13 +55,47 @@ export default function WanderAI() {
     setAncillariesPayload(null);
   };
 
+  // Initialize Duffel Web Component when modal opens
+  useEffect(() => {
+    if (!showCheckout || !selectedOffer || !scriptLoaded) return;
+
+    const element = ancillariesRef.current;
+    if (!element) return;
+
+    // Render the web component
+    element.render({
+      offer_id: selectedOffer.id,
+      services: ["bags", "seats"],
+      passengers: [
+        {
+          id: "pax_1",
+          given_name: givenName || "Test",
+          family_name: familyName || "User",
+          gender: gender.toUpperCase(),
+          title: title,
+          born_on: bornOn || "1990-01-01",
+          email: email || "test@example.com",
+          phone_number: phone || "+447700000000",
+        },
+      ],
+    });
+
+    // Listen for payload
+    const handlePayload = (event: any) => {
+      console.log("Duffel payload ready:", event.detail);
+      setAncillariesPayload(event.detail);
+    };
+
+    element.addEventListener("onPayloadReady", handlePayload);
+
+    return () => {
+      element.removeEventListener("onPayloadReady", handlePayload);
+    };
+  }, [showCheckout, selectedOffer, scriptLoaded, givenName, familyName, email, phone, bornOn, gender, title]);
+
   const handlePayNow = async () => {
-    if (!selectedOffer) {
-      alert('No offer selected');
-      return;
-    }
-    if (!ancillariesPayload) {
-      alert('Please add bags or seats in the form above first.');
+    if (!selectedOffer || !ancillariesPayload) {
+      alert("Please complete bags/seats selection first");
       return;
     }
 
@@ -65,7 +104,7 @@ export default function WanderAI() {
     try {
       const orderPayload = {
         ...ancillariesPayload.data,
-        type: 'instant',
+        type: "instant",
         selected_offers: [selectedOffer.id],
       };
 
@@ -78,18 +117,18 @@ export default function WanderAI() {
       const result = await res.json();
 
       if (!result.success) {
-        alert('Booking failed: ' + (result.error || 'Unknown error'));
+        alert("Booking failed: " + (result.error || "Unknown error"));
         return;
       }
 
-      alert(`✅ Booked successfully!\nOrder ID: ${result.order.id}`);
+      alert(`✅ Booked successfully! Order ID: ${result.order.id}`);
       setShowCheckout(false);
       setAncillariesPayload(null);
       setSelectedOffer(null);
 
     } catch (err: any) {
       console.error(err);
-      alert('Error creating booking');
+      alert("Error creating booking");
     } finally {
       setLoading(false);
     }
@@ -97,6 +136,11 @@ export default function WanderAI() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
+      <Script
+        src="https://assets.duffel.com/components/3.7.25/duffel-ancillaries.js"
+        onLoad={() => setScriptLoaded(true)}
+      />
+
       <div className="max-w-5xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">Wander AI</h1>
 
@@ -112,36 +156,25 @@ export default function WanderAI() {
           </div>
         </div>
 
-        {/* Flight Results - FIXED object rendering */}
+        {/* Flight Results */}
         {offers.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Available Flights ({offers.length})</h2>
-            
             <div className="space-y-4">
               {offers.map((offer, index) => {
                 const slice = offer.slices?.[0];
                 const segment = slice?.segments?.[0];
                 const airline = offer.owner?.name || 'Airline';
-
-                // Safely get origin/destination codes
                 const originCode = typeof slice?.origin === 'string' ? slice.origin : slice?.origin?.iata_code || 'N/A';
                 const destCode = typeof slice?.destination === 'string' ? slice.destination : slice?.destination?.iata_code || 'N/A';
 
                 return (
-                  <div
-                    key={index}
-                    onClick={() => selectOffer(offer)}
-                    className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-500 rounded-2xl p-6 cursor-pointer transition-all"
-                  >
+                  <div key={index} onClick={() => selectOffer(offer)} className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-500 rounded-2xl p-6 cursor-pointer transition-all">
                     <div className="flex justify-between items-center">
                       <div>
                         <div className="font-semibold text-lg">{airline}</div>
-                        <div className="text-sm text-zinc-400 mt-1">
-                          {originCode} → {destCode}
-                        </div>
-                        <div className="text-xs text-zinc-500 mt-1">
-                          {segment?.departing_at}
-                        </div>
+                        <div className="text-sm text-zinc-400 mt-1">{originCode} → {destCode}</div>
+                        <div className="text-xs text-zinc-500 mt-1">{segment?.departing_at}</div>
                       </div>
                       <div className="text-right">
                         <div className="text-3xl font-bold">£{offer.total_amount}</div>
@@ -156,7 +189,7 @@ export default function WanderAI() {
           </div>
         )}
 
-        {/* CHECKOUT MODAL */}
+        {/* CHECKOUT MODAL with Duffel Web Component */}
         {showCheckout && selectedOffer && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8">
@@ -173,32 +206,15 @@ export default function WanderAI() {
                 <div className="text-2xl font-bold mt-2">£{selectedOffer.total_amount}</div>
               </div>
 
+              {/* Duffel Web Component for Bags + Seats */}
               <div className="mb-8">
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
-                  <DuffelAncillaries
-  offer={selectedOffer}
-  services={["bags"]}
-  passengers={[
-    {
-      id: "pax_1",
-      given_name: givenName || "",
-      family_name: familyName || "",
-      born_on: bornOn || "",
-      title: title,
-      gender: gender,
-      email: email || "",
-      phone_number: phone || "",
-    },
-  ]}
-  seat_maps={[]}
-  onPayloadReady={(payload) => {
-    setAncillariesPayload(payload);
-  }}
-/>
+                  <duffel-ancillaries ref={ancillariesRef}></duffel-ancillaries>
                 </div>
               </div>
 
+              {/* Passenger Form */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <input placeholder="First name" value={givenName} onChange={e => setGivenName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
                 <input placeholder="Last name" value={familyName} onChange={e => setFamilyName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
@@ -219,7 +235,7 @@ export default function WanderAI() {
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Clean build • Real Duffel integration
+          Clean build • Using official Duffel Web Component
         </p>
       </div>
     </div>
