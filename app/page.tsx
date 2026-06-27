@@ -203,7 +203,7 @@ export default function WanderAI() {
                   <DuffelAncillaries
                     debug={true}
                     offer={selectedOffer}
-                    seat_maps={seatMaps.length > 0 ? seatMaps : undefined}
+                    seat_maps={seatMaps}
                     services={availableServices}
                     passengers={[passenger]}
                     onPayloadReady={handlePayloadReady}
