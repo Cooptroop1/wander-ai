@@ -741,6 +741,12 @@ const handlePayNow = async () => {
 
   <div className="bg-zinc-800 p-6 rounded-2xl">
     {selectedOffer && (
+      {/* === DUFFEL ANCILLARIES === */}
+<div className="mb-8">
+  <div className="font-semibold mb-2 text-lg">Add bags, seats & extras</div>
+
+  <div className="bg-zinc-800 rounded-2xl p-6">
+    {selectedOffer && (
       <DuffelAncillaries
         offer={selectedOffer}
         services={["bags", "seats"]}
@@ -751,8 +757,6 @@ const handlePayNow = async () => {
             born_on: bornOn || "",
             email: email || "",
             phone_number: phone || "",
-            // We are NOT passing gender or title here anymore
-            // Let the component handle gender itself
           },
         ]}
         seat_maps={seatMapData?.data || []}
