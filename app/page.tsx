@@ -23,8 +23,6 @@ export default function WanderAI() {
   const [title, setTitle] = useState<'mr' | 'mrs' | 'ms' | 'miss' | 'dr'>('mr');
 
   const ancillariesRef = useRef<any>(null);
-
-  // Load Duffel Web Component script
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
   const searchFlights = async () => {
@@ -55,14 +53,12 @@ export default function WanderAI() {
     setAncillariesPayload(null);
   };
 
-  // Initialize Duffel Web Component when modal opens
   useEffect(() => {
     if (!showCheckout || !selectedOffer || !scriptLoaded) return;
 
     const element = ancillariesRef.current;
     if (!element) return;
 
-    // Render the web component
     element.render({
       offer_id: selectedOffer.id,
       services: ["bags", "seats"],
@@ -80,7 +76,6 @@ export default function WanderAI() {
       ],
     });
 
-    // Listen for payload
     const handlePayload = (event: any) => {
       console.log("Duffel payload ready:", event.detail);
       setAncillariesPayload(event.detail);
@@ -189,7 +184,7 @@ export default function WanderAI() {
           </div>
         )}
 
-        {/* CHECKOUT MODAL with Duffel Web Component */}
+        {/* CHECKOUT MODAL */}
         {showCheckout && selectedOffer && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8">
@@ -206,7 +201,6 @@ export default function WanderAI() {
                 <div className="text-2xl font-bold mt-2">£{selectedOffer.total_amount}</div>
               </div>
 
-              {/* Duffel Web Component for Bags + Seats */}
               <div className="mb-8">
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
@@ -214,7 +208,6 @@ export default function WanderAI() {
                 </div>
               </div>
 
-              {/* Passenger Form */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <input placeholder="First name" value={givenName} onChange={e => setGivenName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
                 <input placeholder="Last name" value={familyName} onChange={e => setFamilyName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
