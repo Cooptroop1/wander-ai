@@ -255,11 +255,14 @@ useEffect(() => {
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
 const createCustomerUser = async () => {
+  // Make email unique every time (for testing)
+  const uniqueEmail = `test+${Date.now()}@example.com`;
+
   const res = await fetch('/api/duffel/create-customer-user', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      email: email || 'test@example.com',
+      email: uniqueEmail,
       given_name: givenName || 'James',
       family_name: familyName || 'Cooper',
       phone_number: phone || '+447700000000',
