@@ -255,87 +255,40 @@ useEffect(() => {
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
 const handlePayNow = async () => {
-  if (!selectedOffer) {
-    alert("No offer selected");
-    return;
-  }
+  if (!selectedOffer) return;
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    alert("You must be logged in");
-    return;
-  }
+  const passengers = [{
+    id: "pax_1",
+    title: "mr",
+    given_name: givenName || "James",
+    family_name: familyName || "Cooper",
+    born_on: bornOn || "1990-01-01",
+    gender: "m",
+    email: email || "test@example.com",
+    phone_number: phone || "+447700000000",
+  }];
 
-  const passengers = [
-    {
-      id: "pax_1",
-      title: title || 'mr',
-      given_name: givenName || 'James',
-      family_name: familyName || 'Cooper',
-      born_on: bornOn || '1978-12-04',
-      gender: gender || 'm',
-      email: email || 'jcooper4888@aol.co.uk',
-      phone_number: phone || '+447368841330',
-    },
-  ];
-
-  // Build services array (bags)
-  const services: any[] = [];
-  if (selectedBags > 0 && availableServices.length > 0) {
-    // Try to find a baggage service (this is basic - can be improved later)
-    const bagService = availableServices.find((s: any) => 
-      s.type === 'baggage' || s.name?.toLowerCase().includes('bag')
-    );
-    if (bagService) {
-      services.push({
-        id: bagService.id,
-        quantity: selectedBags,
-      });
-    }
-  }
-
-  const orderPayload = {
-    type: 'instant',
+  const payload = {
+    type: "hold",                    // ← Use hold (not instant)
     selected_offers: [selectedOffer.id],
     passengers,
-    services,
+    services: [],
   };
 
-  try {
-    const res = await fetch('/api/orders/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ payload: orderPayload }),
-    });
+  const res = await fetch("/api/orders/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ payload }),
+  });
 
-    const result = await res.json();
+  const result = await res.json();
 
-    if (!result.success) {
-      alert('Booking failed: ' + (result.error || 'Unknown error'));
-      console.error('Duffel error:', result.details || result);
-      return;
-    }
-
-    const order = result.order;
-
-    await supabase.from('bookings').insert({
-      duffel_order_id: order.id,
-      user_id: user.id,
-      status: 'confirmed',
-      total: parseFloat(order.total_amount),
-      currency: order.total_currency,
-      airline: order.owner?.name || 'Airline',
-      origin: order.slices?.[0]?.origin?.iata_code || order.slices?.[0]?.origin || '',
-      destination: order.slices?.[0]?.destination?.iata_code || order.slices?.[0]?.destination || '',
-      departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
-    });
-
-    alert(`✅ Flight booked! Order ID: ${order.id}`);
+  if (result.success) {
+    alert("✅ Hold created! Order ID: " + result.order.id);
     setShowCheckout(false);
-
-  } catch (err: any) {
-    console.error(err);
-    alert('Error creating booking');
+  } else {
+    alert("Failed: " + JSON.stringify(result.error || result.details));
+    console.error("Full Duffel response:", result);
   }
 };
 
