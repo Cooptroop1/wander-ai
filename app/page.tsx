@@ -1,22 +1,19 @@
 'use client';
- 
+
 import React, { useState } from 'react';
 import { DuffelAncillaries } from '@duffel/components';
 
 export default function WanderAI() {
-  // Search state
   const [origin, setOrigin] = useState('LHR');
   const [destination, setDestination] = useState('JFK');
   const [departureDate, setDepartureDate] = useState('2026-07-15');
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Selected offer + checkout
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [showCheckout, setShowCheckout] = useState(false);
   const [ancillariesPayload, setAncillariesPayload] = useState<any>(null);
 
-  // Passenger form
   const [givenName, setGivenName] = useState('');
   const [familyName, setFamilyName] = useState('');
   const [email, setEmail] = useState('');
@@ -25,7 +22,7 @@ export default function WanderAI() {
   const [gender, setGender] = useState<'m' | 'f'>('m');
   const [title, setTitle] = useState<'mr' | 'mrs' | 'ms' | 'miss' | 'dr'>('mr');
 
-  // Search flights
+  // FIXED: Send correct field names that the API expects
   const searchFlights = async () => {
     setLoading(true);
     try {
@@ -33,9 +30,9 @@ export default function WanderAI() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          origin: origin.toUpperCase(),
-          destination: destination.toUpperCase(),
-          departure_date: departureDate,
+          from: origin.toUpperCase(),
+          to: destination.toUpperCase(),
+          departDate: departureDate,
         }),
       });
       const data = await res.json();
@@ -48,14 +45,12 @@ export default function WanderAI() {
     }
   };
 
-  // Open checkout
   const selectOffer = (offer: any) => {
     setSelectedOffer(offer);
     setShowCheckout(true);
     setAncillariesPayload(null);
   };
 
-  // Handle booking with DuffelAncillaries payload
   const handlePayNow = async () => {
     if (!selectedOffer) {
       alert('No offer selected');
@@ -186,7 +181,6 @@ export default function WanderAI() {
                 <button onClick={() => setShowCheckout(false)} className="text-zinc-400 text-2xl">×</button>
               </div>
 
-              {/* Flight Summary */}
               <div className="bg-zinc-800 rounded-2xl p-5 mb-6">
                 <div className="font-semibold">{selectedOffer.owner?.name}</div>
                 <div className="text-sm text-zinc-400">
@@ -195,7 +189,6 @@ export default function WanderAI() {
                 <div className="text-2xl font-bold mt-2">£{selectedOffer.total_amount}</div>
               </div>
 
-              {/* Duffel Ancillaries */}
               <div className="mb-8">
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
@@ -215,14 +208,11 @@ export default function WanderAI() {
                       },
                     ]}
                     seat_maps={[]}
-                    onPayloadReady={(payload) => {
-                      setAncillariesPayload(payload);
-                    }}
+                    onPayloadReady={(payload) => setAncillariesPayload(payload)}
                   />
                 </div>
               </div>
 
-              {/* Passenger Form */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <input placeholder="First name" value={givenName} onChange={e => setGivenName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
                 <input placeholder="Last name" value={familyName} onChange={e => setFamilyName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
@@ -231,11 +221,10 @@ export default function WanderAI() {
                 <input type="date" value={bornOn} onChange={e => setBornOn(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
               </div>
 
-              {/* Pay Button */}
               <button
                 onClick={handlePayNow}
                 disabled={loading || !ancillariesPayload}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-700 p-4 rounded-2xl font-bold text-lg transition-all"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-700 p-4 rounded-2xl font-bold text-lg"
               >
                 {loading ? 'Processing...' : 'Pay Now & Book with Duffel'}
               </button>
