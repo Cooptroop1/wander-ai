@@ -735,18 +735,12 @@ const handlePayNow = async () => {
   </div>
 </div>
 
-            {/* === DUFFEL ANCILLARIES (Bags + Seats + Passenger details) === */}
-<div className="mb-8">
-  <div className="font-bold mb-3">Add extras (bags, seats, etc.)</div>
+           {selectedOffer && (
+  <div className="mb-8">
+    {/* === DUFFEL ANCILLARIES === */}
+    <div className="font-semibold mb-2 text-lg">Add bags, seats & extras</div>
 
-  <div className="bg-zinc-800 p-6 rounded-2xl">
-    {selectedOffer && (
-      {/* === DUFFEL ANCILLARIES === */}
-<div className="mb-8">
-  <div className="font-semibold mb-2 text-lg">Add bags, seats & extras</div>
-
-  <div className="bg-zinc-800 rounded-2xl p-6">
-    {selectedOffer && (
+    <div className="bg-zinc-800 rounded-2xl p-6">
       <DuffelAncillaries
         offer={selectedOffer}
         services={["bags", "seats"]}
@@ -765,9 +759,9 @@ const handlePayNow = async () => {
           setAncillariesPayload(payload);
         }}
       />
-    )}
+    </div>
   </div>
-</div>
+)}
 
             <div className="mb-8">
               <div className="font-bold mb-3">Payment</div>
