@@ -254,6 +254,71 @@ useEffect(() => {
 
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
+const handlePayNow = async () => {
+  if (!selectedOffer) {
+    alert("No offer selected");
+    return;
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    alert("You must be logged in");
+    return;
+  }
+
+  const passengers = [
+    {
+      title: title || 'mr',
+      given_name: givenName || 'James',
+      family_name: familyName || 'Cooper',
+      born_on: bornOn || '1978-12-04',
+      gender: gender || 'm',
+      email: email || 'jcooper4888@aol.co.uk',
+      phone_number: phone || '+447368841330',
+    },
+  ];
+
+  try {
+    const res = await fetch('/api/orders/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        offerId: selectedOffer.id,
+        passengers,
+        finalAmount: selectedOffer.total_amount,
+      }),
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      alert('Pay Now failed: ' + (result.error || 'Unknown error'));
+      return;
+    }
+
+    const order = result.order;
+
+    await supabase.from('bookings').insert({
+      duffel_order_id: order.id,
+      user_id: user.id,
+      status: 'confirmed',
+      total: parseFloat(order.total_amount),
+      currency: order.total_currency,
+      airline: order.owner?.name || 'Duffel Airways',
+      origin: order.slices?.[0]?.origin || '',
+      destination: order.slices?.[0]?.destination || '',
+      departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
+    });
+
+    alert('✅ Flight booked and paid for! Order ID: ' + order.id);
+    setShowOrderHeld(true); // reuse the success screen or change to your own
+
+  } catch (err) {
+    alert('Error creating payment');
+    console.error(err);
+  }
+};
   
 const confirmHold = async () => {
   if (!selectedOffer) {
@@ -586,7 +651,10 @@ const confirmHold = async () => {
           )}
         </div>
       )}
-
+<button onClick={handlePayNow} className="bg-emerald-500 py-4 rounded-2xl font-bold w-full">
+  Pay Now with Test Card
+</button>
+      
       {/* CHECKOUT MODAL */}
       {showCheckout && selectedOffer && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
