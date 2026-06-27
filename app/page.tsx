@@ -162,14 +162,17 @@ export default function WanderAI() {
                     offer={selectedOffer}
                     services={["bags", "seats"]}
                     passengers={[
-                      {
-                        given_name: givenName || "",
-                        family_name: familyName || "",
-                        born_on: bornOn || "",
-                        email: email || "",
-                        phone_number: phone || "",
-                      },
-                    ]}
+  {
+    id: "pax_1",
+    given_name: givenName || "",
+    family_name: familyName || "",
+    born_on: bornOn || "",
+    title: title || "mr",
+    gender: gender || "m",
+    email: email || "",
+    phone_number: phone || "",
+  },
+]}
                     onPayloadReady={(payload) => {
                       setAncillariesPayload(payload);
                     }}
