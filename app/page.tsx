@@ -411,7 +411,7 @@ const handleLogout = async () => {
 )}
       </div>
 
-     {/* Flight Details Modal */}
+ 
 {selectedFlight && (
   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
     <div className="bg-zinc-900 rounded-3xl w-full max-w-5xl border border-zinc-700 overflow-hidden flex flex-col max-h-[92vh]">
