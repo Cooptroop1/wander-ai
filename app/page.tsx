@@ -263,67 +263,70 @@ const handlePayNow = async () => {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    alert("You must be logged in");
+    alert("You must be logged in to book");
     return;
   }
 
-  // Use the payload from Duffel Ancillaries component if available
-  // Otherwise fall back to basic payload
-  let orderPayload: any;
-
-  if (ancillariesPayload && ancillariesPayload.data) {
-    // Use the enriched payload from the component (includes services)
-    orderPayload = {
-      ...ancillariesPayload.data,
-      type: "instant",
-      selected_offers: [selectedOffer.id],
-    };
-  } else {
-    // Fallback basic payload (no ancillaries)
-    orderPayload = {
-      type: "instant",
-      selected_offers: [selectedOffer.id],
-      passengers: [
-        {
-          title: title || "mr",
-          given_name: givenName || "James",
-          family_name: familyName || "Cooper",
-          born_on: bornOn || "1978-12-04",
-          gender: gender || "m",
-          email: email || "jcooper4888@aol.co.uk",
-          phone_number: phone || "+447368841330",
-        },
-      ],
-      payments: [
-        {
-          type: "balance",
-          currency: "GBP",
-          amount: selectedOffer.total_amount,
-        },
-      ],
-    };
-  }
+  setIsLoading(true);
 
   try {
+    let orderPayload: any;
+
+    // Use payload from Duffel Ancillaries component if user selected bags/seats
+    if (ancillariesPayload && ancillariesPayload.data) {
+      orderPayload = {
+        ...ancillariesPayload.data,
+        type: "instant",
+        selected_offers: [selectedOffer.id],
+      };
+    } 
+    // Fallback - basic payload (no ancillaries)
+    else {
+      orderPayload = {
+        type: "instant",
+        selected_offers: [selectedOffer.id],
+        passengers: [
+          {
+            title: title || "mr",
+            given_name: givenName || "James",
+            family_name: familyName || "Cooper",
+            born_on: bornOn || "1978-12-04",
+            gender: (gender as "m" | "f" | "other") || "m",
+            email: email || "jcooper4888@aol.co.uk",
+            phone_number: phone || "+447368841330",
+          },
+        ],
+        payments: [
+          {
+            type: "balance",
+            currency: "GBP",
+            amount: selectedOffer.total_amount,
+          },
+        ],
+      };
+    }
+
+    // Call our API route
     const res = await fetch("/api/orders/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        offerId: selectedOffer.id,
-        payload: orderPayload,           // send the full payload
-        finalAmount: selectedOffer.total_amount,
+        payload: orderPayload,           // Send the full payload
       }),
     });
 
     const result = await res.json();
 
     if (!result.success) {
-      alert("Pay Now failed: " + (result.error?.message || result.error || "Unknown error"));
+      console.error("Order creation failed:", result);
+      alert("Booking failed: " + (result.error || "Unknown error"));
+      setIsLoading(false);
       return;
     }
 
     const order = result.order;
 
+    // Save to Supabase
     await supabase.from("bookings").insert({
       duffel_order_id: order.id,
       user_id: user.id,
@@ -334,14 +337,19 @@ const handlePayNow = async () => {
       origin: order.slices?.[0]?.origin || "",
       destination: order.slices?.[0]?.destination || "",
       departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || "",
+      passengers: order.passengers || [],
+      services: order.services || [],
     });
 
-    alert(`✅ Flight booked with ancillaries! Order ID: ${order.id}`);
+    alert(`✅ Flight booked successfully!\nOrder ID: ${order.id}`);
     setShowCheckout(false);
+    setAncillariesPayload(null); // reset
 
-  } catch (err) {
-    console.error(err);
-    alert("Error creating booking");
+  } catch (err: any) {
+    console.error("handlePayNow error:", err);
+    alert("Something went wrong while booking. Check console for details.");
+  } finally {
+    setIsLoading(false);
   }
 };
   
