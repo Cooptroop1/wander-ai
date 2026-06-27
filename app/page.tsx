@@ -267,6 +267,11 @@ const handlePayNow = async () => {
     return;
   }
 
+  if (!givenName || !familyName || !email || !phone || !bornOn) {
+    alert("Please fill in all passenger details before booking.");
+    return;
+  }
+
   setLoading(true);
 
   try {
@@ -283,16 +288,16 @@ const handlePayNow = async () => {
         type: "instant",
         selected_offers: [selectedOffer.id],
         passengers: [
-  {
-    title,
-    given_name: givenName,
-    family_name: familyName,
-    born_on: bornOn,
-    gender,
-    email,
-    phone_number: phone,
-  },
-],
+          {
+            title,
+            given_name: givenName,
+            family_name: familyName,
+            born_on: bornOn,
+            gender,
+            email,
+            phone_number: phone,
+          },
+        ],
         payments: [
           {
             type: "balance",
@@ -336,7 +341,7 @@ const handlePayNow = async () => {
       services: order.services || [],
     });
 
-    alert(`✅ Flight booked successfully!\nOrder ID: ${order.id}`);
+    alert(`Flight booked successfully!\nOrder ID: ${order.id}`);
     setShowCheckout(false);
     setAncillariesPayload(null);
 
