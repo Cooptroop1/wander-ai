@@ -11,6 +11,7 @@ export default function WanderAI() {
   const [loading, setLoading] = useState(false);
 
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
+  const [seatMaps, setSeatMaps] = useState<any[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
   const [ancillariesPayload, setAncillariesPayload] = useState<any>(null);
 
@@ -44,15 +45,36 @@ export default function WanderAI() {
     }
   };
 
-  const selectOffer = (offer: any) => {
+  const selectOffer = async (offer: any) => {
+    setLoading(true);
     setSelectedOffer(offer);
-    setShowCheckout(true);
     setAncillariesPayload(null);
+    setSeatMaps([]);
+
+    try {
+      // Fetch seat maps first (as recommended by Duffel)
+      const res = await fetch(`/api/seat-maps?offer_id=${offer.id}`);
+      const data = await res.json();
+
+      if (data.success) {
+        setSeatMaps(data.seat_maps || []);
+      } else {
+        console.warn('No seat maps available for this offer');
+        setSeatMaps([]);
+      }
+
+      setShowCheckout(true);
+    } catch (err) {
+      console.error('Failed to fetch seat maps:', err);
+      setSeatMaps([]);
+      setShowCheckout(true); // still open modal even without seat maps
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePayloadReady = (data: any, metadata: any) => {
-    console.log('Ancillaries data:', data);
-    console.log('Ancillaries metadata:', metadata);
+    console.log('Ancillaries payload ready:', data);
     setAncillariesPayload(data);
   };
 
@@ -89,6 +111,7 @@ export default function WanderAI() {
       setShowCheckout(false);
       setAncillariesPayload(null);
       setSelectedOffer(null);
+      setSeatMaps([]);
 
     } catch (err: any) {
       console.error(err);
@@ -98,12 +121,11 @@ export default function WanderAI() {
     }
   };
 
-  // Fixed passenger object (gender is already lowercase)
   const passenger = {
     id: 'pax_1',
     given_name: givenName,
     family_name: familyName,
-    gender: gender,                    // ← lowercase 'm' or 'f'
+    gender: gender,
     title: title,
     born_on: bornOn,
     email: email,
@@ -158,6 +180,7 @@ export default function WanderAI() {
           </div>
         )}
 
+        {/* CHECKOUT MODAL */}
         {showCheckout && selectedOffer && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto">
             <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl p-8">
@@ -180,6 +203,7 @@ export default function WanderAI() {
                   <DuffelAncillaries
                     debug={true}
                     offer={selectedOffer}
+                    seat_maps={seatMaps}
                     services={['bags', 'seats']}
                     passengers={[passenger]}
                     onPayloadReady={handlePayloadReady}
@@ -207,7 +231,7 @@ export default function WanderAI() {
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Using official Duffel React Component
+          Following Duffel official guide (offer + seat_maps)
         </p>
       </div>
     </div>
