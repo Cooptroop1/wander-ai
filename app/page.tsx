@@ -343,17 +343,7 @@ const handlePayNow = async () => {
 
     alert(`Flight booked successfully!\nOrder ID: ${order.id}`);
     setShowCheckout(false);
-    setAncillariesPayload(null);
-
-  } catch (err: any) {
-    console.error("handlePayNow error:", err);
-    alert("Something went wrong while booking.");
-  } finally {
-    setLoading(false);
-  }
-};
-  
-const confirmHold = async () => {
+    const handlePayNow = async () => {
   if (!selectedOffer) {
     alert("No offer selected");
     return;
@@ -361,56 +351,65 @@ const confirmHold = async () => {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    alert("You must be logged in");
+    alert("You must be logged in to book");
     return;
   }
 
-  // Basic validation - blank form friendly
-  if (!givenName || !familyName || !email || !phone || !bornOn) {
-    alert("Please fill in all passenger details before booking.");
+  if (!ancillariesPayload) {
+    alert("Please use the extras form above to select bags or seats first.");
     return;
   }
 
   setLoading(true);
 
-  const passengers = [
-    {
-      title,
-      given_name: givenName,
-      family_name: familyName,
-      born_on: bornOn,
-      gender,
-      email,
-      phone_number: phone,
-    },
-  ];
-
   try {
-    const res = await fetch('/api/orders/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    // Use the full payload from DuffelAncillaries component
+    const orderPayload = {
+      ...ancillariesPayload.data,
+      type: "instant",
+      selected_offers: [selectedOffer.id],
+    };
+
+    const res = await fetch("/api/orders/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        offerId: selectedOffer.id,
-        type: "hold",
-        passengers,
+        payload: orderPayload,
       }),
     });
 
     const result = await res.json();
 
     if (!result.success) {
-      alert("Failed to hold booking: " + (result.error || "Unknown error"));
+      console.error("Order creation failed:", result);
+      alert("Booking failed: " + (result.error || "Unknown error"));
       setLoading(false);
       return;
     }
 
     const order = result.order;
-    alert(`Booking held successfully! Order ID: ${order.id}`);
-    setShowCheckout(false);
 
-  } catch (err) {
-    console.error(err);
-    alert("Error holding booking");
+    await supabase.from("bookings").insert({
+      duffel_order_id: order.id,
+      user_id: user.id,
+      status: "confirmed",
+      total: parseFloat(order.total_amount),
+      currency: order.total_currency,
+      airline: order.owner?.name || "Duffel Airways",
+      origin: order.slices?.[0]?.origin || "",
+      destination: order.slices?.[0]?.destination || "",
+      departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || "",
+      passengers: order.passengers || [],
+      services: order.services || [],
+    });
+
+    alert(`✅ Flight booked with ancillaries!\nOrder ID: ${order.id}`);
+    setShowCheckout(false);
+    setAncillariesPayload(null);
+
+  } catch (err: any) {
+    console.error("handlePayNow error:", err);
+    alert("Something went wrong while booking.");
   } finally {
     setLoading(false);
   }
@@ -736,40 +735,32 @@ const confirmHold = async () => {
   </div>
 </div>
 
-            {/* === DUFFEL ANCILLARIES COMPONENT (Bags + Seats) === */}
+            {/* === DUFFEL ANCILLARIES (Bags + Seats + Passenger details) === */}
 <div className="mb-8">
   <div className="font-bold mb-3">Add extras (bags, seats, etc.)</div>
-  
+
   <div className="bg-zinc-800 p-6 rounded-2xl">
     {selectedOffer && (
       <DuffelAncillaries
         offer={selectedOffer}
         services={["bags", "seats"]}
         passengers={[
-  {
-    given_name: givenName,
-    family_name: familyName,
-    gender,
-    title,
-    born_on: bornOn,
-    email,
-    phone_number: phone,
-  },
-]}
+          {
+            given_name: givenName || "",
+            family_name: familyName || "",
+            born_on: bornOn || "",
+            email: email || "",
+            phone_number: phone || "",
+            // We are NOT passing gender or title here anymore
+            // Let the component handle gender itself
+          },
+        ]}
         seat_maps={seatMapData?.data || []}
-        markup={{
-          bags: { amount: 0, rate: 0 }, // change this later if you want markup
-          seats: { amount: 0, rate: 0 },
-        }}
         onPayloadReady={(payload) => {
-          console.log("Ancillaries payload ready:", payload);
+          console.log("Duffel payload ready:", payload);
           setAncillariesPayload(payload);
         }}
       />
-    )}
-    
-    {!selectedOffer && (
-      <div className="text-sm text-zinc-400">Select a flight first to see available extras.</div>
     )}
   </div>
 </div>
