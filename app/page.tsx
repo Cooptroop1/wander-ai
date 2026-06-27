@@ -45,9 +45,9 @@ const [email, setEmail] = useState('');
 const [phone, setPhone] = useState('');
 const [givenName, setGivenName] = useState('');
 const [familyName, setFamilyName] = useState('');
-const [title, setTitle] = useState('');
 const [bornOn, setBornOn] = useState('');
-const [gender, setGender] = useState('');
+const [gender, setGender] = useState<"m" | "f" | "other">("m");
+const [title, setTitle] = useState<"mr" | "mrs" | "ms" | "miss" | "dr">("mr");
 
   // ==================== LOAD USER TRIPS FROM SUPABASE ====================
 useEffect(() => {
