@@ -4,17 +4,19 @@ import React, { useState } from 'react';
 import { DuffelAncillaries } from '@duffel/components';
 
 export default function WanderAI() {
-  // === STATE ===
+  // Search state
   const [origin, setOrigin] = useState('LHR');
   const [destination, setDestination] = useState('JFK');
   const [departureDate, setDepartureDate] = useState('2026-07-15');
   const [offers, setOffers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Selected offer + checkout
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [showCheckout, setShowCheckout] = useState(false);
   const [ancillariesPayload, setAncillariesPayload] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
 
-  // Passenger form state (blank)
+  // Passenger form
   const [givenName, setGivenName] = useState('');
   const [familyName, setFamilyName] = useState('');
   const [email, setEmail] = useState('');
@@ -23,7 +25,7 @@ export default function WanderAI() {
   const [gender, setGender] = useState<'m' | 'f'>('m');
   const [title, setTitle] = useState<'mr' | 'mrs' | 'ms' | 'miss' | 'dr'>('mr');
 
-  // === SEARCH FLIGHTS ===
+  // Search flights
   const searchFlights = async () => {
     setLoading(true);
     try {
@@ -31,8 +33,8 @@ export default function WanderAI() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          origin,
-          destination,
+          origin: origin.toUpperCase(),
+          destination: destination.toUpperCase(),
           departure_date: departureDate,
         }),
       });
@@ -46,14 +48,21 @@ export default function WanderAI() {
     }
   };
 
-  // === CLEAN HANDLE PAY NOW (uses DuffelAncillaries payload) ===
+  // Open checkout
+  const selectOffer = (offer: any) => {
+    setSelectedOffer(offer);
+    setShowCheckout(true);
+    setAncillariesPayload(null);
+  };
+
+  // Handle booking with DuffelAncillaries payload
   const handlePayNow = async () => {
     if (!selectedOffer) {
       alert('No offer selected');
       return;
     }
     if (!ancillariesPayload) {
-      alert('Please add bags or seats using the form above first.');
+      alert('Please add bags or seats in the form above first.');
       return;
     }
 
@@ -79,7 +88,7 @@ export default function WanderAI() {
         return;
       }
 
-      alert(`✅ Booked! Order ID: ${result.order.id}`);
+      alert(`✅ Booked successfully!\nOrder ID: ${result.order.id}`);
       setShowCheckout(false);
       setAncillariesPayload(null);
       setSelectedOffer(null);
@@ -92,13 +101,6 @@ export default function WanderAI() {
     }
   };
 
-  // === SELECT OFFER AND OPEN CHECKOUT ===
-  const selectOffer = (offer: any) => {
-    setSelectedOffer(offer);
-    setShowCheckout(true);
-    setAncillariesPayload(null);
-  };
-
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
       <div className="max-w-5xl mx-auto">
@@ -107,73 +109,112 @@ export default function WanderAI() {
         {/* Search Form */}
         <div className="bg-zinc-900 p-6 rounded-2xl mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input value={origin} onChange={(e) => setOrigin(e.target.value)} className="bg-zinc-800 p-3 rounded" placeholder="Origin" />
-            <input value={destination} onChange={(e) => setDestination(e.target.value)} className="bg-zinc-800 p-3 rounded" placeholder="Destination" />
-            <input type="date" value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} className="bg-zinc-800 p-3 rounded" />
-            <button onClick={searchFlights} disabled={loading} className="bg-blue-600 hover:bg-blue-700 p-3 rounded font-semibold">
+            <input
+              value={origin}
+              onChange={(e) => setOrigin(e.target.value)}
+              className="bg-zinc-800 p-3 rounded-xl"
+              placeholder="Origin (e.g. LHR)"
+            />
+            <input
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              className="bg-zinc-800 p-3 rounded-xl"
+              placeholder="Destination (e.g. JFK)"
+            />
+            <input
+              type="date"
+              value={departureDate}
+              onChange={(e) => setDepartureDate(e.target.value)}
+              className="bg-zinc-800 p-3 rounded-xl"
+            />
+            <button
+              onClick={searchFlights}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 p-3 rounded-xl font-semibold"
+            >
               {loading ? 'Searching...' : 'Search Flights'}
             </button>
           </div>
         </div>
 
-        {/* Results */}
+        {/* Flight Results */}
         {offers.length > 0 && (
-          <div className="space-y-4 mb-8">
-            {offers.map((offer, index) => (
-              <div key={index} onClick={() => selectOffer(offer)} className="bg-zinc-900 p-6 rounded-2xl cursor-pointer hover:bg-zinc-800">
-                <div className="flex justify-between">
-                  <div>
-                    <div className="font-semibold">{offer.owner?.name}</div>
-                    <div className="text-sm text-zinc-400">{offer.slices?.[0]?.segments?.[0]?.departing_at}</div>
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Available Flights ({offers.length})</h2>
+            
+            <div className="space-y-4">
+              {offers.map((offer, index) => {
+                const slice = offer.slices?.[0];
+                const segment = slice?.segments?.[0];
+                const airline = offer.owner?.name || 'Airline';
+
+                return (
+                  <div
+                    key={index}
+                    onClick={() => selectOffer(offer)}
+                    className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-500 rounded-2xl p-6 cursor-pointer transition-all"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-semibold text-lg">{airline}</div>
+                        <div className="text-sm text-zinc-400 mt-1">
+                          {slice?.origin} → {slice?.destination}
+                        </div>
+                        <div className="text-xs text-zinc-500 mt-1">
+                          {segment?.departing_at}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold">£{offer.total_amount}</div>
+                        <div className="text-xs text-zinc-400">{offer.total_currency}</div>
+                        <div className="text-emerald-400 text-sm mt-1">Select flight →</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">£{offer.total_amount}</div>
-                    <div className="text-xs text-zinc-400">{offer.total_currency}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
         )}
 
         {/* CHECKOUT MODAL */}
         {showCheckout && selectedOffer && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8">
-              <div className="flex justify-between mb-6">
-                <h2 className="text-2xl font-bold">Complete your booking</h2>
-                <button onClick={() => setShowCheckout(false)} className="text-zinc-400">✕</button>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Complete Booking</h2>
+                <button onClick={() => setShowCheckout(false)} className="text-zinc-400 text-2xl">×</button>
               </div>
 
               {/* Flight Summary */}
-              <div className="bg-zinc-800 p-4 rounded-xl mb-6">
+              <div className="bg-zinc-800 rounded-2xl p-5 mb-6">
                 <div className="font-semibold">{selectedOffer.owner?.name}</div>
                 <div className="text-sm text-zinc-400">
                   {selectedOffer.slices?.[0]?.origin} → {selectedOffer.slices?.[0]?.destination}
                 </div>
-                <div className="text-xl font-bold mt-2">£{selectedOffer.total_amount}</div>
+                <div className="text-2xl font-bold mt-2">£{selectedOffer.total_amount}</div>
               </div>
 
-              {/* DUFFEL ANCILLARIES - CLEAN */}
+              {/* Duffel Ancillaries */}
               <div className="mb-8">
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
                   <DuffelAncillaries
                     offer={selectedOffer}
                     services={["bags", "seats"]}
-                    seat_maps={[]}
                     passengers={[
-  {
-    id: "pax_1",
-    given_name: givenName || "",
-    family_name: familyName || "",
-    born_on: bornOn || "",
-    title: title || "mr",
-    gender: gender,
-    email: email || "",
-    phone_number: phone || "",
-  },
-]}
+                      {
+                        id: "pax_1",
+                        given_name: givenName || "",
+                        family_name: familyName || "",
+                        born_on: bornOn || "",
+                        title: title,
+                        gender: gender,
+                        email: email || "",
+                        phone_number: phone || "",
+                      },
+                    ]}
+                    seat_maps={[]}
                     onPayloadReady={(payload) => {
                       setAncillariesPayload(payload);
                     }}
@@ -181,29 +222,29 @@ export default function WanderAI() {
                 </div>
               </div>
 
-              {/* Simple Passenger Form (blank) */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <input placeholder="First name" value={givenName} onChange={e => setGivenName(e.target.value)} className="bg-zinc-800 p-3 rounded" />
-                <input placeholder="Last name" value={familyName} onChange={e => setFamilyName(e.target.value)} className="bg-zinc-800 p-3 rounded" />
-                <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="bg-zinc-800 p-3 rounded col-span-2" />
-                <input placeholder="Phone" value={phone} onChange={e => setPhone(e.target.value)} className="bg-zinc-800 p-3 rounded col-span-2" />
-                <input type="date" value={bornOn} onChange={e => setBornOn(e.target.value)} className="bg-zinc-800 p-3 rounded" />
+              {/* Passenger Form */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <input placeholder="First name" value={givenName} onChange={e => setGivenName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
+                <input placeholder="Last name" value={familyName} onChange={e => setFamilyName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
+                <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="bg-zinc-800 p-3 rounded-xl col-span-2" />
+                <input placeholder="Phone" value={phone} onChange={e => setPhone(e.target.value)} className="bg-zinc-800 p-3 rounded-xl col-span-2" />
+                <input type="date" value={bornOn} onChange={e => setBornOn(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
               </div>
 
               {/* Pay Button */}
               <button
                 onClick={handlePayNow}
                 disabled={loading || !ancillariesPayload}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-700 p-4 rounded-2xl font-bold text-lg"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-700 p-4 rounded-2xl font-bold text-lg transition-all"
               >
-                {loading ? 'Processing...' : 'Pay Now & Book'}
+                {loading ? 'Processing...' : 'Pay Now & Book with Duffel'}
               </button>
             </div>
           </div>
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Clean build • Duffel Ancililaries integrated
+          Clean build • Real Duffel integration
         </p>
       </div>
     </div>
