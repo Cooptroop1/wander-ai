@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Duffel requires { data: payload }
     const response = await fetch(`${DUFFEL_API_URL}/air/orders`, {
       method: 'POST',
       headers: {
@@ -37,7 +36,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Duffel order error:', data);
+      console.error('Duffel error:', data);
       return NextResponse.json(
         {
           success: false,
@@ -54,9 +53,9 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Order creation error:', error);
+    console.error('Order error:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Internal server error' },
+      { success: false, error: error.message },
       { status: 500 }
     );
   }
