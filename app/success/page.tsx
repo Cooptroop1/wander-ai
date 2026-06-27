@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface Order {
@@ -13,7 +13,7 @@ interface Order {
   slices: any[];
 }
 
-export default function SuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order_id');
 
@@ -83,36 +83,46 @@ export default function SuccessPage() {
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-gray-500">Booking Reference</p>
-            <p className="font-mono text-lg font-bold">{order.booking_reference}</p>
+            <p className="text-gray-500">Booking Reference (PNR)</p>
+            <p className="font-mono text-2xl font-bold tracking-wider">{order.booking_reference}</p>
           </div>
           <div>
             <p className="text-gray-500">Status</p>
-            <p className="font-semibold capitalize">{order.status}</p>
+            <p className="font-semibold capitalize text-lg">{order.status}</p>
           </div>
           <div>
             <p className="text-gray-500">Total Paid</p>
-            <p className="font-semibold">{order.total_currency} {order.total_amount}</p>
+            <p className="font-semibold text-lg">{order.total_currency} {order.total_amount}</p>
           </div>
           <div>
             <p className="text-gray-500">Order ID</p>
-            <p className="font-mono text-xs break-all">{order.id}</p>
+            <p className="font-mono text-xs break-all text-gray-600">{order.id}</p>
           </div>
         </div>
 
-        <div className="mt-6 pt-6 border-t">
-          <p className="text-sm text-gray-600">
-            A confirmation email has been sent with your e-ticket and PNR.
-            You can manage your booking directly with the airline using the booking reference above.
-          </p>
+        <div className="mt-6 pt-6 border-t text-sm text-gray-600">
+          A confirmation email has been sent with your e-ticket.<br />
+          To manage or cancel this booking, use the <strong>Booking Reference (PNR)</strong> above on the airline’s website.
         </div>
       </div>
 
       <div className="mt-8 text-center">
-        <a href="/" className="text-blue-600 hover:underline">
-          ← Back to search
+        <a href="/" className="text-blue-600 hover:underline font-medium">
+          ← Search for more flights
         </a>
       </div>
     </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading booking details...</p>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   );
 }
