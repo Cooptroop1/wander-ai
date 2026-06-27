@@ -163,6 +163,20 @@ const handleLogout = async () => {
     }
   };
 
+  };
+
+  // ==================== HELPER FUNCTION ====================
+  const formatDuration = (isoDuration: string) => {
+    if (!isoDuration) return '';
+    const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+    if (!match) return isoDuration;
+    const hours = match[1] ? `${match[1]}h` : '';
+    const minutes = match[2] ? `${match[2]}m` : '';
+    return `${hours} ${minutes}`.trim();
+  };
+
+  return (
+  
   return (
         <div className="min-h-screen bg-zinc-950 text-white">
       {/* Header */}
