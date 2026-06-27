@@ -306,8 +306,6 @@ const handleLogout = async () => {
     {loadingTrips ? (
       <div className="text-center py-20 text-zinc-400">Loading your trips...</div>
     ) : trips.length > 0 ? (
-      <div className="space-y-4">
-        ) : trips.length > 0 ? (
   <div className="space-y-4">
     {trips.map((trip, index) => {
       const outbound = trip.slices?.[0];
@@ -342,16 +340,12 @@ const handleLogout = async () => {
         : '';
 
       return (
-        <div 
-          key={index} 
-          className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-6"
-        >
+        <div key={index} className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-6">
           <div className="flex justify-between items-start mb-4">
             <div>
               <div className="font-mono text-2xl font-bold tracking-[2px]">{trip.booking_reference}</div>
               <div className="text-xs text-zinc-500 mt-1">BOOKING REFERENCE</div>
             </div>
-
             <div className="text-right">
               <div className="text-2xl font-bold text-emerald-400">
                 {trip.total_currency} {trip.total_amount}
@@ -360,14 +354,12 @@ const handleLogout = async () => {
             </div>
           </div>
 
-          {/* Route Info */}
           <div className="bg-zinc-950 rounded-2xl p-5 mb-4">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-3xl font-bold tracking-tighter">{origin} → {dest}</div>
                 <div className="text-xs text-zinc-400 mt-1">{stops} • {outbound?.duration}</div>
               </div>
-
               {returnSlice && (
                 <div className="text-right">
                   <div className="text-sm text-purple-400 font-medium">RETURN</div>
@@ -381,7 +373,6 @@ const handleLogout = async () => {
                 <span className="text-zinc-400">Outbound</span><br />
                 <span className="font-medium">{depDate}</span>
               </div>
-
               {returnDate && (
                 <div className="text-right">
                   <span className="text-zinc-400">Return</span><br />
@@ -391,7 +382,6 @@ const handleLogout = async () => {
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex justify-between items-center text-xs text-zinc-400">
             <div>
               {passengerCount} passenger{passengerCount > 1 ? 's' : ''} • Booked {bookedDate}
@@ -408,7 +398,6 @@ const handleLogout = async () => {
     })}
   </div>
 ) : (
-  // Empty state
   <div className="text-center py-20 bg-zinc-900 border border-zinc-800 rounded-3xl">
     <p className="text-xl text-zinc-400 mb-2">No trips yet</p>
     <p className="text-sm text-zinc-500">Book a flight and it will appear here automatically.</p>
@@ -418,8 +407,6 @@ const handleLogout = async () => {
     >
       Search flights
     </button>
-  </div>
-)}
   </div>
 )}
       </div>
