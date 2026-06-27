@@ -67,9 +67,9 @@ const handleLogout = async () => {
     return;
   }
   try {
-    const res = await fetch(`/api/places/suggestions?q=${encodeURIComponent(query)}`);
+    const res = await fetch(`/api/places/suggestions?query=${encodeURIComponent(query)}`);
     const data = await res.json();
-    setSuggestions(data.places?.slice(0, 8) || []);   // ← Note the .places
+    setSuggestions(data.places?.slice(0, 8) || []);
     setShow(true);
   } catch (e) {
     console.error(e);
