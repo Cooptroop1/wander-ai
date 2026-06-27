@@ -39,7 +39,7 @@ export default function WanderAI() {
     setShowModal(true);
   };
 
-    const bookFlight = async () => {
+      const bookFlight = async () => {
     if (!selectedOffer) return;
 
     setLoading(true);
@@ -50,8 +50,8 @@ export default function WanderAI() {
         selected_offers: [selectedOffer.id],
         passengers: [
           {
-            given_name: "Test",
-            family_name: "Passenger",
+            given_name: "James",
+            family_name: "Cooper",
             born_on: "1990-01-01",
             title: "mr",
             gender: "m",
@@ -70,8 +70,8 @@ export default function WanderAI() {
       const result = await res.json();
 
       if (!result.success) {
-        console.error("Duffel error:", result);
-        alert("Booking failed: " + (result.error || "Unknown error from Duffel"));
+        console.error("Duffel rejected the order:", result.details);
+        alert("Duffel error: " + JSON.stringify(result.details, null, 2));
         return;
       }
 
