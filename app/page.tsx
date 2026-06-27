@@ -254,129 +254,116 @@ useEffect(() => {
 
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
+const createCustomerUser = async () => {
+  const res = await fetch('/api/duffel/create-customer-user', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: email || 'test@example.com',
+      given_name: givenName || 'James',
+      family_name: familyName || 'Cooper',
+      phone_number: phone || '+447700000000',
+    }),
+  });
+
+  const result = await res.json();
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+  return result.customerUser.id;
+};
+
 const handlePayNow = async () => {
   if (!selectedOffer) return;
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    alert("You must be logged in");
-    return;
-  }
-
-  const passengers = [{
-    id: "pax_1",
-    title: title || "mr",
-    given_name: givenName || "James",
-    family_name: familyName || "Cooper",
-    born_on: bornOn || "1990-01-01",
-    gender: gender || "m",
-    email: email || "test@example.com",
-    phone_number: phone || "+447700000000",
-  }];
-
-  const payload = {
-    type: "hold",
-    selected_offers: [selectedOffer.id],
-    passengers,
-    services: [],
-  };
-
   try {
-    const res = await fetch("/api/orders/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const customerUserId = await createCustomerUser();
+
+    const passengers = [{
+      user_id: customerUserId,
+      title: title || 'mr',
+      given_name: givenName || 'James',
+      family_name: familyName || 'Cooper',
+      born_on: bornOn || '1990-01-01',
+      gender: gender || 'm',
+      email: email || 'test@example.com',
+      phone_number: phone || '+447700000000',
+    }];
+
+    const payload = {
+      type: 'hold',
+      selected_offers: [selectedOffer.id],
+      passengers,
+      services: [],
+      users: [customerUserId],
+    };
+
+    const res = await fetch('/api/orders/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ payload }),
     });
 
     const result = await res.json();
 
     if (!result.success) {
-      alert("Booking failed: " + result.error);
-      console.error("Duffel error:", result.details);
+      alert('Booking failed: ' + result.error);
+      console.error(result.details);
       return;
     }
 
-    // Save to Supabase
-    await supabase.from("bookings").insert({
-      duffel_order_id: result.order.id,
-      user_id: user.id,
-      status: "on_hold",
-      total: parseFloat(result.order.total_amount),
-      currency: result.order.total_currency,
-      airline: result.order.owner?.name || "Airline",
-      origin: result.order.slices?.[0]?.origin?.iata_code || "",
-      destination: result.order.slices?.[0]?.destination?.iata_code || "",
-      departure_date: result.order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || "",
-    });
-
-    alert("✅ Hold created successfully! Order ID: " + result.order.id);
+    alert('✅ Hold created! Order ID: ' + result.order.id);
     setShowCheckout(false);
 
-  } catch (err) {
-    console.error(err);
-    alert("Something went wrong");
+  } catch (err: any) {
+    alert('Error: ' + err.message);
   }
 };
 
 const confirmHold = async () => {
   if (!selectedOffer) return;
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    alert("Login required");
-    return;
-  }
-
-  const passengers = [{
-    id: "pax_1",
-    title: title || "mr",
-    given_name: givenName || "James",
-    family_name: familyName || "Cooper",
-    born_on: bornOn || "1990-01-01",
-    gender: gender || "m",
-    email: email || "test@example.com",
-    phone_number: phone || "+447700000000",
-  }];
-
-  const payload = {
-    type: "hold",
-    selected_offers: [selectedOffer.id],
-    passengers,
-    services: [],
-  };
-
   try {
-    const res = await fetch("/api/orders/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const customerUserId = await createCustomerUser();
+
+    const passengers = [{
+      user_id: customerUserId,
+      title: title || 'mr',
+      given_name: givenName || 'James',
+      family_name: familyName || 'Cooper',
+      born_on: bornOn || '1990-01-01',
+      gender: gender || 'm',
+      email: email || 'test@example.com',
+      phone_number: phone || '+447700000000',
+    }];
+
+    const payload = {
+      type: 'hold',
+      selected_offers: [selectedOffer.id],
+      passengers,
+      services: [],
+      users: [customerUserId],
+    };
+
+    const res = await fetch('/api/orders/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ payload }),
     });
 
     const result = await res.json();
 
     if (!result.success) {
-      alert("Hold failed: " + result.error);
+      alert('Hold failed: ' + result.error);
       return;
     }
 
-    await supabase.from("bookings").insert({
-      duffel_order_id: result.order.id,
-      user_id: user.id,
-      status: "on_hold",
-      total: parseFloat(result.order.total_amount),
-      currency: result.order.total_currency,
-      airline: result.order.owner?.name || "Airline",
-      origin: result.order.slices?.[0]?.origin?.iata_code || "",
-      destination: result.order.slices?.[0]?.destination?.iata_code || "",
-      departure_date: result.order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || "",
-    });
-
-    alert("✅ Hold created! Order ID: " + result.order.id);
+    alert('✅ Hold created! Order ID: ' + result.order.id);
     setShowHoldInfo(false);
     setShowOrderHeld(true);
 
-  } catch (err) {
-    alert("Error creating hold");
+  } catch (err: any) {
+    alert('Error: ' + err.message);
   }
 };
 
