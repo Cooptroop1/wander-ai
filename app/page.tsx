@@ -311,12 +311,10 @@ const handlePayNow = async () => {
       departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
     });
 
-    alert('✅ Flight booked and paid for! Order ID: ' + order.id);
-    setShowOrderHeld(true); // reuse the success screen or change to your own
+    alert(`✅ Flight booked and paid! Order ID: ${order.id}`);
 
   } catch (err) {
     alert('Error creating payment');
-    console.error(err);
   }
 };
   
