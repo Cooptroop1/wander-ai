@@ -308,40 +308,83 @@ const handleLogout = async () => {
     ) : trips.length > 0 ? (
       <div className="space-y-4">
         {trips.map((trip, index) => {
-          const firstSlice = trip.slices?.[0];
-          const firstSegment = firstSlice?.segments?.[0];
-          const origin = firstSegment?.origin?.iata_code || 'N/A';
-          const dest = firstSegment?.destination?.iata_code || 'N/A';
+          const outbound = trip.slices?.[0];
+          const returnSlice = trip.slices?.[1];
+          const firstSegment = outbound?.segments?.[0];
+          const lastSegment = outbound?.segments?.[outbound?.segments?.length - 1];
+
+          const origin = firstSegment?.origin?.iata_code || '—';
+          const dest = lastSegment?.destination?.iata_code || '—';
+          const stops = outbound?.segments?.length > 1 
+            ? `${outbound.segments.length - 1} stop${outbound.segments.length > 2 ? 's' : ''}` 
+            : 'Direct';
+
           const depDate = firstSegment?.departing_at 
-            ? new Date(firstSegment.departing_at).toLocaleDateString([], { 
-                month: 'short', day: 'numeric', year: 'numeric' 
-              }) 
+            ? new Date(firstSegment.departing_at).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }) 
+            : '';
+
+          const returnDate = returnSlice?.segments?.[0]?.departing_at 
+            ? new Date(returnSlice.segments[0].departing_at).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }) 
+            : '';
+
+          const passengerCount = trip.passengers?.length || 1;
+          const bookedDate = trip.created_at 
+            ? new Date(trip.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) 
             : '';
 
           return (
-            <div 
-              key={index} 
-              className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-6 flex justify-between items-center"
-            >
-              <div className="flex items-center gap-8">
+            <div key={index} className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-6">
+              <div className="flex justify-between items-start mb-4">
                 <div>
                   <div className="font-mono text-2xl font-bold tracking-[2px]">{trip.booking_reference}</div>
-                  <div className="text-xs text-zinc-500 mt-1">BOOKING REF</div>
+                  <div className="text-xs text-zinc-500 mt-1">BOOKING REFERENCE</div>
                 </div>
-
-                <div className="text-lg">
-                  <span className="font-semibold">{origin}</span>
-                  <span className="mx-2 text-zinc-500">→</span>
-                  <span className="font-semibold">{dest}</span>
-                  <div className="text-xs text-zinc-400 mt-0.5">{depDate}</div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-emerald-400">
+                    {trip.total_currency} {trip.total_amount}
+                  </div>
+                  <div className="text-xs text-zinc-400 capitalize mt-1">{trip.status}</div>
                 </div>
               </div>
 
-              <div className="text-right">
-                <div className="text-2xl font-bold text-emerald-400">
-                  {trip.total_currency} {trip.total_amount}
+              <div className="bg-zinc-950 rounded-2xl p-5 mb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-3xl font-bold tracking-tighter">{origin} → {dest}</div>
+                    <div className="text-xs text-zinc-400 mt-1">{stops} • {outbound?.duration}</div>
+                  </div>
+                  {returnSlice && (
+                    <div className="text-right">
+                      <div className="text-sm text-purple-400 font-medium">RETURN</div>
+                      <div className="text-xs text-zinc-400">{returnDate}</div>
+                    </div>
+                  )}
                 </div>
-                <div className="text-xs text-zinc-400 capitalize mt-1">{trip.status}</div>
+
+                <div className="mt-4 pt-4 border-t border-zinc-800 flex justify-between text-sm">
+                  <div>
+                    <span className="text-zinc-400">Outbound</span><br />
+                    <span className="font-medium">{depDate}</span>
+                  </div>
+                  {returnDate && (
+                    <div className="text-right">
+                      <span className="text-zinc-400">Return</span><br />
+                      <span className="font-medium">{returnDate}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center text-xs text-zinc-400">
+                <div>
+                  {passengerCount} passenger{passengerCount > 1 ? 's' : ''} • Booked {bookedDate}
+                </div>
+                <button 
+                  onClick={() => alert('Full details modal coming soon')}
+                  className="text-emerald-400 hover:text-emerald-300 font-medium"
+                >
+                  View full details →
+                </button>
               </div>
             </div>
           );
