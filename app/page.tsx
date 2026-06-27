@@ -130,8 +130,7 @@ export default function WanderAI() {
     phone_number: phone,
   };
 
-  // Only request seats if we actually have seat maps
-  const availableServices = seatMaps.length > 0 ? ['bags', 'seats'] : ['bags'];
+  const availableServices: ('bags' | 'seats')[] = seatMaps.length > 0 ? ['bags', 'seats'] : ['bags'];
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
