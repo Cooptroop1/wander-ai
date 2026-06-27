@@ -104,43 +104,7 @@ useEffect(() => {
       setMyTrips(formatted);
     }
   };
-{/* TEMP TEST BUTTON - DELETE LATER */}
-<div className="p-4 bg-yellow-100 border border-yellow-400 rounded mb-4">
-  <p className="font-bold mb-2">Quick Test - Create Duffel Link</p>
-  <button
-    onClick={async () => {
-      // Replace this with a real offer ID from one of your searches
-      const testOfferId = "off_xxxxxxxxxxxxxxxxxxxxxxxx"; 
 
-      const res = await fetch('/api/duffel/create-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          selected_offers: [testOfferId],
-        }),
-      });
-
-      const result = await res.json();
-      console.log("Full result:", result);
-
-      if (result.success) {
-        alert("Link created! Opening now...");
-        window.open(result.link_url, "_blank");
-      } else {
-        alert("Error: " + result.error);
-        console.error(result);
-      }
-    }}
-    className="px-4 py-2 bg-black text-white rounded"
-  >
-    Create Test Link (replace offer ID first)
-  </button>
-  <p className="text-xs mt-2 text-gray-600">
-    1. Do a flight search first<br />
-    2. Copy one offer ID from the console or network tab<br />
-    3. Paste it above, then click the button
-  </p>
-</div>
   loadUserTrips();
 
   // Re-load trips when auth state changes (login/logout)
@@ -385,6 +349,47 @@ const handleBookWithDuffel = async () => {
       {/* SEARCH VIEW */}
       {currentView === 'search' && (
         <>
+          {currentView === 'search' && (
+  <div>
+    {/* === TEMP TEST BUTTON - DELETE THIS LATER === */}
+    <div className="p-4 bg-yellow-100 border border-yellow-400 rounded mb-4">
+      <p className="font-bold mb-2">Quick Test - Create Duffel Link</p>
+      <button
+        onClick={async () => {
+          const testOfferId = "off_xxxxxxxxxxxxxxxxxxxxxxxx"; // ← paste real offer ID here
+
+          const res = await fetch('/api/duffel/create-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              selected_offers: [testOfferId],
+            }),
+          });
+
+          const result = await res.json();
+          console.log("Full result:", result);
+
+          if (result.success) {
+            alert("Link created! Opening now...");
+            window.open(result.link_url, "_blank");
+          } else {
+            alert("Error: " + result.error);
+            console.error(result);
+          }
+        }}
+        className="px-4 py-2 bg-black text-white rounded"
+      >
+        Create Test Link
+      </button>
+      <p className="text-xs mt-2 text-gray-600">
+        1. Search for flights first<br />
+        2. Copy an offer ID (starts with off_) from console<br />
+        3. Paste it above then click
+      </p>
+    </div>
+    {/* === END TEMP TEST BUTTON === */}
+
+    {/* your normal search inputs and button go here */}
           <div className="flex gap-2 mb-6">
             <button onClick={() => setJourneyType('one_way')} className={`px-6 py-2 rounded-xl ${journeyType === 'one_way' ? 'bg-sky-500' : 'bg-zinc-800'}`}>One way</button>
             <button onClick={() => setJourneyType('return')} className={`px-6 py-2 rounded-xl ${journeyType === 'return' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Return</button>
