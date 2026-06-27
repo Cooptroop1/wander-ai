@@ -31,7 +31,8 @@ export default function WanderAI() {
   const [toSuggestions, setToSuggestions] = useState<any[]>([]);
   const [showFromDropdown, setShowFromDropdown] = useState(false);
   const [showToDropdown, setShowToDropdown] = useState(false);
-
+  const [trips, setTrips] = useState<any[]>([]);
+const [loadingTrips, setLoadingTrips] = useState(false);
   // Modal for flight confirmation
   const [selectedFlight, setSelectedFlight] = useState<any>(null);
 
@@ -54,6 +55,33 @@ export default function WanderAI() {
   return () => subscription.unsubscribe();
 }, []);
 
+  // Fetch trips when user switches to My Trips tab
+React.useEffect(() => {
+  const fetchTrips = async () => {
+    if (currentView !== 'trips' || !user) {
+      return;
+    }
+
+    setLoadingTrips(true);
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setTrips(data);
+    } else if (error) {
+      console.error('Error fetching trips:', error);
+    }
+
+    setLoadingTrips(false);
+  };
+
+  fetchTrips();
+}, [currentView, user]);
+  
 const handleLogout = async () => {
   await supabase.auth.signOut();
   setUser(null);
@@ -260,8 +288,79 @@ const handleLogout = async () => {
             )}
           </>
         ) : (
-          <div className="text-center py-20 text-zinc-400">My Trips coming soon…</div>
-        )}
+  // ==================== MY TRIPS VIEW ====================
+  <div className="max-w-5xl mx-auto">
+    <div className="flex items-center justify-between mb-8">
+      <div>
+        <h2 className="text-3xl font-bold">My Trips</h2>
+        <p className="text-zinc-400 mt-1">Your saved flight bookings</p>
+      </div>
+      <button 
+        onClick={() => setCurrentView('search')}
+        className="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-sm font-medium"
+      >
+        ← Back to Search
+      </button>
+    </div>
+
+    {loadingTrips ? (
+      <div className="text-center py-20 text-zinc-400">Loading your trips...</div>
+    ) : trips.length > 0 ? (
+      <div className="space-y-4">
+        {trips.map((trip, index) => {
+          const firstSlice = trip.slices?.[0];
+          const firstSegment = firstSlice?.segments?.[0];
+          const origin = firstSegment?.origin?.iata_code || 'N/A';
+          const dest = firstSegment?.destination?.iata_code || 'N/A';
+          const depDate = firstSegment?.departing_at 
+            ? new Date(firstSegment.departing_at).toLocaleDateString([], { 
+                month: 'short', day: 'numeric', year: 'numeric' 
+              }) 
+            : '';
+
+          return (
+            <div 
+              key={index} 
+              className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-6 flex justify-between items-center"
+            >
+              <div className="flex items-center gap-8">
+                <div>
+                  <div className="font-mono text-2xl font-bold tracking-[2px]">{trip.booking_reference}</div>
+                  <div className="text-xs text-zinc-500 mt-1">BOOKING REF</div>
+                </div>
+
+                <div className="text-lg">
+                  <span className="font-semibold">{origin}</span>
+                  <span className="mx-2 text-zinc-500">→</span>
+                  <span className="font-semibold">{dest}</span>
+                  <div className="text-xs text-zinc-400 mt-0.5">{depDate}</div>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <div className="text-2xl font-bold text-emerald-400">
+                  {trip.total_currency} {trip.total_amount}
+                </div>
+                <div className="text-xs text-zinc-400 capitalize mt-1">{trip.status}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    ) : (
+      <div className="text-center py-20 bg-zinc-900 border border-zinc-800 rounded-3xl">
+        <p className="text-xl text-zinc-400 mb-2">No trips yet</p>
+        <p className="text-sm text-zinc-500">Book a flight and it will appear here automatically.</p>
+        <button 
+          onClick={() => setCurrentView('search')}
+          className="mt-6 px-6 py-3 bg-white text-black rounded-2xl font-semibold text-sm"
+        >
+          Search flights
+        </button>
+      </div>
+    )}
+  </div>
+)}
       </div>
 
      {/* Flight Details Modal */}
