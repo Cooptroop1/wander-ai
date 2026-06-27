@@ -191,7 +191,7 @@ export default function WanderAI() {
       phone_number: phone || "",
     },
   ]}
-  seat_maps={undefined}
+  seat_maps={[]}
   onPayloadReady={(payload) => {
     setAncillariesPayload(payload);
   }}
