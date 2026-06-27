@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { DuffelAncillaries } from '@duffel/components';
 
 export default function DuffelCloneHome() {
   const [currentView, setCurrentView] = useState<'search' | 'myTrips' | 'tripDetail'>('search');
@@ -27,7 +28,7 @@ export default function DuffelCloneHome() {
   const [toSuggestions, setToSuggestions] = useState<any[]>([]);
   const [showFromDropdown, setShowFromDropdown] = useState(false);
   const [showToDropdown, setShowToDropdown] = useState(false);
-
+  const [ancillariesPayload, setAncillariesPayload] = useState<any>(null);
   const [selectedBags, setSelectedBags] = useState(0);
   const [availableServices, setAvailableServices] = useState<any[]>([]);
   const [selectedSeat, setSelectedSeat] = useState<any>(null);
@@ -261,31 +262,55 @@ const handlePayNow = async () => {
   }
 
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) {
     alert("You must be logged in");
     return;
   }
 
-  const passengers = [
-    {
-      title: title || 'mr',
-      given_name: givenName || 'James',
-      family_name: familyName || 'Cooper',
-      born_on: bornOn || '1978-12-04',
-      gender: gender || 'm',
-      email: email || 'jcooper4888@aol.co.uk',
-      phone_number: phone || '+447368841330',
-    },
-  ];
+  // Use the payload from Duffel Ancillaries component if available
+  // Otherwise fall back to basic payload
+  let orderPayload: any;
+
+  if (ancillariesPayload && ancillariesPayload.data) {
+    // Use the enriched payload from the component (includes services)
+    orderPayload = {
+      ...ancillariesPayload.data,
+      type: "instant",
+      selected_offers: [selectedOffer.id],
+    };
+  } else {
+    // Fallback basic payload (no ancillaries)
+    orderPayload = {
+      type: "instant",
+      selected_offers: [selectedOffer.id],
+      passengers: [
+        {
+          title: title || "mr",
+          given_name: givenName || "James",
+          family_name: familyName || "Cooper",
+          born_on: bornOn || "1978-12-04",
+          gender: gender || "m",
+          email: email || "jcooper4888@aol.co.uk",
+          phone_number: phone || "+447368841330",
+        },
+      ],
+      payments: [
+        {
+          type: "balance",
+          currency: "GBP",
+          amount: selectedOffer.total_amount,
+        },
+      ],
+    };
+  }
 
   try {
-    const res = await fetch('/api/orders/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/orders/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         offerId: selectedOffer.id,
-        passengers,
+        payload: orderPayload,           // send the full payload
         finalAmount: selectedOffer.total_amount,
       }),
     });
@@ -293,28 +318,30 @@ const handlePayNow = async () => {
     const result = await res.json();
 
     if (!result.success) {
-      alert('Pay Now failed: ' + (result.error || 'Unknown error'));
+      alert("Pay Now failed: " + (result.error?.message || result.error || "Unknown error"));
       return;
     }
 
     const order = result.order;
 
-    await supabase.from('bookings').insert({
+    await supabase.from("bookings").insert({
       duffel_order_id: order.id,
       user_id: user.id,
-      status: 'confirmed',
+      status: "confirmed",
       total: parseFloat(order.total_amount),
       currency: order.total_currency,
-      airline: order.owner?.name || 'Duffel Airways',
-      origin: order.slices?.[0]?.origin || '',
-      destination: order.slices?.[0]?.destination || '',
-      departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
+      airline: order.owner?.name || "Duffel Airways",
+      origin: order.slices?.[0]?.origin || "",
+      destination: order.slices?.[0]?.destination || "",
+      departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || "",
     });
 
-    alert(`✅ Flight booked and paid! Order ID: ${order.id}`);
+    alert(`✅ Flight booked with ancillaries! Order ID: ${order.id}`);
+    setShowCheckout(false);
 
   } catch (err) {
-    alert('Error creating payment');
+    console.error(err);
+    alert("Error creating booking");
   }
 };
   
@@ -720,45 +747,43 @@ const confirmHold = async () => {
   </div>
 </div>
 
-            <div className="mb-8">
-              <div className="font-bold mb-3">Add extras</div>
-              
-              <div className="bg-zinc-800 p-6 rounded-2xl mb-4">
-                <div className="mb-4">Extra Bags (from Duffel API)</div>
-                {availableServices.length > 0 ? (
-                  availableServices.map((service, idx) => (
-                    <div key={idx} className="flex justify-between items-center mb-4 p-4 bg-zinc-700 rounded-xl">
-                      <div>
-                        <div className="font-semibold">{service.metadata?.type || 'Checked bag'} × {selectedBags}</div>
-                        <div className="text-sm text-zinc-400">£{service.total_amount} each</div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button onClick={() => setSelectedBags(Math.max(0, selectedBags - 1))} className="px-3 py-1 bg-zinc-600 rounded">-</button>
-                        <span className="w-8 text-center">{selectedBags}</span>
-                        <button onClick={() => setSelectedBags(selectedBags + 1)} className="px-3 py-1 bg-zinc-600 rounded">+</button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-sm text-zinc-400">No extra bags available</div>
-                )}
-                <div className="mt-2 font-bold">Bags total: £{(selectedBags * 30).toFixed(2)}</div>
-              </div>
-
-              <div className="bg-zinc-800 p-6 rounded-2xl">
-                <div className="flex justify-between items-center mb-4">
-                  <div>Seat Selection (from Duffel Seat Maps API)</div>
-                  <button onClick={fetchSeatMap} className="bg-emerald-500 px-4 py-2 rounded-xl text-sm">Select Seat from API</button>
-                </div>
-                {selectedSeat ? (
-                  <div className="p-4 bg-zinc-700 rounded-xl">
-                    Selected: {selectedSeat.designator || 'Seat'} - £{selectedSeat.total_amount || '0.00'}
-                  </div>
-                ) : (
-                  <div className="text-sm text-zinc-400">No seat selected</div>
-                )}
-              </div>
-            </div>
+            {/* === DUFFEL ANCILLARIES COMPONENT (Bags + Seats) === */}
+<div className="mb-8">
+  <div className="font-bold mb-3">Add extras (bags, seats, etc.)</div>
+  
+  <div className="bg-zinc-800 p-6 rounded-2xl">
+    {selectedOffer && (
+      <DuffelAncillaries
+        offer={selectedOffer}
+        services={["bags", "seats"]}
+        passengers={[
+          {
+            given_name: givenName || "James",
+            family_name: familyName || "Cooper",
+            gender: gender || "m",
+            title: title || "mr",
+            born_on: bornOn || "1978-12-04",
+            email: email || "jcooper4888@aol.co.uk",
+            phone_number: phone || "+447368841330",
+          },
+        ]}
+        seat_maps={seatMapData?.data || []}
+        markup={{
+          bags: { amount: 0, rate: 0 }, // change this later if you want markup
+          seats: { amount: 0, rate: 0 },
+        }}
+        onPayloadReady={(payload) => {
+          console.log("Ancillaries payload ready:", payload);
+          setAncillariesPayload(payload);
+        }}
+      />
+    )}
+    
+    {!selectedOffer && (
+      <div className="text-sm text-zinc-400">Select a flight first to see available extras.</div>
+    )}
+  </div>
+</div>
 
             <div className="mb-8">
               <div className="font-bold mb-3">Payment</div>
