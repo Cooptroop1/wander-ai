@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 interface Order {
   id: string;
@@ -20,6 +21,9 @@ function SuccessContent() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
     if (!orderId) {
@@ -28,16 +32,57 @@ function SuccessContent() {
       return;
     }
 
-    const fetchOrder = async () => {
+    const fetchAndSaveOrder = async () => {
       try {
+        // 1. Fetch order from Duffel
         const res = await fetch(`/api/duffel/get-order?order_id=${orderId}`);
         const result = await res.json();
 
         if (!result.success) {
           setError(result.error);
-        } else {
-          setOrder(result.order);
+          setLoading(false);
+          return;
         }
+
+        const orderData = result.order;
+        setOrder(orderData);
+
+        // 2. Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.warn('No user logged in - booking not saved to account');
+          setLoading(false);
+          return;
+        }
+
+        // 3. Delete old rows for this user + this order (as you requested)
+        await supabase
+          .from('bookings')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('duffel_order_id', orderData.id);
+
+        // 4. Insert fresh booking record
+        const { error: insertError } = await supabase.from('bookings').insert({
+          user_id: user.id,
+          duffel_order_id: orderData.id,
+          booking_reference: orderData.booking_reference,
+          status: orderData.status,
+          total_amount: orderData.total_amount,
+          total_currency: orderData.total_currency,
+          slices: orderData.slices,
+          passengers: orderData.passengers,
+          raw_order: orderData,           // keep full data just in case
+          created_at: new Date().toISOString(),
+        });
+
+        if (insertError) {
+          console.error('Failed to save booking:', insertError);
+        } else {
+          setSaved(true);
+          console.log('Booking saved to Supabase');
+        }
+
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -45,13 +90,13 @@ function SuccessContent() {
       }
     };
 
-    fetchOrder();
+    fetchAndSaveOrder();
   }, [orderId]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl">Loading your booking details...</p>
+        <p className="text-xl">Saving your booking...</p>
       </div>
     );
   }
@@ -76,6 +121,7 @@ function SuccessContent() {
       <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center mb-8">
         <h1 className="text-3xl font-bold text-green-700 mb-2">Booking Confirmed!</h1>
         <p className="text-green-600">Thank you for your booking.</p>
+        {saved && <p className="text-sm text-green-600 mt-2">✓ Saved to your My Trips</p>}
       </div>
 
       <div className="bg-white border rounded-xl p-6 shadow-sm">
@@ -106,9 +152,18 @@ function SuccessContent() {
         </div>
       </div>
 
-      <div className="mt-8 text-center">
-        <a href="/" className="text-blue-600 hover:underline font-medium">
-          ← Search for more flights
+      <div className="mt-8 flex justify-center gap-4">
+        <a 
+          href="/my-trips" 
+          className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-medium"
+        >
+          View My Trips →
+        </a>
+        <a 
+          href="/" 
+          className="px-6 py-3 border border-zinc-300 hover:bg-zinc-50 rounded-2xl font-medium"
+        >
+          Search more flights
         </a>
       </div>
     </div>
