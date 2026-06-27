@@ -6,7 +6,7 @@ const DUFFEL_API_URL = 'https://api.duffel.com';
 export async function POST(request: NextRequest) {
   if (!DUFFEL_ACCESS_TOKEN) {
     return NextResponse.json(
-      { success: false, error: 'Duffel API key not configured (DUFFEL_ACCESS_TOKEN)' },
+      { success: false, error: 'Duffel API key not configured' },
       { status: 500 }
     );
   }
@@ -17,11 +17,12 @@ export async function POST(request: NextRequest) {
 
     if (!payload || !payload.selected_offers?.length) {
       return NextResponse.json(
-        { success: false, error: 'Invalid payload - missing selected_offers' },
+        { success: false, error: 'Invalid payload' },
         { status: 400 }
       );
     }
 
+    // Duffel requires { data: payload }
     const response = await fetch(`${DUFFEL_API_URL}/air/orders`, {
       method: 'POST',
       headers: {
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         'Duffel-Version': 'v2',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ data: payload }),
     });
 
     const data = await response.json();
