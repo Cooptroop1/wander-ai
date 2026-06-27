@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { DuffelAncillaries } from '@duffel/components';
 
 export default function WanderAI() {
   const [origin, setOrigin] = useState('LHR');
@@ -10,7 +11,17 @@ export default function WanderAI() {
   const [loading, setLoading] = useState(false);
 
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [ancillariesPayload, setAncillariesPayload] = useState<any>(null);
+
+  // Passenger form state
+  const [givenName, setGivenName] = useState('James');
+  const [familyName, setFamilyName] = useState('Cooper');
+  const [email, setEmail] = useState('test@example.com');
+  const [phone, setPhone] = useState('+447700000000');
+  const [bornOn, setBornOn] = useState('1990-01-01');
+  const [gender, setGender] = useState<'m' | 'f'>('m');
+  const [title, setTitle] = useState<'mr' | 'mrs' | 'ms' | 'miss' | 'dr'>('mr');
 
   const searchFlights = async () => {
     setLoading(true);
@@ -34,32 +45,30 @@ export default function WanderAI() {
     }
   };
 
-  const openBooking = (offer: any) => {
+  const selectOffer = (offer: any) => {
     setSelectedOffer(offer);
-    setShowModal(true);
+    setShowCheckout(true);
+    setAncillariesPayload(null);
   };
 
-      const bookFlight = async () => {
-    if (!selectedOffer) return;
+  const handlePayloadReady = (payload: any) => {
+    console.log('Ancillaries payload ready:', payload);
+    setAncillariesPayload(payload);
+  };
+
+  const handlePayNow = async () => {
+    if (!selectedOffer || !ancillariesPayload) {
+      alert('Please complete bags/seats selection first');
+      return;
+    }
 
     setLoading(true);
 
     try {
       const orderPayload = {
-        type: "instant",
+        ...ancillariesPayload,
+        type: 'instant',
         selected_offers: [selectedOffer.id],
-        passengers: [
-          {
-            id: "pax_1",
-            given_name: "James",
-            family_name: "Cooper",
-            born_on: "1990-01-01",
-            title: "mr",
-            gender: "m",
-            email: "test@example.com",
-            phone_number: "+447700000000",
-          },
-        ],
       };
 
       const res = await fetch('/api/orders/create', {
@@ -71,21 +80,34 @@ export default function WanderAI() {
       const result = await res.json();
 
       if (!result.success) {
-        console.error("Duffel rejected the order:", result.details);
-        alert("Duffel error: " + JSON.stringify(result.details, null, 2));
+        alert('Booking failed: ' + (result.error || 'Unknown error'));
+        console.error(result);
         return;
       }
 
-      alert(`✅ Booked successfully!\nOrder ID: ${result.order.id}`);
-      setShowModal(false);
+      alert(`✅ Booked successfully! Order ID: ${result.order.id}`);
+      setShowCheckout(false);
+      setAncillariesPayload(null);
       setSelectedOffer(null);
 
     } catch (err: any) {
       console.error(err);
-      alert("Error creating booking");
+      alert('Error creating booking');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Build passenger object for DuffelAncillaries
+  const passenger = {
+    id: 'pax_1',
+    given_name: givenName,
+    family_name: familyName,
+    gender: gender.toUpperCase(),
+    title: title,
+    born_on: bornOn,
+    email: email,
+    phone_number: phone,
   };
 
   return (
@@ -105,7 +127,7 @@ export default function WanderAI() {
           </div>
         </div>
 
-        {/* Results */}
+        {/* Flight Results */}
         {offers.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Available Flights ({offers.length})</h2>
@@ -118,7 +140,7 @@ export default function WanderAI() {
                 const destCode = typeof slice?.destination === 'string' ? slice.destination : slice?.destination?.iata_code || 'N/A';
 
                 return (
-                  <div key={index} onClick={() => openBooking(offer)} className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-500 rounded-2xl p-6 cursor-pointer transition-all">
+                  <div key={index} onClick={() => selectOffer(offer)} className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-500 rounded-2xl p-6 cursor-pointer transition-all">
                     <div className="flex justify-between items-center">
                       <div>
                         <div className="font-semibold text-lg">{airline}</div>
@@ -128,7 +150,7 @@ export default function WanderAI() {
                       <div className="text-right">
                         <div className="text-3xl font-bold">£{offer.total_amount}</div>
                         <div className="text-xs text-zinc-400">{offer.total_currency}</div>
-                        <div className="text-emerald-400 text-sm mt-1">Book this flight →</div>
+                        <div className="text-emerald-400 text-sm mt-1">Select →</div>
                       </div>
                     </div>
                   </div>
@@ -138,45 +160,59 @@ export default function WanderAI() {
           </div>
         )}
 
-        {/* Simple Booking Modal */}
-        {showModal && selectedOffer && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-zinc-900 rounded-3xl w-full max-w-md p-8">
-              <h2 className="text-2xl font-bold mb-6">Confirm Booking</h2>
+        {/* CHECKOUT MODAL with correct DuffelAncillaries usage */}
+        {showCheckout && selectedOffer && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto">
+            <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Complete Booking</h2>
+                <button onClick={() => setShowCheckout(false)} className="text-zinc-400 text-2xl">×</button>
+              </div>
 
               <div className="bg-zinc-800 rounded-2xl p-5 mb-6">
                 <div className="font-semibold">{selectedOffer.owner?.name}</div>
-                <div className="text-sm text-zinc-400 mt-1">
+                <div className="text-sm text-zinc-400">
                   {selectedOffer.slices?.[0]?.origin?.iata_code || selectedOffer.slices?.[0]?.origin} → {selectedOffer.slices?.[0]?.destination?.iata_code || selectedOffer.slices?.[0]?.destination}
                 </div>
-                <div className="text-3xl font-bold mt-3">£{selectedOffer.total_amount}</div>
+                <div className="text-2xl font-bold mt-2">£{selectedOffer.total_amount}</div>
               </div>
 
-             <p className="text-sm text-zinc-400 mb-6">
-                    This will create a test booking with basic passenger details.
-            </p>
-
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 bg-zinc-700 hover:bg-zinc-600 p-4 rounded-2xl font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={bookFlight}
-                  disabled={loading}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-700 p-4 rounded-2xl font-bold"
-                >
-                  {loading ? 'Booking...' : 'Confirm & Pay'}
-                </button>
+              {/* Duffel React Component - Correct usage */}
+              <div className="mb-8">
+                <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
+                <div className="bg-zinc-800 rounded-2xl p-6">
+                  <DuffelAncillaries
+                    debug={true}
+                    offer={selectedOffer}
+                    services={['bags', 'seats']}
+                    passengers={[passenger]}
+                    onPayloadReady={handlePayloadReady}
+                  />
+                </div>
               </div>
+
+              {/* Passenger Form */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <input placeholder="First name" value={givenName} onChange={e => setGivenName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
+                <input placeholder="Last name" value={familyName} onChange={e => setFamilyName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
+                <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="bg-zinc-800 p-3 rounded-xl col-span-2" />
+                <input placeholder="Phone" value={phone} onChange={e => setPhone(e.target.value)} className="bg-zinc-800 p-3 rounded-xl col-span-2" />
+                <input type="date" value={bornOn} onChange={e => setBornOn(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
+              </div>
+
+              <button
+                onClick={handlePayNow}
+                disabled={loading || !ancillariesPayload}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-700 p-4 rounded-2xl font-bold text-lg"
+              >
+                {loading ? 'Processing...' : 'Pay Now & Book'}
+              </button>
             </div>
           </div>
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Clean build • Basic one-way booking
+          Using official Duffel React Component
         </p>
       </div>
     </div>
