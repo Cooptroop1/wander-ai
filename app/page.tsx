@@ -50,6 +50,7 @@ export default function WanderAI() {
         selected_offers: [selectedOffer.id],
         passengers: [
           {
+            id: "pax_1",
             given_name: "James",
             family_name: "Cooper",
             born_on: "1990-01-01",
