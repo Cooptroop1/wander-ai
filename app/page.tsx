@@ -264,38 +264,152 @@ const handleLogout = async () => {
         )}
       </div>
 
-      {/* Flight Confirmation Modal */}
-      {selectedFlight && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 rounded-3xl p-8 max-w-md w-full border border-zinc-700">
-            <h2 className="text-2xl font-bold mb-6">Confirm your flight</h2>
+      {/* Flight Details Modal */}
+{selectedFlight && (
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div className="bg-zinc-900 rounded-3xl w-full max-w-2xl border border-zinc-700 overflow-hidden">
+      
+      {/* Header */}
+      <div className="px-8 pt-8 pb-6 border-b border-zinc-800 flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Flight Details</h2>
+          <p className="text-zinc-400 text-sm mt-1">Review before booking</p>
+        </div>
+        <button 
+          onClick={() => setSelectedFlight(null)} 
+          className="text-zinc-400 hover:text-white text-3xl leading-none"
+        >
+          ×
+        </button>
+      </div>
 
-            <div className="space-y-4 text-sm mb-8">
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Airline</span>
-                <span>{selectedFlight.slices?.[0]?.segments?.[0]?.marketing_carrier?.name}</span>
+      <div className="p-8 space-y-8">
+        
+        {/* Outbound */}
+        {selectedFlight.slices?.[0] && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full text-xs font-medium">OUTBOUND</div>
+              <div className="text-sm text-zinc-400">{selectedFlight.slices[0].duration}</div>
+            </div>
+            
+            {selectedFlight.slices[0].segments?.map((segment: any, idx: number) => (
+              <div key={idx} className="bg-zinc-950 rounded-2xl p-5 mb-3 border border-zinc-800">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <div className="text-2xl font-semibold">{segment.origin.iata_code}</div>
+                    <div className="text-sm text-zinc-400">{segment.origin.name}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-semibold">{segment.destination.iata_code}</div>
+                    <div className="text-sm text-zinc-400">{segment.destination.name}</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <div>
+                    <div className="text-emerald-400">Departs</div>
+                    <div className="font-medium">{new Date(segment.departing_at).toLocaleString([], { 
+                      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                    })}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-emerald-400">Arrives</div>
+                    <div className="font-medium">{new Date(segment.arriving_at).toLocaleString([], { 
+                      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                    })}</div>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-zinc-800 flex justify-between text-xs text-zinc-400">
+                  <div>{segment.marketing_carrier?.name} • {segment.marketing_carrier?.iata_code}{segment.marketing_carrier_flight_number}</div>
+                  <div>{segment.duration} • {segment.stops?.length || 0} stop{(segment.stops?.length || 0) !== 1 ? 's' : ''}</div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Price</span>
-                <span className="font-bold text-2xl">£{selectedFlight.total_amount}</span>
-              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Return (if exists) */}
+        {selectedFlight.slices?.[1] && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-xs font-medium">RETURN</div>
+              <div className="text-sm text-zinc-400">{selectedFlight.slices[1].duration}</div>
             </div>
 
-            <div className="flex gap-3">
-              <button onClick={() => setSelectedFlight(null)} className="flex-1 py-3 rounded-2xl border border-zinc-600">Cancel</button>
-              <button 
-                onClick={() => {
-                  createDuffelLink(selectedFlight.id);
-                  setSelectedFlight(null);
-                }} 
-                className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 rounded-2xl font-bold"
-              >
-                Book on Duffel →
-              </button>
-            </div>
+            {selectedFlight.slices[1].segments?.map((segment: any, idx: number) => (
+              <div key={idx} className="bg-zinc-950 rounded-2xl p-5 mb-3 border border-zinc-800">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <div className="text-2xl font-semibold">{segment.origin.iata_code}</div>
+                    <div className="text-sm text-zinc-400">{segment.origin.name}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-semibold">{segment.destination.iata_code}</div>
+                    <div className="text-sm text-zinc-400">{segment.destination.name}</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <div>
+                    <div className="text-emerald-400">Departs</div>
+                    <div className="font-medium">{new Date(segment.departing_at).toLocaleString([], { 
+                      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                    })}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-emerald-400">Arrives</div>
+                    <div className="font-medium">{new Date(segment.arriving_at).toLocaleString([], { 
+                      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                    })}</div>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-zinc-800 flex justify-between text-xs text-zinc-400">
+                  <div>{segment.marketing_carrier?.name} • {segment.marketing_carrier?.iata_code}{segment.marketing_carrier_flight_number}</div>
+                  <div>{segment.duration} • {segment.stops?.length || 0} stop{(segment.stops?.length || 0) !== 1 ? 's' : ''}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Price */}
+        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex justify-between items-center">
+          <div>
+            <div className="text-sm text-zinc-400">Total price for all passengers</div>
+            <div className="text-xs text-zinc-500 mt-0.5">Includes taxes & fees</div>
+          </div>
+          <div className="text-right">
+            <div className="text-4xl font-bold text-emerald-400">£{selectedFlight.total_amount}</div>
           </div>
         </div>
-      )}
+
+      </div>
+
+      {/* Actions */}
+      <div className="px-8 py-6 bg-zinc-950 border-t border-zinc-800 flex gap-4">
+        <button 
+          onClick={() => setSelectedFlight(null)} 
+          className="flex-1 py-4 rounded-2xl border border-zinc-700 hover:bg-zinc-800 font-medium transition"
+        >
+          Cancel
+        </button>
+        <button 
+          onClick={() => {
+            createDuffelLink(selectedFlight.id);
+            setSelectedFlight(null);
+          }} 
+          className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 rounded-2xl font-bold text-lg transition"
+        >
+          Book on Duffel →
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
     </div>
   );
 }
