@@ -20,7 +20,7 @@ export default function WanderAI() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [bornOn, setBornOn] = useState('');
-  const [gender, setGender] = useState<'m' | 'f' | 'other'>('m');
+  const [gender, setGender] = useState<'m' | 'f'>('m');
   const [title, setTitle] = useState<'mr' | 'mrs' | 'ms' | 'miss' | 'dr'>('mr');
 
   // === SEARCH FLIGHTS ===
@@ -168,7 +168,7 @@ export default function WanderAI() {
     family_name: familyName || "",
     born_on: bornOn || "",
     title: title || "mr",
-    gender: gender || "m",
+    gender: gender,
     email: email || "",
     phone_number: phone || "",
   },
