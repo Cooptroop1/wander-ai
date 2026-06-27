@@ -254,11 +254,7 @@ useEffect(() => {
 
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
-const handlePayNow = async () => {
-  if (!selectedOffer) {
-    alert("No offer selected");
-    return;
-  }
+
 
   const { data: { user } } = await supabase.auth.getUser();
 
