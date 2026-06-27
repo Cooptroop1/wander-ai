@@ -14,7 +14,6 @@ export default function WanderAI() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [ancillariesPayload, setAncillariesPayload] = useState<any>(null);
 
-  // Passenger form state
   const [givenName, setGivenName] = useState('James');
   const [familyName, setFamilyName] = useState('Cooper');
   const [email, setEmail] = useState('test@example.com');
@@ -51,9 +50,11 @@ export default function WanderAI() {
     setAncillariesPayload(null);
   };
 
-  const handlePayloadReady = (payload: any) => {
-    console.log('Ancillaries payload ready:', payload);
-    setAncillariesPayload(payload);
+  // Correct handler following Duffel docs
+  const handlePayloadReady = (data: any, metadata: any) => {
+    console.log('Ancillaries data:', data);
+    console.log('Ancillaries metadata:', metadata);
+    setAncillariesPayload(data); // store the order payload
   };
 
   const handlePayNow = async () => {
@@ -98,7 +99,6 @@ export default function WanderAI() {
     }
   };
 
-  // Build passenger object for DuffelAncillaries
   const passenger = {
     id: 'pax_1',
     given_name: givenName,
@@ -115,7 +115,6 @@ export default function WanderAI() {
       <div className="max-w-5xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">Wander AI</h1>
 
-        {/* Search Form */}
         <div className="bg-zinc-900 p-6 rounded-2xl mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <input value={origin} onChange={(e) => setOrigin(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" placeholder="Origin (e.g. LHR)" />
@@ -127,7 +126,6 @@ export default function WanderAI() {
           </div>
         </div>
 
-        {/* Flight Results */}
         {offers.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Available Flights ({offers.length})</h2>
@@ -160,7 +158,7 @@ export default function WanderAI() {
           </div>
         )}
 
-        {/* CHECKOUT MODAL with correct DuffelAncillaries usage */}
+        {/* CHECKOUT MODAL */}
         {showCheckout && selectedOffer && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto">
             <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl p-8">
@@ -191,7 +189,6 @@ export default function WanderAI() {
                 </div>
               </div>
 
-              {/* Passenger Form */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <input placeholder="First name" value={givenName} onChange={e => setGivenName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
                 <input placeholder="Last name" value={familyName} onChange={e => setFamilyName(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
@@ -212,7 +209,7 @@ export default function WanderAI() {
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Using official Duffel React Component
+          Using official Duffel React Component (correct pattern)
         </p>
       </div>
     </div>
