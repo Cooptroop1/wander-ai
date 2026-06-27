@@ -261,7 +261,6 @@ const handlePayNow = async () => {
   }
 
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) {
     alert("You must be logged in");
     return;
@@ -279,21 +278,40 @@ const handlePayNow = async () => {
     },
   ];
 
+  // Build services array (bags)
+  const services: any[] = [];
+  if (selectedBags > 0 && availableServices.length > 0) {
+    // Try to find a baggage service (this is basic - can be improved later)
+    const bagService = availableServices.find((s: any) => 
+      s.type === 'baggage' || s.name?.toLowerCase().includes('bag')
+    );
+    if (bagService) {
+      services.push({
+        id: bagService.id,
+        quantity: selectedBags,
+      });
+    }
+  }
+
+  const orderPayload = {
+    type: 'instant',
+    selected_offers: [selectedOffer.id],
+    passengers,
+    services,
+  };
+
   try {
     const res = await fetch('/api/orders/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        offerId: selectedOffer.id,
-        passengers,
-        finalAmount: selectedOffer.total_amount,
-      }),
+      body: JSON.stringify({ payload: orderPayload }),
     });
 
     const result = await res.json();
 
     if (!result.success) {
-      alert('Pay Now failed: ' + (result.error || 'Unknown error'));
+      alert('Booking failed: ' + (result.error || 'Unknown error'));
+      console.error('Duffel error:', result.details || result);
       return;
     }
 
@@ -305,19 +323,21 @@ const handlePayNow = async () => {
       status: 'confirmed',
       total: parseFloat(order.total_amount),
       currency: order.total_currency,
-      airline: order.owner?.name || 'Duffel Airways',
-      origin: order.slices?.[0]?.origin || '',
-      destination: order.slices?.[0]?.destination || '',
+      airline: order.owner?.name || 'Airline',
+      origin: order.slices?.[0]?.origin?.iata_code || order.slices?.[0]?.origin || '',
+      destination: order.slices?.[0]?.destination?.iata_code || order.slices?.[0]?.destination || '',
       departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
     });
 
-    alert(`✅ Flight booked and paid! Order ID: ${order.id}`);
+    alert(`✅ Flight booked! Order ID: ${order.id}`);
+    setShowCheckout(false);
 
-  } catch (err) {
-    alert('Error creating payment');
+  } catch (err: any) {
+    console.error(err);
+    alert('Error creating booking');
   }
 };
-  
+
 const confirmHold = async () => {
   if (!selectedOffer) {
     alert("No offer selected");
@@ -325,7 +345,6 @@ const confirmHold = async () => {
   }
 
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) {
     alert("You must be logged in to hold a flight");
     return;
@@ -343,21 +362,24 @@ const confirmHold = async () => {
     },
   ];
 
+  const orderPayload = {
+    type: 'instant',
+    selected_offers: [selectedOffer.id],
+    passengers,
+    services: [],
+  };
+
   try {
     const res = await fetch('/api/orders/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        offerId: selectedOffer.id,
-        passengers,
-      }),
+      body: JSON.stringify({ payload: orderPayload }),
     });
 
     const result = await res.json();
 
     if (!result.success) {
-      const msg = result.error?.title || result.error?.message || 'Unknown error';
-      alert('Duffel failed: ' + msg);
+      alert('Hold failed: ' + (result.error || 'Unknown error'));
       console.error(result);
       return;
     }
@@ -370,33 +392,19 @@ const confirmHold = async () => {
       status: 'on_hold',
       total: parseFloat(order.total_amount),
       currency: order.total_currency,
-      airline: order.owner?.name || 'Duffel Airways',
-      origin: order.slices?.[0]?.origin || '',
-      destination: order.slices?.[0]?.destination || '',
+      airline: order.owner?.name || 'Airline',
+      origin: order.slices?.[0]?.origin?.iata_code || '',
+      destination: order.slices?.[0]?.destination?.iata_code || '',
       departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
     });
 
-    const newTrip = {
-      id: order.id,
-      status: 'On hold',
-      total: order.total_amount,
-      currency: order.total_currency,
-      airline: order.owner?.name || 'Duffel Airways',
-      created: new Date().toLocaleString('en-GB'),
-      holdUntil: '28 Jun 2026',
-      extraBags: 0,
-      selectedSeat: null,
-      flights: [],
-      passenger: passengers[0],
-    };
-
-    setMyTrips([...myTrips, newTrip]);
+    alert(`✅ Flight held! Order ID: ${order.id}`);
     setShowHoldInfo(false);
     setShowOrderHeld(true);
 
   } catch (err: any) {
     console.error(err);
-    alert('Something went wrong creating the hold');
+    alert('Error creating hold');
   }
 };
 
