@@ -22,7 +22,6 @@ export default function WanderAI() {
   const [gender, setGender] = useState<'m' | 'f'>('m');
   const [title, setTitle] = useState<'mr' | 'mrs' | 'ms' | 'miss' | 'dr'>('mr');
 
-  // FIXED: Send correct field names that the API expects
   const searchFlights = async () => {
     setLoading(true);
     try {
@@ -104,35 +103,16 @@ export default function WanderAI() {
         {/* Search Form */}
         <div className="bg-zinc-900 p-6 rounded-2xl mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              className="bg-zinc-800 p-3 rounded-xl"
-              placeholder="Origin (e.g. LHR)"
-            />
-            <input
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              className="bg-zinc-800 p-3 rounded-xl"
-              placeholder="Destination (e.g. JFK)"
-            />
-            <input
-              type="date"
-              value={departureDate}
-              onChange={(e) => setDepartureDate(e.target.value)}
-              className="bg-zinc-800 p-3 rounded-xl"
-            />
-            <button
-              onClick={searchFlights}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 p-3 rounded-xl font-semibold"
-            >
+            <input value={origin} onChange={(e) => setOrigin(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" placeholder="Origin (e.g. LHR)" />
+            <input value={destination} onChange={(e) => setDestination(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" placeholder="Destination (e.g. JFK)" />
+            <input type="date" value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" />
+            <button onClick={searchFlights} disabled={loading} className="bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 p-3 rounded-xl font-semibold">
               {loading ? 'Searching...' : 'Search Flights'}
             </button>
           </div>
         </div>
 
-        {/* Flight Results */}
+        {/* Flight Results - FIXED object rendering */}
         {offers.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Available Flights ({offers.length})</h2>
@@ -142,6 +122,10 @@ export default function WanderAI() {
                 const slice = offer.slices?.[0];
                 const segment = slice?.segments?.[0];
                 const airline = offer.owner?.name || 'Airline';
+
+                // Safely get origin/destination codes
+                const originCode = typeof slice?.origin === 'string' ? slice.origin : slice?.origin?.iata_code || 'N/A';
+                const destCode = typeof slice?.destination === 'string' ? slice.destination : slice?.destination?.iata_code || 'N/A';
 
                 return (
                   <div
@@ -153,7 +137,7 @@ export default function WanderAI() {
                       <div>
                         <div className="font-semibold text-lg">{airline}</div>
                         <div className="text-sm text-zinc-400 mt-1">
-                          {slice?.origin} → {slice?.destination}
+                          {originCode} → {destCode}
                         </div>
                         <div className="text-xs text-zinc-500 mt-1">
                           {segment?.departing_at}
@@ -184,7 +168,7 @@ export default function WanderAI() {
               <div className="bg-zinc-800 rounded-2xl p-5 mb-6">
                 <div className="font-semibold">{selectedOffer.owner?.name}</div>
                 <div className="text-sm text-zinc-400">
-                  {selectedOffer.slices?.[0]?.origin} → {selectedOffer.slices?.[0]?.destination}
+                  {selectedOffer.slices?.[0]?.origin?.iata_code || selectedOffer.slices?.[0]?.origin} → {selectedOffer.slices?.[0]?.destination?.iata_code || selectedOffer.slices?.[0]?.destination}
                 </div>
                 <div className="text-2xl font-bold mt-2">£{selectedOffer.total_amount}</div>
               </div>
