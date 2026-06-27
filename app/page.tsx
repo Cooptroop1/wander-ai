@@ -268,6 +268,7 @@ const handlePayNow = async () => {
 
   const passengers = [
     {
+      id: "pax_1",
       title: title || 'mr',
       given_name: givenName || 'James',
       family_name: familyName || 'Cooper',
@@ -352,6 +353,7 @@ const confirmHold = async () => {
 
   const passengers = [
     {
+      id: "pax_1",
       title: title || 'mr',
       given_name: givenName || 'James',
       family_name: familyName || 'Cooper',
