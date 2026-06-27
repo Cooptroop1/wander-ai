@@ -204,6 +204,7 @@ export default function WanderAI() {
               <div className="mb-8">
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
+                  {/* @ts-ignore - custom web component */}
                   <duffel-ancillaries ref={ancillariesRef}></duffel-ancillaries>
                 </div>
               </div>
