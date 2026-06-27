@@ -267,12 +267,12 @@ const handlePayNow = async () => {
     return;
   }
 
-  setIsLoading(true);
+  setLoading(true);
 
   try {
     let orderPayload: any;
 
-    // Use payload from Duffel Ancillaries component if user selected bags/seats
+    // Use payload from Duffel Ancillaries component if available
     if (ancillariesPayload && ancillariesPayload.data) {
       orderPayload = {
         ...ancillariesPayload.data,
@@ -280,7 +280,7 @@ const handlePayNow = async () => {
         selected_offers: [selectedOffer.id],
       };
     } 
-    // Fallback - basic payload (no ancillaries)
+    // Fallback basic payload
     else {
       orderPayload = {
         type: "instant",
@@ -306,12 +306,11 @@ const handlePayNow = async () => {
       };
     }
 
-    // Call our API route
     const res = await fetch("/api/orders/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        payload: orderPayload,           // Send the full payload
+        payload: orderPayload,
       }),
     });
 
@@ -320,13 +319,12 @@ const handlePayNow = async () => {
     if (!result.success) {
       console.error("Order creation failed:", result);
       alert("Booking failed: " + (result.error || "Unknown error"));
-      setIsLoading(false);
+      setLoading(false);
       return;
     }
 
     const order = result.order;
 
-    // Save to Supabase
     await supabase.from("bookings").insert({
       duffel_order_id: order.id,
       user_id: user.id,
@@ -343,13 +341,13 @@ const handlePayNow = async () => {
 
     alert(`✅ Flight booked successfully!\nOrder ID: ${order.id}`);
     setShowCheckout(false);
-    setAncillariesPayload(null); // reset
+    setAncillariesPayload(null);
 
   } catch (err: any) {
     console.error("handlePayNow error:", err);
-    alert("Something went wrong while booking. Check console for details.");
+    alert("Something went wrong while booking.");
   } finally {
-    setIsLoading(false);
+    setLoading(false);
   }
 };
   
