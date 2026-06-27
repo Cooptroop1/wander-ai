@@ -367,7 +367,7 @@ const confirmHold = async () => {
       given_name: givenName || 'James',
       family_name: familyName || 'Cooper',
       born_on: bornOn || '1978-12-04',
-      gender: gender || 'm',
+      gender: (gender as "m" | "f" | "other") || "m",
       email: email || 'jcooper4888@aol.co.uk',
       phone_number: phone || '+447368841330',
     },
