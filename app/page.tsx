@@ -39,7 +39,7 @@ export default function WanderAI() {
     setShowModal(true);
   };
 
-  const bookFlight = async () => {
+    const bookFlight = async () => {
     if (!selectedOffer) return;
 
     setLoading(true);
@@ -48,6 +48,17 @@ export default function WanderAI() {
       const orderPayload = {
         type: "instant",
         selected_offers: [selectedOffer.id],
+        passengers: [
+          {
+            given_name: "Test",
+            family_name: "Passenger",
+            born_on: "1990-01-01",
+            title: "mr",
+            gender: "m",
+            email: "test@example.com",
+            phone_number: "+447700000000",
+          },
+        ],
       };
 
       const res = await fetch('/api/orders/create', {
@@ -59,7 +70,8 @@ export default function WanderAI() {
       const result = await res.json();
 
       if (!result.success) {
-        alert("Booking failed: " + (result.error || "Unknown error"));
+        console.error("Duffel error:", result);
+        alert("Booking failed: " + (result.error || "Unknown error from Duffel"));
         return;
       }
 
@@ -139,9 +151,9 @@ export default function WanderAI() {
                 <div className="text-3xl font-bold mt-3">£{selectedOffer.total_amount}</div>
               </div>
 
-              <p className="text-sm text-zinc-400 mb-6">
-                This is a basic one-way fare. No extra bags or seats included.
-              </p>
+             <p className="text-sm text-zinc-400 mb-6">
+                    This will create a test booking with basic passenger details.
+            </p>
 
               <div className="flex gap-4">
                 <button
