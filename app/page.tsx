@@ -198,24 +198,14 @@ export default function WanderAI() {
               <div className="mb-8">
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
-                  {seatMaps.length > 0 ? (
-                    <DuffelAncillaries
-                      debug={true}
-                      offer={selectedOffer}
-                      seat_maps={seatMaps}
-                      services={availableServices}
-                      passengers={[passenger]}
-                      onPayloadReady={handlePayloadReady}
-                    />
-                  ) : (
-                    <DuffelAncillaries
-                      debug={true}
-                      offer={selectedOffer}
-                      services={availableServices}
-                      passengers={[passenger]}
-                      onPayloadReady={handlePayloadReady}
-                    />
-                  )}
+                  <DuffelAncillaries
+                    debug={true}
+                    offer={selectedOffer as any}
+                    seat_maps={seatMaps as any}
+                    services={availableServices}
+                    passengers={[passenger] as any}
+                    onPayloadReady={handlePayloadReady}
+                  />
                 </div>
               </div>
 
@@ -239,7 +229,7 @@ export default function WanderAI() {
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Proper implementation (conditional seat_maps)
+          Using type assertions to satisfy strict Duffel types
         </p>
       </div>
     </div>
