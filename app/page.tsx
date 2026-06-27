@@ -50,11 +50,10 @@ export default function WanderAI() {
     setAncillariesPayload(null);
   };
 
-  // Correct handler following Duffel docs
   const handlePayloadReady = (data: any, metadata: any) => {
     console.log('Ancillaries data:', data);
     console.log('Ancillaries metadata:', metadata);
-    setAncillariesPayload(data); // store the order payload
+    setAncillariesPayload(data);
   };
 
   const handlePayNow = async () => {
@@ -99,11 +98,12 @@ export default function WanderAI() {
     }
   };
 
+  // Fixed passenger object (gender is already lowercase)
   const passenger = {
     id: 'pax_1',
     given_name: givenName,
     family_name: familyName,
-    gender: gender.toUpperCase(),
+    gender: gender,                    // ← lowercase 'm' or 'f'
     title: title,
     born_on: bornOn,
     email: email,
@@ -158,7 +158,6 @@ export default function WanderAI() {
           </div>
         )}
 
-        {/* CHECKOUT MODAL */}
         {showCheckout && selectedOffer && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto">
             <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl p-8">
@@ -175,7 +174,6 @@ export default function WanderAI() {
                 <div className="text-2xl font-bold mt-2">£{selectedOffer.total_amount}</div>
               </div>
 
-              {/* Duffel React Component - Correct usage */}
               <div className="mb-8">
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
@@ -209,7 +207,7 @@ export default function WanderAI() {
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Using official Duffel React Component (correct pattern)
+          Using official Duffel React Component
         </p>
       </div>
     </div>
