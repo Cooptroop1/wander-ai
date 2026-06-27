@@ -254,7 +254,11 @@ useEffect(() => {
 
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
-
+const handlePayNow = async () => {
+  if (!selectedOffer) {
+    alert("No offer selected");
+    return;
+  }
 
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -323,19 +327,21 @@ const confirmHold = async () => {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    alert("You must be logged in");
+    alert("You must be logged in to hold a flight");
     return;
   }
 
-  const passengers = [{
-    title: title || 'mr',
-    given_name: givenName || 'James',
-    family_name: familyName || 'Cooper',
-    born_on: bornOn || '1978-12-04',
-    gender: gender || 'm',
-    email: email || 'jcooper4888@aol.co.uk',
-    phone_number: phone || '+447368841330',
-  }];
+  const passengers = [
+    {
+      title: title || 'mr',
+      given_name: givenName || 'James',
+      family_name: familyName || 'Cooper',
+      born_on: bornOn || '1978-12-04',
+      gender: gender || 'm',
+      email: email || 'jcooper4888@aol.co.uk',
+      phone_number: phone || '+447368841330',
+    },
+  ];
 
   try {
     const res = await fetch('/api/orders/create', {
@@ -343,14 +349,16 @@ const confirmHold = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         offerId: selectedOffer.id,
-        passengers,           // ← must be array of objects
+        passengers,
       }),
     });
 
     const result = await res.json();
 
     if (!result.success) {
-      alert('Hold failed: ' + (result.error?.message || 'Unknown error'));
+      const msg = result.error?.title || result.error?.message || 'Unknown error';
+      alert('Duffel failed: ' + msg);
+      console.error(result);
       return;
     }
 
@@ -368,71 +376,27 @@ const confirmHold = async () => {
       departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
     });
 
-    alert('Hold created successfully!');
+    const newTrip = {
+      id: order.id,
+      status: 'On hold',
+      total: order.total_amount,
+      currency: order.total_currency,
+      airline: order.owner?.name || 'Duffel Airways',
+      created: new Date().toLocaleString('en-GB'),
+      holdUntil: '28 Jun 2026',
+      extraBags: 0,
+      selectedSeat: null,
+      flights: [],
+      passenger: passengers[0],
+    };
+
+    setMyTrips([...myTrips, newTrip]);
     setShowHoldInfo(false);
     setShowOrderHeld(true);
 
-  } catch (err) {
-    alert('Error creating hold');
+  } catch (err: any) {
     console.error(err);
-  }
-};
-
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    alert("You must be logged in");
-    return;
-  }
-
-  const passengers = [{
-    title: title || 'mr',
-    given_name: givenName || 'James',
-    family_name: familyName || 'Cooper',
-    born_on: bornOn || '1978-12-04',
-    gender: gender || 'm',
-    email: email || 'jcooper4888@aol.co.uk',
-    phone_number: phone || '+447368841330',
-  }];
-
-  try {
-    const res = await fetch('/api/orders/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        offerId: selectedOffer.id,
-        passengers,
-        finalAmount: selectedOffer.total_amount,
-      }),
-    });
-
-    const result = await res.json();
-
-    if (!result.success) {
-      alert('Pay Now failed: ' + (result.error?.message || 'Unknown error'));
-      return;
-    }
-
-    const order = result.order;
-
-    await supabase.from('bookings').insert({
-      duffel_order_id: order.id,
-      user_id: user.id,
-      status: 'confirmed',
-      total: parseFloat(order.total_amount),
-      currency: order.total_currency,
-      airline: order.owner?.name || 'Duffel Airways',
-      origin: order.slices?.[0]?.origin || '',
-      destination: order.slices?.[0]?.destination || '',
-      departure_date: order.slices?.[0]?.segments?.[0]?.departing_at?.substring(0, 10) || '',
-    });
-
-    alert(`✅ Flight booked! Order ID: ${order.id}`);
-
-  } catch (err) {
-    alert('Error creating payment');
-    console.error(err);
+    alert('Something went wrong creating the hold');
   }
 };
 
