@@ -10,9 +10,16 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const response = await duffel.orders.create({
-      type: 'pay_later',
+      type: 'instant',
       selected_offers: [body.offerId],
       passengers: body.passengers,
+      payments: [
+        {
+          type: 'balance',
+          currency: 'GBP',
+          amount: body.finalAmount || '120.39',
+        }
+      ],
     });
 
     const order = response.data;
@@ -23,9 +30,7 @@ export async function POST(request: Request) {
     });
 
   } catch (error: any) {
-    console.error('=== DUFFEL ERROR ===');
-    console.error(JSON.stringify(error, null, 2));
-
+    console.error('Duffel error:', JSON.stringify(error, null, 2));
     return NextResponse.json({
       success: false,
       error: error.errors?.[0] || error.message,
