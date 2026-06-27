@@ -161,6 +161,7 @@ export default function WanderAI() {
                   <DuffelAncillaries
                     offer={selectedOffer}
                     services={["bags", "seats"]}
+                    seat_maps={[]}
                     passengers={[
   {
     id: "pax_1",
