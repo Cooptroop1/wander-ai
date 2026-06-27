@@ -267,13 +267,13 @@ const handleLogout = async () => {
      {/* Flight Details Modal */}
 {selectedFlight && (
   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-    <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl border border-zinc-700 overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="bg-zinc-900 rounded-3xl w-full max-w-5xl border border-zinc-700 overflow-hidden flex flex-col max-h-[92vh]">
       
-      {/* Header - stays at top */}
+      {/* Header */}
       <div className="px-8 pt-8 pb-6 border-b border-zinc-800 flex justify-between items-center flex-shrink-0">
         <div>
           <h2 className="text-2xl font-bold">Flight Details</h2>
-          <p className="text-zinc-400 text-sm mt-1">Review before booking</p>
+          <p className="text-zinc-400 text-sm mt-1">Review before booking on Duffel</p>
         </div>
         <button 
           onClick={() => setSelectedFlight(null)} 
@@ -283,117 +283,134 @@ const handleLogout = async () => {
         </button>
       </div>
 
-      {/* Scrollable content area */}
-      <div className="p-8 space-y-8 overflow-y-auto flex-1">
+      {/* Scrollable Content */}
+      <div className="p-8 overflow-y-auto flex-1">
         
-        {/* Outbound */}
-        {selectedFlight.slices?.[0] && (
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full text-xs font-medium">OUTBOUND</div>
-              <div className="text-sm text-zinc-400">{selectedFlight.slices[0].duration}</div>
-            </div>
-            
-            {selectedFlight.slices[0].segments?.map((segment: any, idx: number) => (
-              <div key={idx} className="bg-zinc-950 rounded-2xl p-5 mb-3 border border-zinc-800">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <div className="text-2xl font-semibold">{segment.origin.iata_code}</div>
-                    <div className="text-sm text-zinc-400">{segment.origin.name}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-semibold">{segment.destination.iata_code}</div>
-                    <div className="text-sm text-zinc-400">{segment.destination.name}</div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between text-sm">
-                  <div>
-                    <div className="text-emerald-400">Departs</div>
-                    <div className="font-medium">{new Date(segment.departing_at).toLocaleString([], { 
-                      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                    })}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-emerald-400">Arrives</div>
-                    <div className="font-medium">{new Date(segment.arriving_at).toLocaleString([], { 
-                      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                    })}</div>
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-zinc-800 flex justify-between text-xs text-zinc-400">
-                  <div>{segment.marketing_carrier?.name} • {segment.marketing_carrier?.iata_code}{segment.marketing_carrier_flight_number}</div>
-                  <div>{segment.duration} • {segment.stops?.length || 0} stop{(segment.stops?.length || 0) !== 1 ? 's' : ''}</div>
-                </div>
+        {/* Outbound + Return side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Outbound */}
+          {selectedFlight.slices?.[0] && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full text-xs font-semibold tracking-wider">OUTBOUND</div>
+                <div className="text-xs text-zinc-500">{selectedFlight.slices[0].duration}</div>
               </div>
-            ))}
-          </div>
-        )}
+              
+              {selectedFlight.slices[0].segments?.map((segment: any, idx: number) => (
+                <div key={idx} className="bg-zinc-950 rounded-2xl p-5 mb-3 border border-zinc-800">
+                  <div className="flex justify-between mb-4">
+                    <div>
+                      <div className="text-3xl font-bold tracking-tighter">{segment.origin.iata_code}</div>
+                      <div className="text-xs text-zinc-400 mt-0.5">{segment.origin.name}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold tracking-tighter">{segment.destination.iata_code}</div>
+                      <div className="text-xs text-zinc-400 mt-0.5">{segment.destination.name}</div>
+                    </div>
+                  </div>
 
-        {/* Return (if exists) */}
-        {selectedFlight.slices?.[1] && (
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-xs font-medium">RETURN</div>
-              <div className="text-sm text-zinc-400">{selectedFlight.slices[1].duration}</div>
+                  <div className="flex justify-between text-sm mb-4">
+                    <div>
+                      <div className="text-[10px] text-emerald-400/70 font-medium tracking-widest">DEPARTURE</div>
+                      <div className="font-semibold text-lg leading-none mt-1">
+                        {new Date(segment.departing_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                      <div className="text-xs text-zinc-400 mt-1">
+                        {new Date(segment.departing_at).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] text-emerald-400/70 font-medium tracking-widest">ARRIVAL</div>
+                      <div className="font-semibold text-lg leading-none mt-1">
+                        {new Date(segment.arriving_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                      <div className="text-xs text-zinc-400 mt-1">
+                        {new Date(segment.arriving_at).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-zinc-800 flex justify-between text-xs text-zinc-400">
+                    <div>{segment.marketing_carrier?.name}</div>
+                    <div>{segment.duration} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
+                  </div>
+                </div>
+              ))}
             </div>
+          )}
 
-            {selectedFlight.slices[1].segments?.map((segment: any, idx: number) => (
-              <div key={idx} className="bg-zinc-950 rounded-2xl p-5 mb-3 border border-zinc-800">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <div className="text-2xl font-semibold">{segment.origin.iata_code}</div>
-                    <div className="text-sm text-zinc-400">{segment.origin.name}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-semibold">{segment.destination.iata_code}</div>
-                    <div className="text-sm text-zinc-400">{segment.destination.name}</div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between text-sm">
-                  <div>
-                    <div className="text-emerald-400">Departs</div>
-                    <div className="font-medium">{new Date(segment.departing_at).toLocaleString([], { 
-                      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                    })}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-emerald-400">Arrives</div>
-                    <div className="font-medium">{new Date(segment.arriving_at).toLocaleString([], { 
-                      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                    })}</div>
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-zinc-800 flex justify-between text-xs text-zinc-400">
-                  <div>{segment.marketing_carrier?.name} • {segment.marketing_carrier?.iata_code}{segment.marketing_carrier_flight_number}</div>
-                  <div>{segment.duration} • {segment.stops?.length || 0} stop{(segment.stops?.length || 0) !== 1 ? 's' : ''}</div>
-                </div>
+          {/* Return */}
+          {selectedFlight.slices?.[1] && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-xs font-semibold tracking-wider">RETURN</div>
+                <div className="text-xs text-zinc-500">{selectedFlight.slices[1].duration}</div>
               </div>
-            ))}
-          </div>
-        )}
+              
+              {selectedFlight.slices[1].segments?.map((segment: any, idx: number) => (
+                <div key={idx} className="bg-zinc-950 rounded-2xl p-5 mb-3 border border-zinc-800">
+                  <div className="flex justify-between mb-4">
+                    <div>
+                      <div className="text-3xl font-bold tracking-tighter">{segment.origin.iata_code}</div>
+                      <div className="text-xs text-zinc-400 mt-0.5">{segment.origin.name}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold tracking-tighter">{segment.destination.iata_code}</div>
+                      <div className="text-xs text-zinc-400 mt-0.5">{segment.destination.name}</div>
+                    </div>
+                  </div>
 
-        {/* Price */}
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex justify-between items-center">
+                  <div className="flex justify-between text-sm mb-4">
+                    <div>
+                      <div className="text-[10px] text-emerald-400/70 font-medium tracking-widest">DEPARTURE</div>
+                      <div className="font-semibold text-lg leading-none mt-1">
+                        {new Date(segment.departing_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                      <div className="text-xs text-zinc-400 mt-1">
+                        {new Date(segment.departing_at).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] text-emerald-400/70 font-medium tracking-widest">ARRIVAL</div>
+                      <div className="font-semibold text-lg leading-none mt-1">
+                        {new Date(segment.arriving_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                      <div className="text-xs text-zinc-400 mt-1">
+                        {new Date(segment.arriving_at).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-zinc-800 flex justify-between text-xs text-zinc-400">
+                    <div>{segment.marketing_carrier?.name}</div>
+                    <div>{segment.duration} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
+
+        {/* Price - full width under the flights */}
+        <div className="mt-6 bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex justify-between items-center">
           <div>
             <div className="text-sm text-zinc-400">Total price for all passengers</div>
-            <div className="text-xs text-zinc-500 mt-0.5">Includes taxes & fees</div>
+            <div className="text-xs text-zinc-500 mt-0.5">Includes taxes & fees • Book securely on Duffel</div>
           </div>
           <div className="text-right">
-            <div className="text-4xl font-bold text-emerald-400">£{selectedFlight.total_amount}</div>
+            <div className="text-5xl font-bold text-emerald-400 tracking-tighter">£{selectedFlight.total_amount}</div>
           </div>
         </div>
 
       </div>
 
-      {/* Footer - stays at bottom */}
+      {/* Footer Buttons */}
       <div className="px-8 py-6 bg-zinc-950 border-t border-zinc-800 flex gap-4 flex-shrink-0">
         <button 
           onClick={() => setSelectedFlight(null)} 
-          className="flex-1 py-4 rounded-2xl border border-zinc-700 hover:bg-zinc-800 font-medium transition"
+          className="flex-1 py-4 rounded-2xl border border-zinc-700 hover:bg-zinc-800 font-medium transition active:scale-[0.985]"
         >
           Cancel
         </button>
@@ -402,7 +419,7 @@ const handleLogout = async () => {
             createDuffelLink(selectedFlight.id);
             setSelectedFlight(null);
           }} 
-          className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 rounded-2xl font-bold text-lg transition"
+          className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-2xl font-bold text-lg transition active:scale-[0.985]"
         >
           Book on Duffel →
         </button>
