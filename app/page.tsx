@@ -177,23 +177,24 @@ export default function WanderAI() {
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
                   <DuffelAncillaries
-                    offer={selectedOffer}
-                    services={["bags", "seats"]}
-                    passengers={[
-                      {
-                        id: "pax_1",
-                        given_name: givenName || "",
-                        family_name: familyName || "",
-                        born_on: bornOn || "",
-                        title: title,
-                        gender: gender,
-                        email: email || "",
-                        phone_number: phone || "",
-                      },
-                    ]}
-                    seat_maps={[]}
-                    onPayloadReady={(payload) => setAncillariesPayload(payload)}
-                  />
+  offer={selectedOffer}
+  services={["bags"]}
+  passengers={[
+    {
+      id: "pax_1",
+      given_name: givenName || "",
+      family_name: familyName || "",
+      born_on: bornOn || "",
+      title: title,
+      gender: gender,
+      email: email || "",
+      phone_number: phone || "",
+    },
+  ]}
+  onPayloadReady={(payload) => {
+    setAncillariesPayload(payload);
+  }}
+/>
                 </div>
               </div>
 
