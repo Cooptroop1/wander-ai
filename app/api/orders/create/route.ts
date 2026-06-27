@@ -1,59 +1,61 @@
-import { Duffel } from '@duffel/api';
+import { NextRequest, NextResponse } from 'next/server';
 
-const duffel = new Duffel({
-  token: process.env.DUFFEL_ACCESS_TOKEN!,
-});
+const DUFFEL_API_KEY = process.env.DUFFEL_API_KEY;
+const DUFFEL_API_URL = 'https://api.duffel.com';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  if (!DUFFEL_API_KEY) {
+    return NextResponse.json(
+      { success: false, error: 'Duffel API key not configured' },
+      { status: 500 }
+    );
+  }
+
   try {
     const body = await request.json();
+    const { payload } = body;
 
-    let orderPayload: any;
-
-    // Support payload from Duffel Ancillaries component
-    if (body.payload) {
-      orderPayload = body.payload;
-    } 
-    // Fallback for manual / old flow
-    else {
-      orderPayload = {
-        type: body.type || "instant",
-        selected_offers: [body.offerId],
-        passengers: body.passengers || [],
-      };
-
-      if (orderPayload.type === "instant") {
-        orderPayload.payments = body.payments || [
-          {
-            type: "balance",
-            currency: "GBP",
-            amount: body.finalAmount,
-          },
-        ];
-      }
-
-      if (body.services && body.services.length > 0) {
-        orderPayload.services = body.services;
-      }
+    if (!payload || !payload.selected_offers?.length) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid payload - missing selected_offers' },
+        { status: 400 }
+      );
     }
 
-    const orderResponse = await duffel.orders.create(orderPayload);
+    const response = await fetch(`${DUFFEL_API_URL}/air/orders`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${DUFFEL_API_KEY}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Duffel-Version': 'v2',
+      },
+      body: JSON.stringify(payload),
+    });
 
-    return Response.json({
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Duffel order error:', data);
+      return NextResponse.json(
+        {
+          success: false,
+          error: data.errors?.[0]?.title || 'Failed to create order',
+          details: data,
+        },
+        { status: response.status }
+      );
+    }
+
+    return NextResponse.json({
       success: true,
-      order: orderResponse.data,
+      order: data.data,
     });
 
   } catch (error: any) {
-    console.error("=== ORDER CREATION ERROR ===");
-    console.error(error);
-
-    return Response.json(
-      {
-        success: false,
-        error: error.message || "Failed to create order",
-        details: error?.errors || error,
-      },
+    console.error('Order creation error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }
