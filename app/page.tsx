@@ -174,8 +174,6 @@ const handleLogout = async () => {
     const minutes = match[2] ? `${match[2]}m` : '';
     return `${hours} ${minutes}`.trim();
   };
-
-  return (
   
   return (
         <div className="min-h-screen bg-zinc-950 text-white">
