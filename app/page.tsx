@@ -346,12 +346,8 @@ const handleBookWithDuffel = async () => {
         <h1 className="text-2xl font-bold">Wander • Duffel Clone</h1>
       </div>
 
-      {/* SEARCH VIEW */}
-      {currentView === 'search' && (
-        <>
-          {currentView === 'search' && (
-  <div>
-    {/* === TEMP TEST BUTTON - DELETE THIS LATER === */}
+      
+      {/* TEMP TEST BUTTON - DELETE THIS WHOLE BLOCK LATER */}
     <div className="p-4 bg-yellow-100 border border-yellow-400 rounded mb-4">
       <p className="font-bold mb-2">Quick Test - Create Duffel Link</p>
       <button
@@ -367,7 +363,6 @@ const handleBookWithDuffel = async () => {
           });
 
           const result = await res.json();
-          console.log("Full result:", result);
 
           if (result.success) {
             alert("Link created! Opening now...");
@@ -387,9 +382,9 @@ const handleBookWithDuffel = async () => {
         3. Paste it above then click
       </p>
     </div>
-    {/* === END TEMP TEST BUTTON === */}
-
-    {/* your normal search inputs and button go here */}
+        <>
+          {currentView === 'search' && (
+  <div>
           <div className="flex gap-2 mb-6">
             <button onClick={() => setJourneyType('one_way')} className={`px-6 py-2 rounded-xl ${journeyType === 'one_way' ? 'bg-sky-500' : 'bg-zinc-800'}`}>One way</button>
             <button onClick={() => setJourneyType('return')} className={`px-6 py-2 rounded-xl ${journeyType === 'return' ? 'bg-sky-500' : 'bg-zinc-800'}`}>Return</button>
