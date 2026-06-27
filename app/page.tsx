@@ -77,7 +77,6 @@ export default function WanderAI() {
     });
 
     const handlePayload = (event: any) => {
-      console.log("Duffel payload ready:", event.detail);
       setAncillariesPayload(event.detail);
     };
 
@@ -139,7 +138,6 @@ export default function WanderAI() {
       <div className="max-w-5xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">Wander AI</h1>
 
-        {/* Search Form */}
         <div className="bg-zinc-900 p-6 rounded-2xl mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <input value={origin} onChange={(e) => setOrigin(e.target.value)} className="bg-zinc-800 p-3 rounded-xl" placeholder="Origin (e.g. LHR)" />
@@ -151,7 +149,6 @@ export default function WanderAI() {
           </div>
         </div>
 
-        {/* Flight Results */}
         {offers.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Available Flights ({offers.length})</h2>
@@ -184,7 +181,6 @@ export default function WanderAI() {
           </div>
         )}
 
-        {/* CHECKOUT MODAL */}
         {showCheckout && selectedOffer && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8">
@@ -204,7 +200,7 @@ export default function WanderAI() {
               <div className="mb-8">
                 <div className="font-semibold mb-3 text-lg">Bags, seats & extras</div>
                 <div className="bg-zinc-800 rounded-2xl p-6">
-                  {/* @ts-ignore - custom web component */}
+                  {/* @ts-ignore */}
                   <duffel-ancillaries ref={ancillariesRef}></duffel-ancillaries>
                 </div>
               </div>
@@ -229,7 +225,7 @@ export default function WanderAI() {
         )}
 
         <p className="text-center text-xs text-zinc-500 mt-12">
-          Clean build • Using official Duffel Web Component
+          Using official Duffel Web Component
         </p>
       </div>
     </div>
