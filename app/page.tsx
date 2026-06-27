@@ -255,7 +255,6 @@ useEffect(() => {
   const showHoldConfirmation = () => setShowHoldInfo(true);
 
 const createCustomerUser = async () => {
-  // Make email unique every time (for testing)
   const uniqueEmail = `test+${Date.now()}@example.com`;
 
   const res = await fetch('/api/duffel/create-customer-user', {
