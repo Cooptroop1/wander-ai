@@ -283,16 +283,16 @@ const handlePayNow = async () => {
         type: "instant",
         selected_offers: [selectedOffer.id],
         passengers: [
-          {
-            title: title || "mr",
-            given_name: givenName || "James",
-            family_name: familyName || "Cooper",
-            born_on: bornOn || "1978-12-04",
-            gender: (gender as "m" | "f" | "other") || "m",   // ← Fixed here
-            email: email || "jcooper4888@aol.co.uk",
-            phone_number: phone || "+447368841330",
-          },
-        ],
+  {
+    title,
+    given_name: givenName,
+    family_name: familyName,
+    born_on: bornOn,
+    gender,
+    email,
+    phone_number: phone,
+  },
+],
         payments: [
           {
             type: "balance",
@@ -361,17 +361,17 @@ const confirmHold = async () => {
     return;
   }
 
-  const passengers = [
-    {
-      title: title || 'mr',
-      given_name: givenName || 'James',
-      family_name: familyName || 'Cooper',
-      born_on: bornOn || '1978-12-04',
-      gender: (gender as "m" | "f" | "other") || "m",
-      email: email || 'jcooper4888@aol.co.uk',
-      phone_number: phone || '+447368841330',
-    },
-  ];
+  passengers: [
+  {
+    title,
+    given_name: givenName,
+    family_name: familyName,
+    born_on: bornOn,
+    gender,
+    email,
+    phone_number: phone,
+  },
+],
 
   try {
     const res = await fetch('/api/orders/create', {
@@ -760,16 +760,16 @@ const confirmHold = async () => {
         offer={selectedOffer}
         services={["bags", "seats"]}
         passengers={[
-          {
-            given_name: givenName || "James",
-            family_name: familyName || "Cooper",
-            gender: (gender as "m" | "f" | "other") || "m",
-            title: title || "mr",
-            born_on: bornOn || "1978-12-04",
-            email: email || "jcooper4888@aol.co.uk",
-            phone_number: phone || "+447368841330",
-          },
-        ]}
+  {
+    given_name: givenName,
+    family_name: familyName,
+    gender,
+    title,
+    born_on: bornOn,
+    email,
+    phone_number: phone,
+  },
+]}
         seat_maps={seatMapData?.data || []}
         markup={{
           bags: { amount: 0, rate: 0 }, // change this later if you want markup
