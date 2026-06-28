@@ -57,10 +57,6 @@ const [loadingTrips, setLoadingTrips] = useState(false);
     const firstSlice = offer.slices?.[0];
     const firstSegment = firstSlice?.segments?.[0];
     const passengerBags = firstSegment?.passengers?.[0]?.baggages || [];
-const openManageBooking = (trip: any) => {
-  setSelectedTripForManage(trip);
-  setShowManageModal(true);
-};
     
     let carry = 1;
     let checked = 1;
@@ -179,8 +175,7 @@ const handleLogout = async () => {
   if (!user) {
     alert('You must be logged in to book');
     return;
-  }
-
+  }    
   try {
     // 1. Save a pending booking record first (so webhook can update it later)
     const { error: insertError } = await supabase.from('bookings').insert({
@@ -222,6 +217,13 @@ const handleLogout = async () => {
   }
 };
 
+  const openManageBooking = (trip: any) => {
+  setSelectedTripForManage(trip);
+  setShowManageModal(true);
+};
+
+Summary
+  
   return (
         <div className="min-h-screen bg-zinc-950 text-white">
       {/* Header */}
