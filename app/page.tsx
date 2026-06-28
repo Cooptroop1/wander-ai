@@ -171,28 +171,51 @@ const handleLogout = async () => {
 
   // Create Duffel Link and redirect
   const createDuffelLink = async (offerId: string) => {
-    try {
-      const res = await fetch('/api/duffel/create-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          selected_offers: [offerId],
-        }),
-      });
+  if (!user) {
+    alert('You must be logged in to book');
+    return;
+  }
 
-      const result = await res.json();
+  try {
+    // 1. Save a pending booking record first (so webhook can update it later)
+    const { error: insertError } = await supabase.from('bookings').insert({
+      user_id: user.id,
+      offer_id: offerId,
+      status: 'pending_payment',
+      slices: selectedFlight.slices,
+      passengers: selectedFlight.passengers,
+      total_amount: selectedFlight.total_amount,
+      total_currency: selectedFlight.total_currency || 'GBP',
+      raw_offer: selectedFlight,
+      created_at: new Date().toISOString(),
+    });
 
-      if (result.success && result.link_url) {
-        window.location.href = result.link_url;
-      } else {
-        alert('Error creating booking link: ' + (result.error || 'Unknown error'));
-        console.error(result);
-      }
-    } catch (error) {
-      alert('Failed to create link');
-      console.error(error);
+    if (insertError) {
+      console.error('Failed to save pending booking:', insertError);
     }
-  };
+
+    // 2. Create Duffel payment link
+    const res = await fetch('/api/duffel/create-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        selected_offers: [offerId],
+      }),
+    });
+
+    const result = await res.json();
+
+    if (result.success && result.link_url) {
+      window.location.href = result.link_url;
+    } else {
+      alert('Error creating booking link: ' + (result.error || 'Unknown error'));
+      console.error(result);
+    }
+  } catch (error) {
+    alert('Failed to create booking link');
+    console.error(error);
+  }
+};
 
   return (
         <div className="min-h-screen bg-zinc-950 text-white">
