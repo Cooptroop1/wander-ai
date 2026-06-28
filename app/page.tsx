@@ -222,7 +222,6 @@ const handleLogout = async () => {
   setShowManageModal(true);
 };
 
-Summary
   
   return (
         <div className="min-h-screen bg-zinc-950 text-white">
