@@ -36,6 +36,19 @@ const [loadingTrips, setLoadingTrips] = useState(false);
   // Modal for flight confirmation
   const [selectedFlight, setSelectedFlight] = useState<any>(null);
 
+  // ====================== NEW: formatDuration helper (clean, no duplicates) ======================
+  const formatDuration = (isoDuration?: string): string => {
+    if (!isoDuration) return '—';
+    const hoursMatch = isoDuration.match(/(\d+)H/);
+    const minutesMatch = isoDuration.match(/(\d+)M/);
+    const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
+    const minutes = minutesMatch ? parseInt(minutesMatch[1], 10) : 0;
+    const parts: string[] = [];
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0 || parts.length === 0) parts.push(`${minutes}m`);
+    return parts.join(' ');
+  };
+
   // Load user
  React.useEffect(() => {
   // Get current user
@@ -274,7 +287,7 @@ const handleLogout = async () => {
                       <div key={index} onClick={() => setSelectedFlight(offer)} className="bg-zinc-900 border border-zinc-700 hover:border-sky-500 rounded-2xl p-6 cursor-pointer flex justify-between items-center">
                         <div>
                           <div className="font-semibold">{airline}</div>
-                          <div className="text-sm text-zinc-400">{slice?.duration || ''} • {slice?.segments?.length > 1 ? `${slice.segments.length - 1} stop` : 'Direct'}</div>
+                          <div className="text-sm text-zinc-400">{formatDuration(slice?.duration)} • {slice?.segments?.length > 1 ? `${slice.segments.length - 1} stop` : 'Direct'}</div>
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-bold">£{price}</div>
@@ -380,7 +393,7 @@ const handleLogout = async () => {
                   {passengerCount} passenger{passengerCount > 1 ? 's' : ''} • Booked {bookedDate}
                 </div>
                 <button 
-                  onClick={() => alert('Full details modal coming soon')}
+                  onClick={() => alert('Full details modal coming soon (next job)')}
                   className="text-emerald-400 hover:text-emerald-300 font-medium"
                 >
                   View full details →
@@ -406,7 +419,7 @@ const handleLogout = async () => {
 )}
       </div>
 
-     {/* Flight Details Modal */}
+     {/* Flight Details Modal - ENHANCED to show ALL API data + more flight info */}
 {selectedFlight && (
   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
     <div className="bg-zinc-900 rounded-3xl w-full max-w-5xl border border-zinc-700 overflow-hidden flex flex-col max-h-[92vh]">
@@ -415,7 +428,7 @@ const handleLogout = async () => {
       <div className="px-8 pt-8 pb-6 border-b border-zinc-800 flex justify-between items-center flex-shrink-0">
         <div>
           <h2 className="text-2xl font-bold">Flight Details</h2>
-          <p className="text-zinc-400 text-sm mt-1">Review before booking on Duffel</p>
+          <p className="text-zinc-400 text-sm mt-1">Review before booking on Duffel • All data from API</p>
         </div>
         <button 
           onClick={() => setSelectedFlight(null)} 
@@ -436,7 +449,7 @@ const handleLogout = async () => {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full text-xs font-semibold tracking-wider">OUTBOUND</div>
-                <div className="text-xs text-zinc-500">{selectedFlight.slices[0].duration}</div>
+                <div className="text-xs text-zinc-500">{formatDuration(selectedFlight.slices[0].duration)}</div>
               </div>
               
               {selectedFlight.slices[0].segments?.map((segment: any, idx: number) => (
@@ -475,7 +488,18 @@ const handleLogout = async () => {
 
                   <div className="pt-3 border-t border-zinc-800 flex justify-between text-xs text-zinc-400">
                     <div>{segment.marketing_carrier?.name}</div>
-                    <div>{segment.duration} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
+                    <div>{formatDuration(segment.duration)} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
+                  </div>
+
+                  {/* Extra flight info from API if available */}
+                  <div className="pt-2 text-[10px] text-zinc-500 space-y-0.5">
+                    {segment.marketing_carrier_flight_number && <div>Flight #{segment.marketing_carrier_flight_number}</div>}
+                    {segment.operating_carrier && segment.operating_carrier.name !== segment.marketing_carrier?.name && (
+                      <div>Operated by {segment.operating_carrier.name}</div>
+                    )}
+                    {segment.aircraft && (
+                      <div>Aircraft: {segment.aircraft.name || segment.aircraft}</div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -487,7 +511,7 @@ const handleLogout = async () => {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-xs font-semibold tracking-wider">RETURN</div>
-                <div className="text-xs text-zinc-500">{selectedFlight.slices[1].duration}</div>
+                <div className="text-xs text-zinc-500">{formatDuration(selectedFlight.slices[1].duration)}</div>
               </div>
               
               {selectedFlight.slices[1].segments?.map((segment: any, idx: number) => (
@@ -526,7 +550,18 @@ const handleLogout = async () => {
 
                   <div className="pt-3 border-t border-zinc-800 flex justify-between text-xs text-zinc-400">
                     <div>{segment.marketing_carrier?.name}</div>
-                    <div>{segment.duration} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
+                    <div>{formatDuration(segment.duration)} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
+                  </div>
+
+                  {/* Extra flight info from API if available */}
+                  <div className="pt-2 text-[10px] text-zinc-500 space-y-0.5">
+                    {segment.marketing_carrier_flight_number && <div>Flight #{segment.marketing_carrier_flight_number}</div>}
+                    {segment.operating_carrier && segment.operating_carrier.name !== segment.marketing_carrier?.name && (
+                      <div>Operated by {segment.operating_carrier.name}</div>
+                    )}
+                    {segment.aircraft && (
+                      <div>Aircraft: {segment.aircraft.name || segment.aircraft}</div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -544,6 +579,43 @@ const handleLogout = async () => {
           <div className="text-right">
             <div className="text-5xl font-bold text-emerald-400 tracking-tighter">£{selectedFlight.total_amount}</div>
           </div>
+        </div>
+
+        {/* ====================== NEW: ALL API DATA SECTION ====================== */}
+        <div className="mt-6">
+          <details className="group bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+            <summary className="cursor-pointer px-6 py-4 font-semibold flex items-center justify-between hover:bg-zinc-900 transition-colors list-none">
+              <div className="flex items-center gap-3">
+                <span>📋 Show ALL raw API data from Duffel</span>
+                <span className="text-[10px] px-2 py-0.5 bg-zinc-800 rounded text-zinc-400 group-open:hidden">Click to expand • See every field</span>
+                <span className="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded hidden group-open:inline">Click to collapse</span>
+              </div>
+              <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            
+            <div className="border-t border-zinc-800 p-6 bg-black">
+              <div className="flex justify-between items-center mb-3">
+                <div className="text-xs text-zinc-400">Complete offer object returned by the /api/flights/search Duffel endpoint</div>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(JSON.stringify(selectedFlight, null, 2));
+                    alert('Full API data copied to clipboard!');
+                  }}
+                  className="text-[10px] px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-emerald-400"
+                >
+                  📋 Copy JSON
+                </button>
+              </div>
+              <div className="bg-zinc-950 border border-zinc-700 rounded-xl p-4 overflow-auto max-h-[420px] text-xs font-mono whitespace-pre-wrap break-all">
+                {JSON.stringify(selectedFlight, null, 2)}
+              </div>
+              <p className="text-[10px] text-zinc-500 mt-3 leading-snug">
+                This is <strong>every single field</strong> the Duffel API returned for this flight offer. 
+                Use it to find baggage allowances, conditions, services, passenger requirements, 
+                fare rules, or any other data you need. Perfect for building the next features (baggage section, etc).
+              </p>
+            </div>
+          </details>
         </div>
 
       </div>
