@@ -456,15 +456,11 @@ const handleLogout = async () => {
             </div>
 
             <button
-              onClick={() => openManageBooking(trip)}
-                alert(
-                  `To change or cancel this booking, please visit the ${airlineName} website and enter your booking reference: ${trip.booking_reference}`
-                );
-              }}
-              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm font-medium"
-            >
-              Manage Booking →
-            </button>
+  onClick={() => openManageBooking(trip)}
+  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm font-medium"
+>
+  Manage Booking →
+</button>
           </div>
 
           <p className="text-[10px] text-zinc-500 mt-3">
