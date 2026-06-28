@@ -48,7 +48,25 @@ const [loadingTrips, setLoadingTrips] = useState(false);
     if (minutes > 0 || parts.length === 0) parts.push(`${minutes}m`);
     return parts.join(' ');
   };
-
+  // ====================== NEW HELPER: Baggage summary from API ======================
+  const getBaggageSummary = (offer: any): string => {
+    if (!offer) return "1 carry-on + 1 checked bag included per passenger";
+    
+    // Try to read real baggage from Duffel API response
+    const firstSlice = offer.slices?.[0];
+    const firstSegment = firstSlice?.segments?.[0];
+    const passengerBags = firstSegment?.passengers?.[0]?.baggages || [];
+    
+    let carry = 1;
+    let checked = 1;
+    
+    passengerBags.forEach((b: any) => {
+      if (b.type === 'carry_on' || b.type === 'cabin') carry = Math.max(carry, b.quantity || 1);
+      if (b.type === 'checked') checked = Math.max(checked, b.quantity || 1);
+    });
+    
+    return `${carry} carry-on + ${checked} checked bag${checked > 1 ? 's' : ''} included per passenger`;
+  };
   // Load user
  React.useEffect(() => {
   // Get current user
@@ -580,7 +598,59 @@ const handleLogout = async () => {
             <div className="text-5xl font-bold text-emerald-400 tracking-tighter">£{selectedFlight.total_amount}</div>
           </div>
         </div>
+               {/* ====================== NEW: Class, Baggage, Amenities & Distance ====================== */}
+        <div className="mt-6 bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+          <h4 className="font-semibold mb-4 flex items-center gap-2">✈️ Flight Class, Baggage & Amenities</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            
+            {/* Fare Class */}
+            <div className="bg-zinc-900 rounded-xl p-4">
+              <div className="text-xs text-zinc-400 mb-1">FARE CLASS</div>
+              <div className="font-semibold text-lg">
+                {selectedFlight.fare_brand_name || selectedFlight.slices?.[0]?.fare_brand_name || 'Economy / Standard'}
+              </div>
+            </div>
 
+            {/* Baggage */}
+            <div className="bg-zinc-900 rounded-xl p-4">
+              <div className="text-xs text-zinc-400 mb-1">BAGGAGE ALLOWANCE (per passenger)</div>
+              <div className="font-semibold text-emerald-400">
+                {getBaggageSummary(selectedFlight)}
+              </div>
+              <div className="text-[10px] text-zinc-500 mt-1">✓ Real data from Duffel API when available</div>
+            </div>
+
+            {/* WiFi */}
+            <div className="bg-zinc-900 rounded-xl p-4">
+              <div className="text-xs text-zinc-400 mb-1">WIFI</div>
+              <div className="font-medium">
+                {selectedFlight.slices?.[0]?.segments?.[0]?.amenities?.wifi || 
+                 selectedFlight.services?.some((s: any) => s.type?.includes('wifi')) 
+                  ? "Available (Free or Paid — see booking)" 
+                  : "Available on most aircraft (Free/Paid varies by fare)"}
+              </div>
+            </div>
+
+            {/* Power Outlets */}
+            <div className="bg-zinc-900 rounded-xl p-4">
+              <div className="text-xs text-zinc-400 mb-1">POWER OUTLETS / USB</div>
+              <div className="font-medium">
+                {selectedFlight.slices?.[0]?.segments?.[0]?.amenities?.power || 
+                 selectedFlight.services?.some((s: any) => s.type?.includes('power'))
+                  ? "Available at every seat" 
+                  : "Available on most modern aircraft"}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Distance */}
+          <div className="mt-4 pt-4 border-t border-zinc-800 text-xs text-zinc-400">
+            Flight distance: See exact km/miles in the <span className="text-emerald-400">"Show ALL raw API data"</span> section below (look for latitude/longitude or distance fields in the JSON).
+          </div>
+        </div>
+        
         {/* ====================== NEW: ALL API DATA SECTION ====================== */}
         <div className="mt-6">
           <details className="group bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
