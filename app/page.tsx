@@ -588,6 +588,68 @@ const handleLogout = async () => {
 
         </div>
 
+                {/* ====================== NEW: Important Booking Info (from real API) ====================== */}
+        <div className="mt-6 bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+          <h4 className="font-semibold mb-4 flex items-center gap-2">⚠️ Important Booking Info</h4>
+          
+          <div className="space-y-3 text-sm">
+            
+            {/* CO₂ Emissions */}
+            {selectedFlight.total_emissions_kg && (
+              <div className="flex justify-between items-center bg-zinc-900 rounded-xl px-4 py-3">
+                <div className="text-zinc-400">Estimated CO₂ emissions</div>
+                <div className="font-semibold text-emerald-400">{selectedFlight.total_emissions_kg} kg</div>
+              </div>
+            )}
+
+            {/* Refund Policy */}
+            {selectedFlight.conditions?.refund_before_departure && (
+              <div className="flex justify-between items-center bg-zinc-900 rounded-xl px-4 py-3">
+                <div className="text-zinc-400">Cancellation</div>
+                <div className="font-semibold text-right">
+                  {selectedFlight.conditions.refund_before_departure.allowed 
+                    ? `Free cancellation${selectedFlight.conditions.refund_before_departure.penalty_amount ? ` with £${selectedFlight.conditions.refund_before_departure.penalty_amount} fee` : ''}` 
+                    : 'Not allowed'}
+                </div>
+              </div>
+            )}
+
+            {/* Change Policy */}
+            {selectedFlight.conditions?.change_before_departure && (
+              <div className="flex justify-between items-center bg-zinc-900 rounded-xl px-4 py-3">
+                <div className="text-zinc-400">Changes</div>
+                <div className="font-semibold">
+                  {selectedFlight.conditions.change_before_departure.allowed ? 'Allowed' : 'Not allowed on this fare'}
+                </div>
+              </div>
+            )}
+
+            {/* Offer Expiry (creates urgency) */}
+            {selectedFlight.expires_at && (
+              <div className="flex justify-between items-center bg-zinc-900 rounded-xl px-4 py-3">
+                <div className="text-zinc-400">This price expires</div>
+                <div className="font-semibold text-amber-400">
+                  {new Date(selectedFlight.expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 
+                  {' '}({Math.max(0, Math.floor((new Date(selectedFlight.expires_at).getTime() - Date.now()) / (1000 * 60 * 60)))} hours left)
+                </div>
+              </div>
+            )}
+
+            {/* Price Guarantee */}
+            {selectedFlight.payment_requirements?.price_guarantee_expires_at && (
+              <div className="flex justify-between items-center bg-zinc-900 rounded-xl px-4 py-3">
+                <div className="text-zinc-400">Price guarantee until</div>
+                <div className="font-semibold text-xs text-right">
+                  {new Date(selectedFlight.payment_requirements.price_guarantee_expires_at).toLocaleString([], { 
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                  })}
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+        
         {/* Price - full width under the flights */}
         <div className="mt-6 bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex justify-between items-center">
           <div>
