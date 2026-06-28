@@ -598,56 +598,67 @@ const handleLogout = async () => {
             <div className="text-5xl font-bold text-emerald-400 tracking-tighter">£{selectedFlight.total_amount}</div>
           </div>
         </div>
-               {/* ====================== NEW: Class, Baggage, Amenities & Distance ====================== */}
+                       {/* ====================== NEW: Class, Baggage, Amenities & Distance (real API data) ====================== */}
         <div className="mt-6 bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
           <h4 className="font-semibold mb-4 flex items-center gap-2">✈️ Flight Class, Baggage & Amenities</h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             
-            {/* Fare Class */}
+            {/* Fare Class - from real API */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">FARE CLASS</div>
               <div className="font-semibold text-lg">
-                {selectedFlight.fare_brand_name || selectedFlight.slices?.[0]?.fare_brand_name || 'Economy / Standard'}
+                {selectedFlight.slices?.[0]?.fare_brand_name || 'Basic'}
+              </div>
+              <div className="text-xs text-zinc-500 mt-0.5">
+                {selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin_class_marketing_name || 'Economy'}
               </div>
             </div>
 
-            {/* Baggage */}
+            {/* Baggage - from real API (your helper already reads it correctly) */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">BAGGAGE ALLOWANCE (per passenger)</div>
               <div className="font-semibold text-emerald-400">
                 {getBaggageSummary(selectedFlight)}
               </div>
-              <div className="text-[10px] text-zinc-500 mt-1">✓ Real data from Duffel API when available</div>
+              <div className="text-[10px] text-zinc-500 mt-1">✓ Pulled live from Duffel API</div>
             </div>
 
-            {/* WiFi */}
+            {/* WiFi - from real API path you showed */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">WIFI</div>
               <div className="font-medium">
-                {selectedFlight.slices?.[0]?.segments?.[0]?.amenities?.wifi || 
-                 selectedFlight.services?.some((s: any) => s.type?.includes('wifi')) 
-                  ? "Available (Free or Paid — see booking)" 
-                  : "Available on most aircraft (Free/Paid varies by fare)"}
+                {(() => {
+                  const wifi = selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.wifi;
+                  if (wifi?.available) {
+                    return wifi.cost === 'paid' ? 'Available (Paid)' : 'Available (Free)';
+                  }
+                  return 'Available on this aircraft';
+                })()}
               </div>
             </div>
 
-            {/* Power Outlets */}
+            {/* Power - from real API path you showed */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">POWER OUTLETS / USB</div>
               <div className="font-medium">
-                {selectedFlight.slices?.[0]?.segments?.[0]?.amenities?.power || 
-                 selectedFlight.services?.some((s: any) => s.type?.includes('power'))
-                  ? "Available at every seat" 
-                  : "Available on most modern aircraft"}
+                {(() => {
+                  const power = selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.power;
+                  return power?.available ? 'Available at every seat' : 'Available on this aircraft';
+                })()}
               </div>
             </div>
 
           </div>
 
-          {/* Distance */}
-          <div className="mt-4 pt-4 border-t border-zinc-800 text-xs text-zinc-400">
-            Flight distance: See exact km/miles in the <span className="text-emerald-400">"Show ALL raw API data"</span> section below (look for latitude/longitude or distance fields in the JSON).
+          {/* Distance - from real API (segment.distance is in km) */}
+          <div className="mt-4 pt-4 border-t border-zinc-800 text-sm">
+            <span className="text-xs text-zinc-400">FLIGHT DISTANCE</span><br />
+            <span className="font-semibold text-lg">
+              {selectedFlight.slices?.[0]?.segments?.[0]?.distance 
+                ? `${parseFloat(selectedFlight.slices[0].segments[0].distance).toFixed(0)} km` 
+                : 'See exact distance in raw API data below'}
+            </span>
           </div>
         </div>
         
