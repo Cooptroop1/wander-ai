@@ -624,27 +624,27 @@ const handleLogout = async () => {
               <div className="text-[10px] text-zinc-500 mt-1">✓ Pulled live from Duffel API</div>
             </div>
 
-            {/* WiFi - from real API path you showed */}
+                        {/* WiFi - from real API path you showed */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">WIFI</div>
               <div className="font-medium">
                 {(() => {
-                  const wifi = selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.wifi;
-                  if (wifi?.available) {
-                    return wifi.cost === 'paid' ? 'Available (Paid)' : 'Available (Free)';
+                  const w = selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.wifi;
+                  if (w && w.available) {
+                    return w.cost === 'paid' ? 'Available (Paid)' : 'Available (Free)';
                   }
                   return 'Available on this aircraft';
                 })()}
               </div>
             </div>
 
-            {/* Power - from real API path you showed */}
+                        {/* Power - from real API path you showed */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">POWER OUTLETS / USB</div>
               <div className="font-medium">
                 {(() => {
-                  const power = selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.power;
-                  return power?.available ? 'Available at every seat' : 'Available on this aircraft';
+                  const p = selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.power;
+                  return p && p.available ? 'Available at every seat' : 'Available on this aircraft';
                 })()}
               </div>
             </div>
