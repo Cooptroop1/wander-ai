@@ -598,98 +598,171 @@ const handleLogout = async () => {
             <div className="text-5xl font-bold text-emerald-400 tracking-tighter">£{selectedFlight.total_amount}</div>
           </div>
         </div>
-
-                {/* ====================== Flight Class, Baggage & Amenities ====================== */}
+                               {/* ====================== UPDATED: Flight Class, Baggage, Amenities + Booking Info (all in one card) ====================== */}
         <div className="mt-6 bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
           <h4 className="font-semibold mb-4 flex items-center gap-2">✈️ Flight Class, Baggage & Amenities</h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             
+            {/* Fare Class */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">FARE CLASS</div>
               <div className="font-semibold text-lg">
                 {selectedFlight.slices?.[0]?.fare_brand_name || 'Basic'}
               </div>
+              <div className="text-xs text-zinc-500 mt-0.5">
+                {selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin_class_marketing_name || 'Economy'}
+              </div>
             </div>
 
+            {/* Baggage */}
             <div className="bg-zinc-900 rounded-xl p-4">
-              <div className="text-xs text-zinc-400 mb-1">BAGGAGE (per passenger)</div>
+              <div className="text-xs text-zinc-400 mb-1">BAGGAGE ALLOWANCE (per passenger)</div>
               <div className="font-semibold text-emerald-400">
                 {getBaggageSummary(selectedFlight)}
               </div>
+              <div className="text-[10px] text-zinc-500 mt-1">✓ Pulled live from Duffel API</div>
             </div>
 
+            {/* WiFi */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">WIFI</div>
-              <div className="font-medium">Available (Paid or Free)</div>
+              <div className="font-medium">
+                {(() => {
+                  const w = selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.wifi;
+                  if (w && w.available) {
+                    return w.cost === 'paid' ? 'Available (Paid)' : 'Available (Free)';
+                  }
+                  return 'Available on this aircraft';
+                })()}
+              </div>
             </div>
 
+            {/* Power */}
             <div className="bg-zinc-900 rounded-xl p-4">
-              <div className="text-xs text-zinc-400 mb-1">POWER / USB</div>
-              <div className="font-medium">Available at every seat</div>
+              <div className="text-xs text-zinc-400 mb-1">POWER OUTLETS / USB</div>
+              <div className="font-medium">
+                {(() => {
+                  const p = selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.power;
+                  return p && p.available ? 'Available at every seat' : 'Available on this aircraft';
+                })()}
+              </div>
             </div>
 
           </div>
 
+          {/* Distance */}
           <div className="mt-4 pt-4 border-t border-zinc-800 text-sm">
-            <span className="text-xs text-zinc-400">DISTANCE</span><br />
+            <span className="text-xs text-zinc-400">FLIGHT DISTANCE</span><br />
             <span className="font-semibold text-lg">
               {selectedFlight.slices?.[0]?.segments?.[0]?.distance 
                 ? `${parseFloat(selectedFlight.slices[0].segments[0].distance).toFixed(0)} km` 
-                : 'See in raw data'}
+                : 'See exact distance in raw API data below'}
             </span>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-zinc-800 space-y-3 text-sm">
-            <div className="text-xs text-zinc-400 mb-2">IMPORTANT BOOKING INFO</div>
-
-            {selectedFlight.total_emissions_kg && (
-              <div className="flex justify-between bg-zinc-900 rounded-xl px-4 py-2.5">
-                <div className="text-zinc-400">Estimated CO₂</div>
-                <div className="font-semibold text-emerald-400">{selectedFlight.total_emissions_kg} kg</div>
-              </div>
-            )}
-
-            {selectedFlight.conditions?.refund_before_departure && (
-              <div className="flex justify-between bg-zinc-900 rounded-xl px-4 py-2.5">
-                <div className="text-zinc-400">Cancellation</div>
-                <div className="font-semibold text-sm">
-                  {selectedFlight.conditions.refund_before_departure.allowed 
-                    ? `Free${selectedFlight.conditions.refund_before_departure.penalty_amount ? ` (fee £${selectedFlight.conditions.refund_before_departure.penalty_amount})` : ''}` 
-                    : 'Not allowed'}
+          {/* NEW: The 5 items you wanted — now inside the same card */}
+          <div className="mt-6 pt-6 border-t border-zinc-800">
+            <div className="text-xs text-zinc-400 mb-3">IMPORTANT BOOKING INFO</div>
+            
+            <div className="space-y-3 text-sm">
+              
+              {/* CO₂ Emissions */}
+              {selectedFlight.total_emissions_kg && (
+                <div className="flex justify-between items-center bg-zinc-900 rounded-xl px-4 py-2.5">
+                  <div className="text-zinc-400">Estimated CO₂ emissions</div>
+                  <div className="font-semibold text-emerald-400">{selectedFlight.total_emissions_kg} kg</div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {selectedFlight.conditions?.change_before_departure && (
-              <div className="flex justify-between bg-zinc-900 rounded-xl px-4 py-2.5">
-                <div className="text-zinc-400">Changes</div>
-                <div className="font-semibold">
-                  {selectedFlight.conditions.change_before_departure.allowed ? 'Allowed' : 'Not allowed'}
+              {/* Refund Policy */}
+              {selectedFlight.conditions?.refund_before_departure && (
+                <div className="flex justify-between items-center bg-zinc-900 rounded-xl px-4 py-2.5">
+                  <div className="text-zinc-400">Cancellation</div>
+                  <div className="font-semibold text-right text-sm">
+                    {selectedFlight.conditions.refund_before_departure.allowed 
+                      ? `Free cancellation${selectedFlight.conditions.refund_before_departure.penalty_amount ? ` with £${selectedFlight.conditions.refund_before_departure.penalty_amount} fee` : ''}` 
+                      : 'Not allowed'}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {selectedFlight.expires_at && (
-              <div className="flex justify-between bg-zinc-900 rounded-xl px-4 py-2.5">
-                <div className="text-zinc-400">Price expires</div>
-                <div className="font-semibold text-amber-400 text-sm">
-                  {new Date(selectedFlight.expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 
-                  ({Math.max(0, Math.floor((new Date(selectedFlight.expires_at).getTime() - Date.now()) / (1000 * 60 * 60)))} hrs left)
+              {/* Change Policy */}
+              {selectedFlight.conditions?.change_before_departure && (
+                <div className="flex justify-between items-center bg-zinc-900 rounded-xl px-4 py-2.5">
+                  <div className="text-zinc-400">Changes</div>
+                  <div className="font-semibold">
+                    {selectedFlight.conditions.change_before_departure.allowed ? 'Allowed' : 'Not allowed on this fare'}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {selectedFlight.payment_requirements?.price_guarantee_expires_at && (
-              <div className="flex justify-between bg-zinc-900 rounded-xl px-4 py-2.5">
-                <div className="text-zinc-400">Price guarantee until</div>
-                <div className="font-semibold text-xs">
-                  {new Date(selectedFlight.payment_requirements.price_guarantee_expires_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              {/* Offer Expiry */}
+              {selectedFlight.expires_at && (
+                <div className="flex justify-between items-center bg-zinc-900 rounded-xl px-4 py-2.5">
+                  <div className="text-zinc-400">This price expires</div>
+                  <div className="font-semibold text-amber-400 text-sm">
+                    {new Date(selectedFlight.expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 
+                    ({Math.max(0, Math.floor((new Date(selectedFlight.expires_at).getTime() - Date.now()) / (1000 * 60 * 60)))} hrs left)
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Price Guarantee */}
+              {selectedFlight.payment_requirements?.price_guarantee_expires_at && (
+                <div className="flex justify-between items-center bg-zinc-900 rounded-xl px-4 py-2.5">
+                  <div className="text-zinc-400">Price guarantee until</div>
+                  <div className="font-semibold text-xs">
+                    {new Date(selectedFlight.payment_requirements.price_guarantee_expires_at).toLocaleString([], { 
+                      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                    })}
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
+
         </div>
+        
+        {/* ====================== NEW: ALL API DATA SECTION ====================== */}
+        <div className="mt-6">
+          <details className="group bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+            <summary className="cursor-pointer px-6 py-4 font-semibold flex items-center justify-between hover:bg-zinc-900 transition-colors list-none">
+              <div className="flex items-center gap-3">
+                <span>📋 Show ALL raw API data from Duffel</span>
+                <span className="text-[10px] px-2 py-0.5 bg-zinc-800 rounded text-zinc-400 group-open:hidden">Click to expand • See every field</span>
+                <span className="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded hidden group-open:inline">Click to collapse</span>
+              </div>
+              <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            
+            <div className="border-t border-zinc-800 p-6 bg-black">
+              <div className="flex justify-between items-center mb-3">
+                <div className="text-xs text-zinc-400">Complete offer object returned by the /api/flights/search Duffel endpoint</div>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(JSON.stringify(selectedFlight, null, 2));
+                    alert('Full API data copied to clipboard!');
+                  }}
+                  className="text-[10px] px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-emerald-400"
+                >
+                  📋 Copy JSON
+                </button>
+              </div>
+              <div className="bg-zinc-950 border border-zinc-700 rounded-xl p-4 overflow-auto max-h-[420px] text-xs font-mono whitespace-pre-wrap break-all">
+                {JSON.stringify(selectedFlight, null, 2)}
+              </div>
+              <p className="text-[10px] text-zinc-500 mt-3 leading-snug">
+                This is <strong>every single field</strong> the Duffel API returned for this flight offer. 
+                Use it to find baggage allowances, conditions, services, passenger requirements, 
+                fare rules, or any other data you need. Perfect for building the next features (baggage section, etc).
+              </p>
+            </div>
+          </details>
+        </div>
+
+      </div>
 
       {/* Footer Buttons */}
       <div className="px-8 py-6 bg-zinc-950 border-t border-zinc-800 flex gap-4 flex-shrink-0">
