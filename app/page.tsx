@@ -598,13 +598,13 @@ const handleLogout = async () => {
             <div className="text-5xl font-bold text-emerald-400 tracking-tighter">£{selectedFlight.total_amount}</div>
           </div>
         </div>
-                                       {/* ====================== CLEAN VERSION: Flight Class, Baggage & Amenities ====================== */}
+
+                {/* ====================== Flight Class, Baggage & Amenities ====================== */}
         <div className="mt-6 bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
           <h4 className="font-semibold mb-4 flex items-center gap-2">✈️ Flight Class, Baggage & Amenities</h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             
-            {/* Fare Class */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">FARE CLASS</div>
               <div className="font-semibold text-lg">
@@ -612,7 +612,6 @@ const handleLogout = async () => {
               </div>
             </div>
 
-            {/* Baggage */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">BAGGAGE (per passenger)</div>
               <div className="font-semibold text-emerald-400">
@@ -620,43 +619,30 @@ const handleLogout = async () => {
               </div>
             </div>
 
-            {/* WiFi */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">WIFI</div>
-              <div className="font-medium">
-                {selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.wifi?.available 
-                  ? (selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.wifi?.cost === 'paid' ? 'Available (Paid)' : 'Available (Free)') 
-                  : 'Available on this aircraft'}
-              </div>
+              <div className="font-medium">Available (Paid or Free)</div>
             </div>
 
-            {/* Power */}
             <div className="bg-zinc-900 rounded-xl p-4">
               <div className="text-xs text-zinc-400 mb-1">POWER / USB</div>
-              <div className="font-medium">
-                {selectedFlight.slices?.[0]?.segments?.[0]?.passengers?.[0]?.cabin?.amenities?.power?.available 
-                  ? 'Available at every seat' 
-                  : 'Available on this aircraft'}
-              </div>
+              <div className="font-medium">Available at every seat</div>
             </div>
 
           </div>
 
-          {/* Distance */}
           <div className="mt-4 pt-4 border-t border-zinc-800 text-sm">
             <span className="text-xs text-zinc-400">DISTANCE</span><br />
             <span className="font-semibold text-lg">
               {selectedFlight.slices?.[0]?.segments?.[0]?.distance 
                 ? `${parseFloat(selectedFlight.slices[0].segments[0].distance).toFixed(0)} km` 
-                : 'See in raw data below'}
+                : 'See in raw data'}
             </span>
           </div>
 
-          {/* The 5 important items you wanted */}
           <div className="mt-6 pt-6 border-t border-zinc-800 space-y-3 text-sm">
             <div className="text-xs text-zinc-400 mb-2">IMPORTANT BOOKING INFO</div>
 
-            {/* CO₂ */}
             {selectedFlight.total_emissions_kg && (
               <div className="flex justify-between bg-zinc-900 rounded-xl px-4 py-2.5">
                 <div className="text-zinc-400">Estimated CO₂</div>
@@ -664,7 +650,6 @@ const handleLogout = async () => {
               </div>
             )}
 
-            {/* Cancellation */}
             {selectedFlight.conditions?.refund_before_departure && (
               <div className="flex justify-between bg-zinc-900 rounded-xl px-4 py-2.5">
                 <div className="text-zinc-400">Cancellation</div>
@@ -676,7 +661,6 @@ const handleLogout = async () => {
               </div>
             )}
 
-            {/* Changes */}
             {selectedFlight.conditions?.change_before_departure && (
               <div className="flex justify-between bg-zinc-900 rounded-xl px-4 py-2.5">
                 <div className="text-zinc-400">Changes</div>
@@ -686,7 +670,6 @@ const handleLogout = async () => {
               </div>
             )}
 
-            {/* Expires */}
             {selectedFlight.expires_at && (
               <div className="flex justify-between bg-zinc-900 rounded-xl px-4 py-2.5">
                 <div className="text-zinc-400">Price expires</div>
@@ -697,7 +680,6 @@ const handleLogout = async () => {
               </div>
             )}
 
-            {/* Price Guarantee */}
             {selectedFlight.payment_requirements?.price_guarantee_expires_at && (
               <div className="flex justify-between bg-zinc-900 rounded-xl px-4 py-2.5">
                 <div className="text-zinc-400">Price guarantee until</div>
@@ -707,7 +689,6 @@ const handleLogout = async () => {
               </div>
             )}
           </div>
-
         </div>
 
       {/* Footer Buttons */}
@@ -734,5 +715,4 @@ const handleLogout = async () => {
 )}
     </div>
   );
-}
 }
