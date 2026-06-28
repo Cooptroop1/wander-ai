@@ -367,6 +367,10 @@ const handleLogout = async () => {
   const firstSegment = outbound?.segments?.[0];
   const lastSegment = outbound?.segments?.[outbound?.segments?.length - 1];
 
+  const airlineName = firstSegment?.marketing_carrier?.name || 
+                      firstSegment?.operating_carrier?.name || 
+                      'Airline';
+
   const origin = firstSegment?.origin?.iata_code || '—';
   const dest = lastSegment?.destination?.iata_code || '—';
   const stops = outbound?.segments?.length > 1 
@@ -381,13 +385,10 @@ const handleLogout = async () => {
     ? new Date(returnSlice.segments[0].departing_at).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }) 
     : '';
 
-  const passengerCount = trip.passengers?.length || 1;
-  const bookedDate = trip.created_at 
-    ? new Date(trip.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) 
-    : '';
-
   return (
     <div key={index} className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-6">
+      
+      {/* Booking Reference + Price */}
       <div className="flex justify-between items-start mb-4">
         <div>
           <div className="font-mono text-2xl font-bold tracking-[2px]">
@@ -397,7 +398,7 @@ const handleLogout = async () => {
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold text-emerald-400">
-            {trip.total_currency || '£'} {trip.total_amount || '—'}
+            {trip.total_currency || '£'} {trip.total_amount}
           </div>
           <div className="text-xs text-zinc-400 capitalize mt-1">
             {trip.status || 'pending'}
@@ -405,11 +406,14 @@ const handleLogout = async () => {
         </div>
       </div>
 
+      {/* Flight Route Summary */}
       <div className="bg-zinc-950 rounded-2xl p-5 mb-4">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-3xl font-bold tracking-tighter">{origin} → {dest}</div>
-            <div className="text-xs text-zinc-400 mt-1">{stops} • {outbound?.duration || ''}</div>
+            <div className="text-xs text-zinc-400 mt-1">
+              {stops} • {outbound?.duration}
+            </div>
           </div>
           {returnSlice && (
             <div className="text-right">
@@ -433,17 +437,37 @@ const handleLogout = async () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center text-xs text-zinc-400">
-        <div>
-          {passengerCount} passenger{passengerCount > 1 ? 's' : ''} • Booked {bookedDate}
+      {/* CHANGE / CANCEL SECTION */}
+      <div className="pt-4 border-t border-zinc-800">
+        <div className="text-xs text-zinc-400 mb-2">CHANGES & CANCELLATIONS</div>
+        
+        <div className="bg-zinc-950 rounded-xl p-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="font-medium">{airlineName}</div>
+              <div className="text-sm text-zinc-400">
+                Booking ref: <span className="font-mono">{trip.booking_reference || 'Pending'}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                alert(
+                  `To change or cancel this booking, please visit the ${airlineName} website and enter your booking reference: ${trip.booking_reference}`
+                );
+              }}
+              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm font-medium"
+            >
+              Manage Booking →
+            </button>
+          </div>
+
+          <p className="text-[10px] text-zinc-500 mt-3">
+            Changes and cancellations are handled directly by the airline according to your fare rules.
+          </p>
         </div>
-        <button 
-          onClick={() => alert('Full details modal coming soon')}
-          className="text-emerald-400 hover:text-emerald-300 font-medium"
-        >
-          View full details →
-        </button>
       </div>
+
     </div>
   );
 })}
