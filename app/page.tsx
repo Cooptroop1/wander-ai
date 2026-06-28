@@ -456,7 +456,7 @@ const handleLogout = async () => {
             </div>
 
             <button
-              onClick={() => {
+              onClick={() => openManageBooking(trip)}
                 alert(
                   `To change or cancel this booking, please visit the ${airlineName} website and enter your booking reference: ${trip.booking_reference}`
                 );
