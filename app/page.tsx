@@ -25,7 +25,8 @@ export default function WanderAI() {
   const [passengers, setPassengers] = useState(1);
   const [cabinClass, setCabinClass] = useState('economy');
   const [offers, setOffers] = useState<any[]>([]);
-
+const [showManageModal, setShowManageModal] = useState(false);
+const [selectedTripForManage, setSelectedTripForManage] = useState<any>(null);
   // Airport suggestions
   const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
   const [toSuggestions, setToSuggestions] = useState<any[]>([]);
@@ -56,6 +57,10 @@ const [loadingTrips, setLoadingTrips] = useState(false);
     const firstSlice = offer.slices?.[0];
     const firstSegment = firstSlice?.segments?.[0];
     const passengerBags = firstSegment?.passengers?.[0]?.baggages || [];
+const openManageBooking = (trip: any) => {
+  setSelectedTripForManage(trip);
+  setShowManageModal(true);
+};
     
     let carry = 1;
     let checked = 1;
@@ -560,6 +565,116 @@ const handleLogout = async () => {
                     <div>{formatDuration(segment.duration)} • {segment.stops?.length || 0} stop{segment.stops?.length !== 1 ? 's' : ''}</div>
                   </div>
 
+                  {/* ====================== MANAGE BOOKING MODAL (with AI) ====================== */}
+{showManageModal && selectedTripForManage && (
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+      
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-zinc-700 flex justify-between items-center">
+        <div>
+          <h3 className="text-xl font-semibold">Manage Booking</h3>
+          <p className="text-sm text-zinc-400">{selectedTripForManage.booking_reference || 'Pending...'}</p>
+        </div>
+        <button 
+          onClick={() => setShowManageModal(false)} 
+          className="text-2xl text-zinc-400 hover:text-white"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* LEFT: Flight Info */}
+        <div className="w-2/5 border-r border-zinc-700 p-6 overflow-y-auto">
+          <h4 className="font-semibold mb-4">Flight Summary</h4>
+          
+          <div className="space-y-4 text-sm">
+            <div>
+              <div className="text-zinc-400 text-xs">AIRLINE</div>
+              <div className="font-medium">
+                {selectedTripForManage.slices?.[0]?.segments?.[0]?.marketing_carrier?.name || 'Airline'}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-zinc-400 text-xs">ROUTE</div>
+              <div className="font-medium">
+                {selectedTripForManage.slices?.[0]?.segments?.[0]?.origin?.iata_code} → {selectedTripForManage.slices?.[0]?.segments?.[0]?.destination?.iata_code}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-zinc-400 text-xs">DATES</div>
+              <div className="font-medium">
+                {selectedTripForManage.slices?.[0]?.segments?.[0]?.departing_at && 
+                  new Date(selectedTripForManage.slices[0].segments[0].departing_at).toLocaleDateString()}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-zinc-400 text-xs">BOOKING REFERENCE</div>
+              <div className="font-mono font-semibold">
+                {selectedTripForManage.booking_reference || 'Pending...'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT: AI Chat Area */}
+        <div className="flex-1 flex flex-col p-6">
+          <h4 className="font-semibold mb-3">Ai-Assists • Booking Helper</h4>
+
+          {/* Suggested Prompts */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {[
+              "How do I cancel my flight?",
+              "Can I change my dates?",
+              "How do I add extra bags?",
+              "I need to change a passenger name"
+            ].map((prompt, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  // For now this just logs — we'll connect it to real AI next
+                  console.log("User clicked prompt:", prompt);
+                  alert(`AI would respond to: "${prompt}"`);
+                }}
+                className="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-full border border-zinc-700"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+
+          {/* Chat Area (placeholder for now) */}
+          <div className="flex-1 bg-zinc-950 border border-zinc-700 rounded-2xl p-4 mb-4 overflow-y-auto">
+            <div className="text-sm text-zinc-400">
+              Hi! I'm here to help you manage your booking.  
+              What would you like to do?
+            </div>
+          </div>
+
+          {/* Chat Input */}
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              placeholder="Ask about changing, cancelling, bags..." 
+              className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-sm focus:outline-none"
+            />
+            <button className="bg-emerald-500 hover:bg-emerald-600 px-6 rounded-2xl font-medium">
+              Send
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+)}
+                  
                   {/* Extra flight info from API if available */}
                   <div className="pt-2 text-[10px] text-zinc-500 space-y-0.5">
                     {segment.marketing_carrier_flight_number && <div>Flight #{segment.marketing_carrier_flight_number}</div>}
