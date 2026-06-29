@@ -379,6 +379,9 @@ const getTripIdeas = async () => {
       .eq('id', user.id)
       .single();
 
+   console.log("DEBUG → profile data:", profile);
+    console.log("DEBUG → is_pro value:", profile?.is_pro);
+
     if (!profile?.is_pro) {
       setIdeaResults("This feature is only available on the Pro plan (£2.99/month).");
       setIsIdeasLoading(false);
