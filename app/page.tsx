@@ -1180,10 +1180,11 @@ return (
           </ul>
         </div>
 
-                <button 
+                        <button 
           onClick={async () => {
-            if (!user) {
-              alert("Please log in first");
+            console.log("🚀 Subscribe clicked - user:", user);
+            if (!user?.id) {
+              alert("Please log in with Google first");
               return;
             }
             try {
@@ -1192,18 +1193,27 @@ return (
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: user.id }),
               });
-              const { url } = await res.json();
-              if (url) {
-                window.location.href = url;   // redirects to Stripe Checkout
+
+              const data = await res.json();
+              console.log("📡 API response:", data);
+
+              if (data.error) {
+                alert("Stripe error: " + data.error);
+                console.error(data.error);
+              } else if (data.url) {
+                alert("✅ Redirecting to Stripe... (check console)");
+                window.location.href = data.url;
+              } else {
+                alert("No URL returned from server");
               }
-            } catch (e) {
-              alert("Error starting checkout. Check console.");
-              console.error(e);
+            } catch (err: any) {
+              console.error("❌ Fetch error:", err);
+              alert("Failed to contact Stripe: " + err.message + "\n\nCheck Vercel logs + make sure env vars are added");
             }
           }}
           className="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-2xl font-semibold text-lg"
         >
-          Subscribe £2.99/month • Pay with Stripe
+          Subscribe £2.99/month with Stripe 🔄
         </button>
 
         <button 
