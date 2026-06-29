@@ -447,7 +447,7 @@ return (
         <span className="text-2xl">🎉</span>
         <div>
           <span className="font-semibold">Thank you!</span> Your Pro plan is now active.
-          <span className="ml-2 text-emerald-100">You now have unlimited AI Trip Ideas + full Booking Helper access.</span>
+          <span className="ml-2 text-emerald-100">You now have 20 AI Trip Ideas per Month + full Booking Helper access.</span>
         </div>
       </div>
       <button
