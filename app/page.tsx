@@ -619,23 +619,22 @@ const handleLogout = async () => {
           </div>
         </div>
 
-        {/* RIGHT: AI Chat Area */}
+                {/* RIGHT: AI Chat Area */}
         <div className="flex-1 flex flex-col p-6">
-          <h4 className="font-semibold mb-3">Ai-Assists • Booking Helper</h4>
+          <h4 className="font-semibold mb-3">Ai-Assists • Help & Guidance</h4>
 
-          {/* Suggested Prompts */}
+          {/* Hint Prompts */}
           <div className="flex flex-wrap gap-2 mb-4">
             {[
               "How do I cancel my flight?",
-              "Can I change my dates?",
+              "Can I change my travel dates?",
               "How do I add extra bags?",
               "I need to change a passenger name"
             ].map((prompt, i) => (
               <button
                 key={i}
                 onClick={() => {
-                  // For now this just logs — we'll connect it to real AI next
-                  console.log("User clicked prompt:", prompt);
+                  console.log("Prompt clicked:", prompt);
                   alert(`AI would respond to: "${prompt}"`);
                 }}
                 className="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-full border border-zinc-700"
@@ -645,10 +644,10 @@ const handleLogout = async () => {
             ))}
           </div>
 
-          {/* Chat Area (placeholder for now) */}
-          <div className="flex-1 bg-zinc-950 border border-zinc-700 rounded-2xl p-4 mb-4 overflow-y-auto">
-            <div className="text-sm text-zinc-400">
-              Hi! I'm here to help you manage your booking.  
+          {/* Chat Messages Area */}
+          <div className="flex-1 bg-zinc-950 border border-zinc-700 rounded-2xl p-4 mb-4 overflow-y-auto text-sm">
+            <div className="text-zinc-400">
+              Hi! I'm here to help you with changes, cancellations, bags, or anything else.<br />
               What would you like to do?
             </div>
           </div>
@@ -657,10 +656,13 @@ const handleLogout = async () => {
           <div className="flex gap-2">
             <input 
               type="text" 
-              placeholder="Ask about changing, cancelling, bags..." 
+              placeholder="Type your question here..." 
               className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-sm focus:outline-none"
             />
-            <button className="bg-emerald-500 hover:bg-emerald-600 px-6 rounded-2xl font-medium">
+            <button 
+              className="bg-emerald-500 hover:bg-emerald-600 px-6 rounded-2xl font-medium"
+              onClick={() => alert("We'll connect real AI in the next step")}
+            >
               Send
             </button>
           </div>
