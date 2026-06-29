@@ -307,12 +307,32 @@ const handleLogout = async () => {
 };
   
 const getTripIdeas = async () => {
-  if (!ideaDestination.trim()) return;
+  if (!ideaDestination.trim() || !user) return;
 
   setIsIdeasLoading(true);
   setIdeaResults('');
 
   try {
+    const currentMonth = new Date().toISOString().slice(0, 7); // e.g. "2026-06"
+
+    // Check current usage
+    const { data: usageData } = await supabase
+      .from('feature_usage')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('feature', 'trip_ideas')
+      .eq('month', currentMonth)
+      .single();
+
+    const currentCount = usageData?.count || 0;
+
+    if (currentCount >= 20) {
+      setIdeaResults("You've reached your limit of 20 AI Trip Ideas this month. Upgrade or wait until next month.");
+      setIsIdeasLoading(false);
+      return;
+    }
+
+    // Call AI
     const res = await fetch('/api/ai/trip-ideas', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -323,10 +343,27 @@ const getTripIdeas = async () => {
 
     if (data.response) {
       setIdeaResults(data.response);
+
+      // Increment usage
+      if (usageData) {
+        await supabase
+          .from('feature_usage')
+          .update({ count: currentCount + 1, updated_at: new Date().toISOString() })
+          .eq('id', usageData.id);
+      } else {
+        // First time this month
+        await supabase.from('feature_usage').insert({
+          user_id: user.id,
+          feature: 'trip_ideas',
+          count: 1,
+          month: currentMonth,
+        });
+      }
     } else {
       setIdeaResults("Sorry, I couldn't generate ideas right now.");
     }
   } catch (error) {
+    console.error(error);
     setIdeaResults("There was an error getting ideas.");
   } finally {
     setIsIdeasLoading(false);
