@@ -1179,14 +1179,30 @@ return (
           </ul>
         </div>
 
-        <button 
-          onClick={() => {
-            alert("Stripe checkout would open here (we'll hook it up soon)");
-            setShowUpgradeModal(false);
+                <button 
+          onClick={async () => {
+            if (!user) {
+              alert("Please log in first");
+              return;
+            }
+            try {
+              const res = await fetch('/api/stripe/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id }),
+              });
+              const { url } = await res.json();
+              if (url) {
+                window.location.href = url;   // redirects to Stripe Checkout
+              }
+            } catch (e) {
+              alert("Error starting checkout. Check console.");
+              console.error(e);
+            }
           }}
           className="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-2xl font-semibold text-lg"
         >
-          Subscribe £2.99/month
+          Subscribe £2.99/month • Pay with Stripe
         </button>
 
         <button 
