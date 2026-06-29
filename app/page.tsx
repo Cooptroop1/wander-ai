@@ -345,7 +345,7 @@ const handleLogout = async () => {
   setIsIdeasLoading(true);
   setIdeaResults('');
 
-    try {
+  try {
     // 1. Check if user is Pro (defensive)
     let isPro = false;
 
@@ -422,10 +422,6 @@ const handleLogout = async () => {
   } catch (error) {
     console.error(error);
     setIdeaResults("There was an error getting ideas.");
-  } finally {
-    setIsIdeasLoading(false);
-  }
-};
   } finally {
     setIsIdeasLoading(false);
   }
