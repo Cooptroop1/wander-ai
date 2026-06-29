@@ -1127,12 +1127,24 @@ return (
       {ideaResults}
     </div>
 
-    <button
-      onClick={saveIdea}
-      className="w-full bg-emerald-500 hover:bg-emerald-600 py-3 rounded-2xl font-medium"
-    >
-      Save Idea
-    </button>
+    {isPro ? (
+      <button
+        onClick={saveIdea}
+        className="w-full bg-emerald-500 hover:bg-emerald-600 py-3 rounded-2xl font-medium"
+      >
+        Save Idea
+      </button>
+    ) : (
+      <button
+        onClick={() => {
+          setIdeaResults("Pro plan unlocks unlimited AI Trip Ideas + more features. Would you like to upgrade for £2.99/month?");
+          // You can later make this open a real upgrade page
+        }}
+        className="w-full bg-amber-500 hover:bg-amber-600 py-3 rounded-2xl font-medium text-black"
+      >
+        Upgrade to Pro (£2.99/mo)
+      </button>
+    )}
   </div>
 )}
       </div>
