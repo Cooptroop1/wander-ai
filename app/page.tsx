@@ -16,7 +16,7 @@ export default function WanderAI() {
   const [currentView, setCurrentView] = useState<'search' | 'trips'>('search');
 
   // Search states
-  const [journeyType, setJourneyType] = useState<'one_way' | 'return'>('one_way');
+  const [journeyType, setJourneyType] = useState<'one_way' | 'return'>('return');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [fromSearch, setFromSearch] = useState('');
