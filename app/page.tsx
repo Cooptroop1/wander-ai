@@ -28,7 +28,8 @@ export default function WanderAI() {
 const [showManageModal, setShowManageModal] = useState(false);
 const [selectedTripForManage, setSelectedTripForManage] = useState<any>(null);
  const [savedIdeas, setSavedIdeas] = useState<any[]>([]);
-  // Airport suggestions
+ const [remainingIdeas, setRemainingIdeas] = useState(20); 
+ // Airport suggestions
   const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
   const [toSuggestions, setToSuggestions] = useState<any[]>([]);
   const [showFromDropdown, setShowFromDropdown] = useState(false);
@@ -370,6 +371,23 @@ const getTripIdeas = async () => {
   }
 };
 
+ const checkRemainingIdeas = async () => {
+  if (!user) return;
+
+  const currentMonth = new Date().toISOString().slice(0, 7);
+
+  const { data } = await supabase
+    .from('feature_usage')
+    .select('count')
+    .eq('user_id', user.id)
+    .eq('feature', 'trip_ideas')
+    .eq('month', currentMonth)
+    .single();
+
+  const used = data?.count || 0;
+  setRemainingIdeas(20 - used);
+};
+ 
 return (
         <div className="min-h-screen bg-zinc-950 text-white">
       {/* Header */}
@@ -401,7 +419,10 @@ return (
                   My Trips
                 </button>
                 <button
-  onClick={() => setShowIdeasModal(true)}
+  onClick={() => {
+    setShowIdeasModal(true);
+    checkRemainingIdeas();
+  }}
   className="px-4 py-2 rounded-xl text-sm hover:bg-zinc-900"
 >
   AI Ideas
@@ -1055,6 +1076,9 @@ return (
       </div>
 
       <div className="p-6 flex-1 overflow-y-auto">
+       <div className="text-sm text-zinc-400 mb-3">
+    {remainingIdeas} / 20 searches remaining this month
+  </div>
         <div className="flex gap-2 mb-4">
           <input
             type="text"
