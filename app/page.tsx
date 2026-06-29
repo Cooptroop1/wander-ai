@@ -586,37 +586,37 @@ const handleLogout = async () => {
 
       <div className="flex flex-1 overflow-hidden">
         
-        {/* LEFT: Flight Info */}
-        <div className="w-2/5 border-r border-zinc-700 p-6 overflow-y-auto">
-          <h4 className="font-semibold mb-4">Flight Summary</h4>
-          
-          <div className="space-y-4 text-sm">
-            <div>
-              <div className="text-zinc-400 text-xs">AIRLINE</div>
-              <div className="font-medium">
-                {selectedTripForManage.slices?.[0]?.segments?.[0]?.marketing_carrier?.name || 'Airline'}
-              </div>
-            </div>
+        {/* LEFT: Flight Info (Safe Version) */}
+<div className="w-2/5 border-r border-zinc-700 p-6 overflow-y-auto">
+  <h4 className="font-semibold mb-4">Flight Summary</h4>
+  
+  <div className="space-y-4 text-sm">
+    <div>
+      <div className="text-zinc-400 text-xs">AIRLINE</div>
+      <div className="font-medium">
+        {selectedTripForManage.slices?.[0]?.segments?.[0]?.marketing_carrier?.name || 'Airline (not available in test data)'}
+      </div>
+    </div>
 
-            <div>
-              <div className="text-zinc-400 text-xs">ROUTE</div>
-              <div className="font-medium">
-                {selectedTripForManage.slices?.[0]?.segments?.[0]?.origin?.iata_code} → {selectedTripForManage.slices?.[0]?.segments?.[0]?.destination?.iata_code}
-              </div>
-            </div>
+    <div>
+      <div className="text-zinc-400 text-xs">ROUTE</div>
+      <div className="font-medium">
+        {selectedTripForManage.slices?.[0]?.segments?.[0]?.origin?.iata_code || '—'} → {selectedTripForManage.slices?.[0]?.segments?.[0]?.destination?.iata_code || '—'}
+      </div>
+    </div>
 
-            <div>
-              <div className="text-zinc-400 text-xs">DEPARTURE</div>
-              <div className="font-medium">
-                {selectedTripForManage.slices?.[0]?.segments?.[0]?.departing_at 
-                  ? new Date(selectedTripForManage.slices[0].segments[0].departing_at).toLocaleString([], { 
-                      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                    }) 
-                  : '—'}
-              </div>
-            </div>
-          </div>
-        </div>
+    <div>
+      <div className="text-zinc-400 text-xs">DEPARTURE</div>
+      <div className="font-medium">
+        {selectedTripForManage.slices?.[0]?.segments?.[0]?.departing_at 
+          ? new Date(selectedTripForManage.slices[0].segments[0].departing_at).toLocaleString([], { 
+              weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+            }) 
+          : 'Departure time not available'}
+      </div>
+    </div>
+  </div>
+</div>
 
         {/* RIGHT: AI Chat Area */}
         <div className="flex-1 flex flex-col p-6">
