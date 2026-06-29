@@ -371,18 +371,27 @@ const getTripIdeas = async () => {
   setIsIdeasLoading(true);
   setIdeaResults('');
 
-  try {
-    // 1. Check if user is Pro
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_pro')
-      .eq('id', user.id)
-      .single();
+    try {
+    // 1. Check if user is Pro (defensive)
+    let isPro = false;
 
-   console.log("DEBUG → profile data:", profile);
-    console.log("DEBUG → is_pro value:", profile?.is_pro);
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_pro')
+        .eq('id', user.id)
+        .single();
 
-    if (!profile?.is_pro) {
+      console.log("DEBUG → profile data:", profile);
+      console.log("DEBUG → is_pro value:", profile?.is_pro);
+
+      isPro = profile?.is_pro === true;
+    } catch (e) {
+      console.error("Profile check error:", e);
+      isPro = false;
+    }
+
+    if (!isPro) {
       setIdeaResults("This feature is only available on the Pro plan (£2.99/month).");
       setIsIdeasLoading(false);
       return;
