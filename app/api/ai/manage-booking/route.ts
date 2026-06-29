@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!   // Use service role so we can read profiles safely
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,49 +14,57 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    const systemPrompt = `You are a helpful AI assistant for Ai-Assists, a flight booking platform.
-You help users manage their existing bookings (changes, cancellations, adding bags, name corrections, etc.).
+    // Get the logged in user
+    const { data: { user } } = await supabase.auth.getUser();
 
-Important rules:
-- Be helpful and clear.
-- Always remind the user that final changes/cancellations must be done with the airline.
-- Use the booking context provided if relevant.
-- Keep answers concise and actionable.
-- If you don't know something, say so honestly.`;
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+    // Check if user is Pro
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_pro')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.is_pro) {
+      return NextResponse.json({ 
+        error: 'Pro subscription required to use AI Booking Helper' 
+      }, { status: 403 });
+    }
+
+    // If we reach here, user is Pro → call Grok
+    const grokRes = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
+        'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'grok-3', // or 'grok-2' depending on what you have access to
+        model: 'grok-3-latest',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { 
-            role: 'user', 
-            content: `Booking context: ${JSON.stringify(bookingContext)}\n\nUser question: ${message}` 
-          }
+          {
+            role: 'system',
+            content: `You are a helpful flight booking assistant. The user has a booking with reference ${bookingContext?.booking_reference || 'unknown'}. Be concise and helpful.`,
+          },
+          {
+            role: 'user',
+            content: message,
+          },
         ],
         temperature: 0.7,
         max_tokens: 500,
       }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Grok API error:', errorData);
-      return NextResponse.json({ error: 'AI service error' }, { status: 500 });
-    }
+    const grokData = await grokRes.json();
+    const responseText = grokData.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
 
-    const data = await response.json();
-    const aiMessage = data.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
+    return NextResponse.json({ response: responseText });
 
-    return NextResponse.json({ response: aiMessage });
-
-  } catch (error) {
+  } catch (error: any) {
     console.error('Manage booking AI error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }
