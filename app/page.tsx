@@ -2,6 +2,7 @@
  
 import React, { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { loadStripe } from '@stripe/stripe-js';   // we'll use later if needed, but not required for Checkout redirect
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
