@@ -11,6 +11,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 });
     }
 
+    // === DEBUG - shows what key Vercel actually has ===
+    const keyPrefix = process.env.STRIPE_SECRET_KEY ? process.env.STRIPE_SECRET_KEY.substring(0, 25) + "..." : "MISSING";
+    console.log("🔑 Key prefix received by Vercel:", keyPrefix);
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -20,28 +24,26 @@ export async function POST(request: NextRequest) {
             product_data: {
               name: 'Wander AI Pro',
               description: 'Unlimited AI Trip Ideas + Booking Helper + Save Ideas • Cancel anytime',
-              images: ['https://ai-assists.com/pro-badge.png'], // optional - add later
             },
-            unit_amount: 299, // £2.99
-            recurring: {
-              interval: 'month',
-            },
+            unit_amount: 299,
+            recurring: { interval: 'month' },
           },
           quantity: 1,
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}?canceled=true`,
-      metadata: {
-        user_id: userId,
-        plan: 'pro',
-      },
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://ai-assists.com'}?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://ai-assists.com'}?canceled=true`,
+      metadata: { user_id: userId, plan: 'pro' },
     });
 
     return NextResponse.json({ url: session.url });
   } catch (error: any) {
-    console.error('Stripe checkout error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const keyPrefix = process.env.STRIPE_SECRET_KEY ? process.env.STRIPE_SECRET_KEY.substring(0, 20) + "..." : "MISSING";
+    console.error("🔑 Key prefix:", keyPrefix);
+    return NextResponse.json({ 
+      error: error.message,
+      keyDebug: "Key starts with: " + keyPrefix 
+    }, { status: 500 });
   }
 }
