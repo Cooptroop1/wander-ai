@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
             currency: 'gbp',
             product_data: {
               name: 'Wander AI Pro',
-              description: 'Unlimited AI Trip Ideas + AI Booking Helper + Save Ideas • Cancel anytime',
+              description: '20 AI Trip Ideas Per Month + AI Booking Helper + Save Ideas • Cancel anytime',
             },
             unit_amount: 299,
             recurring: { interval: 'month' },
