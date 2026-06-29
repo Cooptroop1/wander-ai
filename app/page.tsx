@@ -306,39 +306,7 @@ const handleLogout = async () => {
     alert('Something went wrong while saving');
   }
 };
-   // Call AI
-    const res = await fetch('/api/ai/trip-ideas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ destination: ideaDestination }),
-    });
-
-    const data = await res.json();
-
-    if (data.response) {
-      setIdeaResults(data.response);
-
-      // Increment usage
-      if (usageData) {
-        await supabase
-          .from('feature_usage')
-          .update({ count: currentCount + 1, updated_at: new Date().toISOString() })
-          .eq('id', usageData.id);
-      } else {
-        // First time this month
-        await supabase.from('feature_usage').insert({
-          user_id: user.id,
-          feature: 'trip_ideas',
-          count: 1,
-          month: currentMonth,
-        });
-      }
-    } else {
-      setIdeaResults("Sorry, I couldn't generate ideas right now.");
-    }
-  } catch (error) {
-    console.error(error);
-    setIdeaResults("There was an error getting ideas.");
+   
    const getTripIdeas = async () => {
   if (!ideaDestination.trim() || !user) return;
 
