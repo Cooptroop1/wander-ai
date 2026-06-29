@@ -917,6 +917,52 @@ return (
     </div>
   </div>
 )}
+
+{/* AI Trip Ideas Modal */}
+{showIdeasModal && (
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+      
+      <div className="px-6 py-4 border-b border-zinc-700 flex justify-between items-center">
+        <h3 className="text-xl font-semibold">AI Trip Ideas</h3>
+        <button 
+          onClick={() => setShowIdeasModal(false)} 
+          className="text-2xl text-zinc-400 hover:text-white"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="p-6 flex-1 overflow-y-auto">
+        <div className="flex gap-2 mb-4">
+          <input
+            type="text"
+            value={ideaDestination}
+            onChange={(e) => setIdeaDestination(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && getTripIdeas()}
+            placeholder="Where do you want to go? (e.g. Barcelona, quiet beach in Greece)"
+            className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-sm focus:outline-none"
+          />
+          <button 
+            onClick={getTripIdeas}
+            disabled={isIdeasLoading || !ideaDestination.trim()}
+            className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-zinc-700 px-6 rounded-2xl font-medium"
+          >
+            {isIdeasLoading ? 'Thinking...' : 'Get Ideas'}
+          </button>
+        </div>
+
+        {ideaResults && (
+          <div className="bg-zinc-950 border border-zinc-700 rounded-2xl p-5 whitespace-pre-wrap text-sm leading-relaxed">
+            {ideaResults}
+          </div>
+        )}
+      </div>
+
+    </div>
+  </div>
+)}
+          
           {/* ====================== MANAGE BOOKING MODAL (with AI) ====================== */}
 {showManageModal && selectedTripForManage && (
   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
