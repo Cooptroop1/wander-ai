@@ -36,7 +36,45 @@ const [selectedTripForManage, setSelectedTripForManage] = useState<any>(null);
 const [loadingTrips, setLoadingTrips] = useState(false);
   // Modal for flight confirmation
   const [selectedFlight, setSelectedFlight] = useState<any>(null);
+const [chatMessages, setChatMessages] = useState<any[]>([]);
+const [chatInput, setChatInput] = useState('');
+const [isAiLoading, setIsAiLoading] = useState(false);
 
+const sendMessageToAI = async (message: string) => {
+  if (!message.trim()) return;
+
+  const userMessage = { role: 'user', content: message };
+  setChatMessages(prev => [...prev, userMessage]);
+  setChatInput('');
+  setIsAiLoading(true);
+
+  try {
+    const res = await fetch('/api/ai/manage-booking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message,
+        bookingContext: {
+          booking_reference: selectedTripForManage?.booking_reference,
+          status: selectedTripForManage?.status,
+          airline: selectedTripForManage?.slices?.[0]?.segments?.[0]?.marketing_carrier?.name,
+        }
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.response) {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+    } else {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I couldn't get a response right now." }]);
+    }
+  } catch (error) {
+    setChatMessages(prev => [...prev, { role: 'assistant', content: "There was an error contacting the AI." }]);
+  } finally {
+    setIsAiLoading(false);
+  }
+};
   // ====================== NEW: formatDuration helper (clean, no duplicates) ======================
   const formatDuration = (isoDuration?: string): string => {
     if (!isoDuration) return '—';
@@ -865,37 +903,26 @@ const handleLogout = async () => {
 
       <div className="flex flex-1 overflow-hidden">
         
-        {/* LEFT: Flight Info (Safe Version) */}
-<div className="w-2/5 border-r border-zinc-700 p-6 overflow-y-auto">
-  <h4 className="font-semibold mb-4">Flight Summary</h4>
-  
-  <div className="space-y-4 text-sm">
-    <div>
-      <div className="text-zinc-400 text-xs">AIRLINE</div>
-      <div className="font-medium">
-        {selectedTripForManage.slices?.[0]?.segments?.[0]?.marketing_carrier?.name || 'Airline (not available in test data)'}
-      </div>
-    </div>
+        {/* LEFT: Flight Info */}
+        <div className="w-2/5 border-r border-zinc-700 p-6 overflow-y-auto">
+          <h4 className="font-semibold mb-4">Flight Summary</h4>
+          
+          <div className="space-y-4 text-sm">
+            <div>
+              <div className="text-zinc-400 text-xs">AIRLINE</div>
+              <div className="font-medium">
+                {selectedTripForManage.slices?.[0]?.segments?.[0]?.marketing_carrier?.name || 'Airline'}
+              </div>
+            </div>
 
-    <div>
-      <div className="text-zinc-400 text-xs">ROUTE</div>
-      <div className="font-medium">
-        {selectedTripForManage.slices?.[0]?.segments?.[0]?.origin?.iata_code || '—'} → {selectedTripForManage.slices?.[0]?.segments?.[0]?.destination?.iata_code || '—'}
-      </div>
-    </div>
-
-    <div>
-      <div className="text-zinc-400 text-xs">DEPARTURE</div>
-      <div className="font-medium">
-        {selectedTripForManage.slices?.[0]?.segments?.[0]?.departing_at 
-          ? new Date(selectedTripForManage.slices[0].segments[0].departing_at).toLocaleString([], { 
-              weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-            }) 
-          : 'Departure time not available'}
-      </div>
-    </div>
-  </div>
-</div>
+            <div>
+              <div className="text-zinc-400 text-xs">ROUTE</div>
+              <div className="font-medium">
+                {selectedTripForManage.slices?.[0]?.segments?.[0]?.origin?.iata_code || '—'} → {selectedTripForManage.slices?.[0]?.segments?.[0]?.destination?.iata_code || '—'}
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* RIGHT: AI Chat Area */}
         <div className="flex-1 flex flex-col p-6">
@@ -911,10 +938,7 @@ const handleLogout = async () => {
             ].map((prompt, i) => (
               <button
                 key={i}
-                onClick={() => {
-                  console.log("Prompt clicked:", prompt);
-                  alert(`AI would respond to: "${prompt}"`);
-                }}
+                onClick={() => sendMessageToAI(prompt)}
                 className="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-full border border-zinc-700"
               >
                 {prompt}
@@ -922,24 +946,39 @@ const handleLogout = async () => {
             ))}
           </div>
 
-          {/* Chat Messages Area */}
-          <div className="flex-1 bg-zinc-950 border border-zinc-700 rounded-2xl p-4 mb-4 overflow-y-auto text-sm">
-            <div className="text-zinc-400">
-              Hi! I'm here to help you with changes, cancellations, bags, or anything else.<br />
-              What would you like to do?
-            </div>
+          {/* Chat Messages */}
+          <div className="flex-1 bg-zinc-950 border border-zinc-700 rounded-2xl p-4 mb-4 overflow-y-auto text-sm space-y-3">
+            {chatMessages.length === 0 && (
+              <div className="text-zinc-400">
+                Hi! Ask me anything about managing this booking.
+              </div>
+            )}
+            {chatMessages.map((msg, index) => (
+              <div key={index} className={msg.role === 'user' ? 'text-right' : ''}>
+                <div className={`inline-block px-4 py-2 rounded-2xl max-w-[80%] ${msg.role === 'user' ? 'bg-emerald-500 text-white' : 'bg-zinc-800'}`}>
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            {isAiLoading && (
+              <div className="text-zinc-400">Ai-Assists is thinking...</div>
+            )}
           </div>
 
           {/* Chat Input */}
           <div className="flex gap-2">
             <input 
               type="text" 
-              placeholder="Type your question here..." 
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendMessageToAI(chatInput)}
+              placeholder="Ask about changes, cancellations, bags..." 
               className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-sm focus:outline-none"
             />
             <button 
-              className="bg-emerald-500 hover:bg-emerald-600 px-6 rounded-2xl font-medium"
-              onClick={() => alert("We'll connect real AI in the next step")}
+              onClick={() => sendMessageToAI(chatInput)}
+              disabled={isAiLoading || !chatInput.trim()}
+              className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-zinc-700 px-6 rounded-2xl font-medium"
             >
               Send
             </button>
