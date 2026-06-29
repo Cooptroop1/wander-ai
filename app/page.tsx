@@ -1172,7 +1172,7 @@ return (
         <div>
           <div className="font-medium mb-2">What you get:</div>
           <ul className="text-sm space-y-2">
-            <li className="flex gap-2">✅ Unlimited AI Trip Ideas (20/month free)</li>
+            <li className="flex gap-2">✅ AI Trip Ideas (20/month)</li>
             <li className="flex gap-2">✅ AI Booking Helper (changes, cancellations, bags)</li>
             <li className="flex gap-2">✅ Save & organise all your ideas</li>
             <li className="flex gap-2">✅ Future features (price alerts, smart planning)</li>
