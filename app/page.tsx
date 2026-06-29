@@ -365,7 +365,81 @@ const getTripIdeas = async () => {
     }
   } catch (error) {
     console.error(error);
+    setIdeaResults("There was an error getting ideas.");const getTripIdeas = async () => {
+  if (!ideaDestination.trim() || !user) return;
+
+  setIsIdeasLoading(true);
+  setIdeaResults('');
+
+  try {
+    // 1. Check if user is Pro
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_pro')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.is_pro) {
+      setIdeaResults("This feature is only available on the Pro plan (£2.99/month).");
+      setIsIdeasLoading(false);
+      return;
+    }
+
+    // 2. Check monthly usage limit (20)
+    const currentMonth = new Date().toISOString().slice(0, 7);
+
+    const { data: usageData } = await supabase
+      .from('feature_usage')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('feature', 'trip_ideas')
+      .eq('month', currentMonth)
+      .single();
+
+    const currentCount = usageData?.count || 0;
+
+    if (currentCount >= 20) {
+      setIdeaResults("You've reached your limit of 20 AI Trip Ideas this month.");
+      setIsIdeasLoading(false);
+      return;
+    }
+
+    // 3. Call the AI
+    const res = await fetch('/api/ai/trip-ideas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ destination: ideaDestination }),
+    });
+
+    const data = await res.json();
+
+    if (data.response) {
+      setIdeaResults(data.response);
+
+      // 4. Increment usage count
+      if (usageData) {
+        await supabase
+          .from('feature_usage')
+          .update({ count: currentCount + 1, updated_at: new Date().toISOString() })
+          .eq('id', usageData.id);
+      } else {
+        await supabase.from('feature_usage').insert({
+          user_id: user.id,
+          feature: 'trip_ideas',
+          count: 1,
+          month: currentMonth,
+        });
+      }
+    } else {
+      setIdeaResults("Sorry, I couldn't generate ideas right now.");
+    }
+  } catch (error) {
+    console.error(error);
     setIdeaResults("There was an error getting ideas.");
+  } finally {
+    setIsIdeasLoading(false);
+  }
+};
   } finally {
     setIsIdeasLoading(false);
   }
