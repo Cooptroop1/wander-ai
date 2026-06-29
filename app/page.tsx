@@ -62,6 +62,12 @@ const [isIdeasLoading, setIsIdeasLoading] = useState(false);
 const sendMessageToAI = async (message: string) => {
   if (!message.trim()) return;
 
+  // Block non-Pro users from even calling the AI
+  if (!userIsPro) {
+    alert("AI Booking Helper is only available for Pro users. Please upgrade.");
+    return;
+  }
+
   const userMessage = { role: 'user', content: message };
   setChatMessages(prev => [...prev, userMessage]);
   setChatInput('');
