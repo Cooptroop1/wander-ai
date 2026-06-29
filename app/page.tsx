@@ -320,6 +320,12 @@ return (
                 >
                   My Trips
                 </button>
+                <button
+  onClick={() => setShowIdeasModal(true)}
+  className="px-4 py-2 rounded-xl text-sm hover:bg-zinc-900"
+>
+  AI Ideas
+</button>
                 <button onClick={handleLogout} className="text-sm text-zinc-400 hover:text-white">Logout</button>
               </>
             )}
