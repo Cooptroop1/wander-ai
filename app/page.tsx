@@ -612,16 +612,31 @@ return (
       <h3 className="text-xl font-semibold mb-4">Saved AI Ideas</h3>
       <div className="space-y-4">
         {savedIdeas.map((idea, index) => (
-          <div key={index} className="bg-zinc-900 border border-zinc-700 rounded-3xl p-6">
-            <div className="font-semibold text-lg mb-2">{idea.title}</div>
-            <div className="text-sm text-zinc-300 whitespace-pre-wrap">
-              {idea.content}
-            </div>
-            <div className="text-xs text-zinc-500 mt-3">
-              Saved {new Date(idea.created_at).toLocaleDateString()}
-            </div>
-          </div>
-        ))}
+  <div key={index} className="bg-zinc-900 border border-zinc-700 rounded-3xl p-6">
+    <div className="flex justify-between items-start mb-2">
+      <div className="font-semibold text-lg">{idea.title}</div>
+      <button 
+        onClick={async () => {
+          if (confirm('Delete this saved idea?')) {
+            await supabase.from('saved_ideas').delete().eq('id', idea.id);
+            fetchSavedIdeas(); // refresh the list
+          }
+        }}
+        className="text-xs text-red-400 hover:text-red-500 px-2 py-1"
+      >
+        Delete
+      </button>
+    </div>
+
+    <div className="text-sm text-zinc-300 whitespace-pre-wrap">
+      {idea.content}
+    </div>
+
+    <div className="text-xs text-zinc-500 mt-3">
+      Saved {new Date(idea.created_at).toLocaleDateString()}
+    </div>
+  </div>
+))}
       </div>
     </div>
   )}
@@ -988,10 +1003,14 @@ return (
   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
     <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
       
-      <div className="px-6 py-4 border-b border-zinc-700 flex justify-between items-center">
+            <div className="px-6 py-4 border-b border-zinc-700 flex justify-between items-center">
         <h3 className="text-xl font-semibold">AI Trip Ideas</h3>
-        <button 
-          onClick={() => setShowIdeasModal(false)} 
+        <button
+          onClick={() => {
+            setShowIdeasModal(false);
+            setIdeaDestination('');
+            setIdeaResults('');
+          }}
           className="text-2xl text-zinc-400 hover:text-white"
         >
           ×
