@@ -603,23 +603,19 @@ const handleLogout = async () => {
             </div>
 
             <div>
-              <div className="text-zinc-400 text-xs">DATES</div>
+              <div className="text-zinc-400 text-xs">DEPARTURE</div>
               <div className="font-medium">
-                {selectedTripForManage.slices?.[0]?.segments?.[0]?.departing_at && 
-                  new Date(selectedTripForManage.slices[0].segments[0].departing_at).toLocaleDateString()}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-zinc-400 text-xs">BOOKING REFERENCE</div>
-              <div className="font-mono font-semibold">
-                {selectedTripForManage.booking_reference || 'Pending...'}
+                {selectedTripForManage.slices?.[0]?.segments?.[0]?.departing_at 
+                  ? new Date(selectedTripForManage.slices[0].segments[0].departing_at).toLocaleString([], { 
+                      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                    }) 
+                  : '—'}
               </div>
             </div>
           </div>
         </div>
 
-                {/* RIGHT: AI Chat Area */}
+        {/* RIGHT: AI Chat Area */}
         <div className="flex-1 flex flex-col p-6">
           <h4 className="font-semibold mb-3">Ai-Assists • Help & Guidance</h4>
 
@@ -669,7 +665,6 @@ const handleLogout = async () => {
         </div>
 
       </div>
-
     </div>
   </div>
 )}
