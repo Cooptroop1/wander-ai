@@ -29,6 +29,7 @@ const [showManageModal, setShowManageModal] = useState(false);
 const [selectedTripForManage, setSelectedTripForManage] = useState<any>(null);
  const [savedIdeas, setSavedIdeas] = useState<any[]>([]);
  const [remainingIdeas, setRemainingIdeas] = useState(20); 
+ const [userIsPro, setUserIsPro] = useState(false);
  // Airport suggestions
   const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
   const [toSuggestions, setToSuggestions] = useState<any[]>([]);
@@ -400,7 +401,17 @@ const handleLogout = async () => {
 
   const currentMonth = new Date().toISOString().slice(0, 7);
 
-  const { data } = await supabase
+  // Check Pro status
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_pro')
+    .eq('id', user.id)
+    .single();
+
+  setUserIsPro(profile?.is_pro === true);
+
+  // Check usage
+  const { data: usage } = await supabase
     .from('feature_usage')
     .select('count')
     .eq('user_id', user.id)
@@ -408,7 +419,7 @@ const handleLogout = async () => {
     .eq('month', currentMonth)
     .single();
 
-  const used = data?.count || 0;
+  const used = usage?.count || 0;
   setRemainingIdeas(20 - used);
 };
  
@@ -1127,24 +1138,18 @@ return (
       {ideaResults}
     </div>
 
-    {isPro ? (
-      <button
-        onClick={saveIdea}
-        className="w-full bg-emerald-500 hover:bg-emerald-600 py-3 rounded-2xl font-medium"
-      >
-        Save Idea
-      </button>
-    ) : (
-      <button
-        onClick={() => {
-          setIdeaResults("Pro plan unlocks unlimited AI Trip Ideas + more features. Would you like to upgrade for £2.99/month?");
-          // You can later make this open a real upgrade page
-        }}
-        className="w-full bg-amber-500 hover:bg-amber-600 py-3 rounded-2xl font-medium text-black"
-      >
-        Upgrade to Pro (£2.99/mo)
-      </button>
-    )}
+    {userIsPro ? (
+  <button onClick={saveIdea} className="w-full bg-emerald-500 hover:bg-emerald-600 py-3 rounded-2xl font-medium">
+    Save Idea
+  </button>
+) : (
+  <button
+    onClick={() => setIdeaResults("This feature is only available on the Pro plan (£2.99/month).")}
+    className="w-full bg-amber-500 hover:bg-amber-600 py-3 rounded-2xl font-medium text-black"
+  >
+    Upgrade to Pro (£2.99/mo)
+  </button>
+)}
   </div>
 )}
       </div>
