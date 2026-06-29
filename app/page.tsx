@@ -27,6 +27,7 @@ export default function WanderAI() {
   const [offers, setOffers] = useState<any[]>([]);
 const [showManageModal, setShowManageModal] = useState(false);
 const [selectedTripForManage, setSelectedTripForManage] = useState<any>(null);
+ const [savedIdeas, setSavedIdeas] = useState<any[]>([]);
   // Airport suggestions
   const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
   const [toSuggestions, setToSuggestions] = useState<any[]>([]);
@@ -76,6 +77,20 @@ const sendMessageToAI = async (message: string) => {
     setChatMessages(prev => [...prev, { role: 'assistant', content: "There was an error contacting the AI." }]);
   } finally {
     setIsAiLoading(false);
+  }
+};
+
+  const fetchSavedIdeas = async () => {
+  if (!user) return;
+
+  const { data, error } = await supabase
+    .from('saved_ideas')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (!error && data) {
+    setSavedIdeas(data);
   }
 };
   // ====================== NEW: formatDuration helper (clean, no duplicates) ======================
@@ -153,6 +168,7 @@ React.useEffect(() => {
   };
 
   fetchTrips();
+  fetchSavedIdeas();
 }, [currentView, user]);
   
 const handleLogout = async () => {
@@ -589,6 +605,29 @@ return (
         </button>
       </div>
     )}
+
+{/* ====================== SAVED AI IDEAS ====================== */}
+  {savedIdeas.length > 0 && (
+    <div className="mt-10">
+      <h3 className="text-xl font-semibold mb-4">Saved AI Ideas</h3>
+      <div className="space-y-4">
+        {savedIdeas.map((idea, index) => (
+          <div key={index} className="bg-zinc-900 border border-zinc-700 rounded-3xl p-6">
+            <div className="font-semibold text-lg mb-2">{idea.title}</div>
+            <div className="text-sm text-zinc-300 whitespace-pre-wrap">
+              {idea.content}
+            </div>
+            <div className="text-xs text-zinc-500 mt-3">
+              Saved {new Date(idea.created_at).toLocaleDateString()}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+</div>   {/* ← This closes the My Trips container */}
+    
   </div>
 )}
       </div>
