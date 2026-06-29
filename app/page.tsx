@@ -306,34 +306,7 @@ const handleLogout = async () => {
     alert('Something went wrong while saving');
   }
 };
-  
-const getTripIdeas = async () => {
-  if (!ideaDestination.trim() || !user) return;
-
-  setIsIdeasLoading(true);
-  setIdeaResults('');
-
-  try {
-    const currentMonth = new Date().toISOString().slice(0, 7); // e.g. "2026-06"
-
-    // Check current usage
-    const { data: usageData } = await supabase
-      .from('feature_usage')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('feature', 'trip_ideas')
-      .eq('month', currentMonth)
-      .single();
-
-    const currentCount = usageData?.count || 0;
-
-    if (currentCount >= 20) {
-      setIdeaResults("You've reached your limit of 20 AI Trip Ideas this month. Upgrade or wait until next month.");
-      setIsIdeasLoading(false);
-      return;
-    }
-
-    // Call AI
+   // Call AI
     const res = await fetch('/api/ai/trip-ideas', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -365,7 +338,8 @@ const getTripIdeas = async () => {
     }
   } catch (error) {
     console.error(error);
-    setIdeaResults("There was an error getting ideas.");const getTripIdeas = async () => {
+    setIdeaResults("There was an error getting ideas.");
+   const getTripIdeas = async () => {
   if (!ideaDestination.trim() || !user) return;
 
   setIsIdeasLoading(true);
