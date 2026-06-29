@@ -457,7 +457,10 @@ const handleLogout = async () => {
             </div>
 
             <button
-  onClick={() => openManageBooking(trip)}
+  onClick={() => {
+    console.log("Button clicked, trip:", trip);
+    openManageBooking(trip);
+  }}
   className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm font-medium"
 >
   Manage Booking →
