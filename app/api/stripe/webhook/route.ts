@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 // Use SERVICE ROLE key (server only, never expose to client)
