@@ -31,6 +31,17 @@ const [selectedTripForManage, setSelectedTripForManage] = useState<any>(null);
  const [savedIdeas, setSavedIdeas] = useState<any[]>([]);
  const [remainingIdeas, setRemainingIdeas] = useState(20); 
  const [userIsPro, setUserIsPro] = useState(false);
+ 
+ // ====================== SUCCESS BANNER FROM STRIPE ======================
+const [showSuccessBanner, setShowSuccessBanner] = useState(false);
+
+React.useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('success') === 'true') {
+    setShowSuccessBanner(true);
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+}, []);
  // Airport suggestions
   const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
   const [toSuggestions, setToSuggestions] = useState<any[]>([]);
@@ -428,6 +439,26 @@ const handleLogout = async () => {
 return (
         <div className="min-h-screen bg-zinc-950 text-white">
       {/* Header */}
+         {/* ====================== STRIPE SUCCESS BANNER ====================== */}
+{showSuccessBanner && (
+  <div className="bg-emerald-600 text-white">
+    <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">🎉</span>
+        <div>
+          <span className="font-semibold">Thank you!</span> Your Pro plan is now active.
+          <span className="ml-2 text-emerald-100">You now have unlimited AI Trip Ideas + full Booking Helper access.</span>
+        </div>
+      </div>
+      <button
+        onClick={() => setShowSuccessBanner(false)}
+        className="text-emerald-100 hover:text-white text-xl leading-none px-2"
+      >
+        ×
+      </button>
+    </div>
+  </div>
+)}
       <div className="border-b border-zinc-800 bg-zinc-950 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
