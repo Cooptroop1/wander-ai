@@ -289,8 +289,11 @@ const handleLogout = async () => {
   }
 };
 
-  const openManageBooking = (trip: any) => {
+  // Open Manage Booking Modal (Pro only for AI chat)
+const openManageBooking = (trip: any) => {
   setSelectedTripForManage(trip);
+  setChatMessages([]);           // clear previous chat
+  setChatInput('');
   setShowManageModal(true);
 };
 
@@ -1300,65 +1303,88 @@ return (
           </div>
         </div>
 
-        {/* RIGHT: AI Chat Area */}
-        <div className="flex-1 flex flex-col p-6">
-          <h4 className="font-semibold mb-3">Ai-Assists • Help & Guidance</h4>
+        {/* RIGHT: AI Chat Area (Pro only) */}
+<div className="flex-1 flex flex-col p-6">
+  <h4 className="font-semibold mb-3">Ai-Assists • Help & Guidance</h4>
 
-          {/* Hint Prompts */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {[
-              "How do I cancel my flight?",
-              "Can I change my travel dates?",
-              "How do I add extra bags?",
-              "I need to change a passenger name"
-            ].map((prompt, i) => (
-              <button
-                key={i}
-                onClick={() => sendMessageToAI(prompt)}
-                className="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-full border border-zinc-700"
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
+  {userIsPro ? (
+    <>
+      {/* Pro users see the real AI chat */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {[
+          "How do I cancel my flight?",
+          "Can I change my travel dates?",
+          "How do I add extra bags?",
+          "I need to change a passenger name"
+        ].map((prompt, i) => (
+          <button
+            key={i}
+            onClick={() => sendMessageToAI(prompt)}
+            className="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-full border border-zinc-700"
+          >
+            {prompt}
+          </button>
+        ))}
+      </div>
 
-          {/* Chat Messages */}
-          <div className="flex-1 bg-zinc-950 border border-zinc-700 rounded-2xl p-4 mb-4 overflow-y-auto text-sm space-y-3">
-            {chatMessages.length === 0 && (
-              <div className="text-zinc-400">
-                Hi! Ask me anything about managing this booking.
-              </div>
-            )}
-            {chatMessages.map((msg, index) => (
-              <div key={index} className={msg.role === 'user' ? 'text-right' : ''}>
-                <div className={`inline-block px-4 py-2 rounded-2xl max-w-[80%] ${msg.role === 'user' ? 'bg-emerald-500 text-white' : 'bg-zinc-800'}`}>
-                  {msg.content}
-                </div>
-              </div>
-            ))}
-            {isAiLoading && (
-              <div className="text-zinc-400">Ai-Assists is thinking...</div>
-            )}
+      {/* Chat Messages */}
+      <div className="flex-1 bg-zinc-950 border border-zinc-700 rounded-2xl p-4 mb-4 overflow-y-auto text-sm space-y-3">
+        {chatMessages.length === 0 && (
+          <div className="text-zinc-400">
+            Hi! Ask me anything about managing this booking.
           </div>
+        )}
+        {chatMessages.map((msg, index) => (
+          <div key={index} className={msg.role === 'user' ? 'text-right' : ''}>
+            <div className={`inline-block px-4 py-2 rounded-2xl max-w-[80%] ${msg.role === 'user' ? 'bg-emerald-500 text-white' : 'bg-zinc-800'}`}>
+              {msg.content}
+            </div>
+          </div>
+        ))}
+        {isAiLoading && (
+          <div className="text-zinc-400">Ai-Assists is thinking...</div>
+        )}
+      </div>
 
-          {/* Chat Input */}
-          <div className="flex gap-2">
-            <input 
-              type="text" 
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendMessageToAI(chatInput)}
-              placeholder="Ask about changes, cancellations, bags..." 
-              className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-sm focus:outline-none"
-            />
-            <button 
-              onClick={() => sendMessageToAI(chatInput)}
-              disabled={isAiLoading || !chatInput.trim()}
-              className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-zinc-700 px-6 rounded-2xl font-medium"
-            >
-              Send
-            </button>
-          </div>
+      {/* Chat Input */}
+      <div className="flex gap-2">
+        <input 
+          type="text" 
+          value={chatInput}
+          onChange={(e) => setChatInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && sendMessageToAI(chatInput)}
+          placeholder="Ask about changes, cancellations, bags..." 
+          className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-sm focus:outline-none"
+        />
+        <button 
+          onClick={() => sendMessageToAI(chatInput)}
+          disabled={isAiLoading || !chatInput.trim()}
+          className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-zinc-700 px-6 rounded-2xl font-medium"
+        >
+          Send
+        </button>
+      </div>
+    </>
+  ) : (
+    /* Free users see upgrade prompt */
+    <div className="flex-1 flex flex-col items-center justify-center text-center border border-zinc-700 rounded-2xl p-8">
+      <div className="text-4xl mb-4">🔒</div>
+      <h4 className="font-semibold text-lg mb-2">AI Booking Helper is a Pro feature</h4>
+      <p className="text-zinc-400 mb-6 max-w-xs">
+        Upgrade to Pro to get AI help with cancellations, date changes, bags, and more.
+      </p>
+      <button
+        onClick={() => {
+          setShowManageModal(false);
+          setShowUpgradeModal(true);
+        }}
+        className="bg-emerald-500 hover:bg-emerald-600 px-8 py-3 rounded-2xl font-medium"
+      >
+        Upgrade to Pro (£2.99/mo)
+      </button>
+    </div>
+  )}
+</div>
         </div>
 
       </div>
