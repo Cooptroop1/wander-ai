@@ -1288,26 +1288,44 @@ return (
 
       <div className="flex flex-1 overflow-hidden">
         
-        {/* LEFT: Flight Info */}
-        <div className="w-2/5 border-r border-zinc-700 p-6 overflow-y-auto">
-          <h4 className="font-semibold mb-4">Flight Summary</h4>
-          
-          <div className="space-y-4 text-sm">
-            <div>
-              <div className="text-zinc-400 text-xs">AIRLINE</div>
-              <div className="font-medium">
-                {selectedTripForManage.slices?.[0]?.segments?.[0]?.marketing_carrier?.name || 'Airline'}
-              </div>
-            </div>
+        {/* LEFT: Flight Info + Generic Help */}
+<div className="w-2/5 border-r border-zinc-700 p-6 overflow-y-auto">
+  <h4 className="font-semibold mb-4">Flight Summary</h4>
+  
+  <div className="space-y-4 text-sm">
+    <div>
+      <div className="text-zinc-400 text-xs">AIRLINE</div>
+      <div className="font-medium">
+        {selectedTripForManage.slices?.[0]?.segments?.[0]?.marketing_carrier?.name || 'Airline'}
+      </div>
+    </div>
 
-            <div>
-              <div className="text-zinc-400 text-xs">ROUTE</div>
-              <div className="font-medium">
-                {selectedTripForManage.slices?.[0]?.segments?.[0]?.origin?.iata_code || '—'} → {selectedTripForManage.slices?.[0]?.segments?.[0]?.destination?.iata_code || '—'}
-              </div>
-            </div>
-          </div>
-        </div>
+    <div>
+      <div className="text-zinc-400 text-xs">ROUTE</div>
+      <div className="font-medium">
+        {selectedTripForManage.slices?.[0]?.segments?.[0]?.origin?.iata_code || '—'} → {selectedTripForManage.slices?.[0]?.segments?.[0]?.destination?.iata_code || '—'}
+      </div>
+    </div>
+  </div>
+
+  {/* Generic Help Text for everyone (especially free users) */}
+  <div className="mt-8 pt-6 border-t border-zinc-700">
+    <h5 className="font-semibold mb-3 text-sm">How to manage your booking</h5>
+    <div className="text-sm text-zinc-400 space-y-3">
+      <p>
+        To cancel, change dates, add bags, or make any changes to your booking, 
+        you need to contact the airline directly.
+      </p>
+      <p>
+        Use the <strong>booking reference</strong> shown above and go to the airline’s website or app. 
+        Most airlines let you manage your booking online.
+      </p>
+      <p className="text-xs text-zinc-500">
+        Note: Some changes may have fees depending on the airline’s rules and how close you are to departure.
+      </p>
+    </div>
+  </div>
+</div>
 
         {/* RIGHT: AI Chat Area (Pro only) */}
 <div className="flex-1 flex flex-col p-6">
