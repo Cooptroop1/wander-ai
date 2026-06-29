@@ -43,7 +43,6 @@ const [chatMessages, setChatMessages] = useState<any[]>([]);
 const [chatInput, setChatInput] = useState('');
 const [isAiLoading, setIsAiLoading] = useState(false);
 const [showIdeasModal, setShowIdeasModal] = useState(false);
-const [showIdeasModal, setShowIdeasModal] = useState(false);
 const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 const [ideaDestination, setIdeaDestination] = useState('');
 const [ideaResults, setIdeaResults] = useState('');
