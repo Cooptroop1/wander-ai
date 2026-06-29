@@ -43,6 +43,8 @@ const [chatMessages, setChatMessages] = useState<any[]>([]);
 const [chatInput, setChatInput] = useState('');
 const [isAiLoading, setIsAiLoading] = useState(false);
 const [showIdeasModal, setShowIdeasModal] = useState(false);
+const [showIdeasModal, setShowIdeasModal] = useState(false);
+const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 const [ideaDestination, setIdeaDestination] = useState('');
 const [ideaResults, setIdeaResults] = useState('');
 const [isIdeasLoading, setIsIdeasLoading] = useState(false);
@@ -1144,11 +1146,11 @@ return (
   </button>
 ) : (
   <button
-    onClick={() => setIdeaResults("This feature is only available on the Pro plan (£2.99/month).")}
-    className="w-full bg-amber-500 hover:bg-amber-600 py-3 rounded-2xl font-medium text-black"
-  >
-    Upgrade to Pro (£2.99/mo)
-  </button>
+  onClick={() => setShowUpgradeModal(true)}
+  className="w-full bg-amber-500 hover:bg-amber-600 py-3 rounded-2xl font-medium text-black"
+>
+  Upgrade to Pro (£2.99/mo)
+</button>
 )}
   </div>
 )}
