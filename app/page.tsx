@@ -626,7 +626,6 @@ return (
     </div>
   )}
 
-</div>   {/* ← This closes the My Trips container */}
     
   </div>
 )}
