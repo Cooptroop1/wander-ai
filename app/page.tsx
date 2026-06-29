@@ -1157,6 +1157,47 @@ return (
     </div>
   </div>
 )}
+
+         {/* ====================== UPGRADE TO PRO MODAL ====================== */}
+{showUpgradeModal && (
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60] p-4">
+    <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-md">
+      <div className="px-6 py-5 text-center border-b border-zinc-700">
+        <h3 className="text-2xl font-semibold">Upgrade to Pro</h3>
+        <p className="text-zinc-400 mt-1">£2.99/month • Cancel anytime</p>
+      </div>
+
+      <div className="p-6 space-y-5">
+        <div>
+          <div className="font-medium mb-2">What you get:</div>
+          <ul className="text-sm space-y-2">
+            <li className="flex gap-2">✅ Unlimited AI Trip Ideas (20/month free)</li>
+            <li className="flex gap-2">✅ AI Booking Helper (changes, cancellations, bags)</li>
+            <li className="flex gap-2">✅ Save & organise all your ideas</li>
+            <li className="flex gap-2">✅ Future features (price alerts, smart planning)</li>
+          </ul>
+        </div>
+
+        <button 
+          onClick={() => {
+            alert("Stripe checkout would open here (we'll hook it up soon)");
+            setShowUpgradeModal(false);
+          }}
+          className="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-2xl font-semibold text-lg"
+        >
+          Subscribe £2.99/month
+        </button>
+
+        <button 
+          onClick={() => setShowUpgradeModal(false)}
+          className="w-full py-3 text-zinc-400 hover:text-white"
+        >
+          Maybe later
+        </button>
+      </div>
+    </div>
+  </div>
+)}
           
           {/* ====================== MANAGE BOOKING MODAL (with AI) ====================== */}
 {showManageModal && selectedTripForManage && (
