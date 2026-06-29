@@ -263,6 +263,33 @@ const handleLogout = async () => {
   setShowManageModal(true);
 };
 
+  const saveIdea = async () => {
+  if (!user || !ideaDestination.trim() || !ideaResults.trim()) {
+    alert("Nothing to save");
+    return;
+  }
+
+  try {
+    const { error } = await supabase.from('saved_ideas').insert({
+      user_id: user.id,
+      title: ideaDestination,
+      content: ideaResults,
+    });
+
+    if (error) {
+      console.error('Error saving idea:', error);
+      alert('Failed to save idea');
+    } else {
+      alert('Idea saved successfully!');
+      // Optional: clear results after saving
+      // setIdeaResults('');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Something went wrong while saving');
+  }
+};
+  
 const getTripIdeas = async () => {
   if (!ideaDestination.trim()) return;
 
@@ -953,10 +980,19 @@ return (
         </div>
 
         {ideaResults && (
-          <div className="bg-zinc-950 border border-zinc-700 rounded-2xl p-5 whitespace-pre-wrap text-sm leading-relaxed">
-            {ideaResults}
-          </div>
-        )}
+  <div>
+    <div className="bg-zinc-950 border border-zinc-700 rounded-2xl p-5 whitespace-pre-wrap text-sm leading-relaxed mb-4">
+      {ideaResults}
+    </div>
+
+    <button
+      onClick={saveIdea}
+      className="w-full bg-emerald-500 hover:bg-emerald-600 py-3 rounded-2xl font-medium"
+    >
+      Save Idea
+    </button>
+  </div>
+)}
       </div>
 
     </div>
