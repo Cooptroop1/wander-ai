@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createRouteHandlerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = createRouteHandlerClient({ cookies });
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +12,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    // Get logged in user
+    // Get logged in user properly
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -32,16 +30,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Pro subscription required' }, { status: 403 });
     }
 
-    // === NEW: Check monthly limit for AI Booking Helper (100 messages) ===
+    // Check monthly limit (100 messages)
     const currentMonth = new Date().toISOString().slice(0, 7);
 
     const { data: usage } = await supabase
-  .from('feature_usage')
-  .select('id, count')           // ← Add "id," here
-  .eq('user_id', user.id)
-  .eq('feature', 'booking_helper')
-  .eq('month', currentMonth)
-  .single();
+      .from('feature_usage')
+      .select('id, count')
+      .eq('user_id', user.id)
+      .eq('feature', 'booking_helper')
+      .eq('month', currentMonth)
+      .single();
 
     const currentCount = usage?.count || 0;
 
@@ -52,18 +50,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Call Grok
-const grokRes = await fetch('https://api.x.ai/v1/chat/completions', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
-  },
-  body: JSON.stringify({
-    model: 'grok-3-latest',
-    messages: [
-      {
-        role: 'system',
-        content: `You are an AI assistant that ONLY helps users with their existing flight bookings. 
+    const grokRes = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'grok-3-latest',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an AI assistant that ONLY helps users with their existing flight bookings. 
 
 You can only answer questions about:
 - Cancelling or changing flights
@@ -75,25 +73,24 @@ You can only answer questions about:
 
 Rules:
 - You must ONLY answer questions related to the user's booking.
-- If the user asks about anything else (recipes, general travel advice, holidays, other bookings, etc.), politely say: "I'm only able to help with managing this specific booking."
-- Never give advice outside of flight booking management.
+- If the user asks about anything else, politely say: "I'm only able to help with managing this specific booking."
 - Be concise and helpful.
 - Booking reference: ${bookingContext?.booking_reference || 'unknown'}.`,
-      },
-      {
-        role: 'user',
-        content: message,
-      },
-    ],
-    temperature: 0.7,
-    max_tokens: 500,
-  }),
-});
+          },
+          {
+            role: 'user',
+            content: message,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 500,
+      }),
+    });
 
     const grokData = await grokRes.json();
     const responseText = grokData.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
 
-    // Increment usage count
+    // Increment usage
     if (usage) {
       await supabase
         .from('feature_usage')
