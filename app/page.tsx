@@ -610,32 +610,20 @@ return (
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {!user ? (
-  // ====================== LANDING PAGE ======================
-  <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
-    
-    <img 
-      src="/landing-hero.jpg" 
-      alt="Ai-Assists" 
-      className="absolute inset-0 w-full h-full object-cover"
-    />
-
-    {/* Button positioned on the image */}
-    <div className="relative z-10">
-      <button
-        onClick={async () => {
-          const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-          });
-          if (error) alert(error.message);
-        }}
-        className="bg-[#00f0ff] hover:bg-[#00d4e6] text-black font-semibold px-10 py-4 rounded-2xl text-lg transition-all active:scale-[0.985]"
-      >
-        Get Started
-      </button>
-    </div>
-
-  </div>
-) : currentView === 'search' ? (
+          <div className="max-w-md mx-auto mt-20 text-center">
+            <h1 className="text-4xl font-bold mb-4">Find flights.<br />Book instantly.</h1>
+            <p className="text-zinc-400 mb-8">Sign in to start searching</p>
+            <button 
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+                if (error) alert(error.message);
+              }} 
+              className="bg-white text-black px-8 py-3 rounded-2xl font-semibold"
+            >
+              Continue with Google
+            </button>
+          </div>
+        ) : currentView === 'search' ? (
           <>
             {/* Journey Type */}
             <div className="flex gap-2 mb-6">
