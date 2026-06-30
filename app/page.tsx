@@ -521,19 +521,23 @@ return (
   <div className="w-9 h-9 bg-sky-500 rounded-xl flex items-center justify-center">
     <span className="font-bold text-xl">W</span>
   </div>
-  <div className="flex items-center gap-2">
-    <div className="font-semibold text-xl">Ai-Assists</div>
+
+  <div>
+    {/* Title row with PRO badge */}
+    <div className="flex items-center gap-2">
+      <div className="font-semibold text-xl">Ai-Assists</div>
+
+      {/* PRO Badge */}
+      {userIsPro && (
+        <div className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded tracking-wider">
+          PRO
+        </div>
+      )}
+    </div>
+
+    {/* Subtitle */}
     <div className="text-[10px] text-zinc-500 -mt-1">Smart Flight Booking</div>
-    
-    {/* PRO Badge next to title */}
-    {userIsPro && (
-      <div className="px-2.5 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded tracking-wider">
-        PRO
-      </div>
-    )}
   </div>
-           {/* Subtitle underneath */}
-    <div className="text-[10px] text-zinc-500 -mt-1">Smart Flight Booking</div>
 </div>
 
           <div className="flex items-center gap-4">
