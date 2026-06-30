@@ -10,7 +10,7 @@ const supabase = createClient(
 );
 export default function WanderAI() {
 
-
+ 
   // Auth
   const [user, setUser] = useState<any>(null);
   const [currentView, setCurrentView] = useState<'search' | 'trips'>('search');
