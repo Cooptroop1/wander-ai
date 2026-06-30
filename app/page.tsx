@@ -609,9 +609,9 @@ return (
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
-                {!user ? (
-          // ====================== FULL SCREEN LANDING PAGE ======================
-          <div className="relative h-screen w-screen overflow-hidden">
+                        {!user ? (
+          // ====================== FULL SCREEN LANDING (NO SCROLL) ======================
+          <div className="fixed inset-0 overflow-hidden bg-black">
             <img 
               src="/landing-hero.jpg" 
               alt="Ai-Assists" 
