@@ -524,28 +524,29 @@ return (
 )}
       <div className="border-b border-zinc-800 bg-zinc-950 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+  {/* Logo */}
   <img 
-  src="/ai-assists-logo.png" 
-  alt="Ai-Assists Logo" 
-  className="w-11 h-11 rounded-xl object-cover ring-1 ring-white/10"
-/>
+    src="/ai-assists-logo.png" 
+    alt="Ai-Assists Logo" 
+    className="w-12 h-12 rounded-2xl object-cover"
+  />
 
   <div>
-    {/* Title row with PRO badge */}
+    {/* Title + PRO badge */}
     <div className="flex items-center gap-2">
-      <div className="font-semibold text-xl">Ai-Assists</div>
+      <div className="font-semibold text-2xl tracking-tight">Ai-Assists</div>
 
       {/* PRO Badge */}
       {userIsPro && (
-        <div className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded tracking-wider">
+        <div className="px-2.5 py-0.5 bg-emerald-600 text-white text-xs font-bold rounded tracking-wider">
           PRO
         </div>
       )}
     </div>
 
     {/* Subtitle */}
-    <div className="text-[10px] text-zinc-500 -mt-1">Smart Flight Booking</div>
+    <div className="text-sm text-zinc-400 -mt-0.5">Smart Flight Booking</div>
   </div>
 </div>
 
