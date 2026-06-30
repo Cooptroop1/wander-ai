@@ -497,14 +497,20 @@ return (
       <div className="border-b border-zinc-800 bg-zinc-950 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-sky-500 rounded-xl flex items-center justify-center">
-              <span className="font-bold text-xl">W</span>
-            </div>
-            <div>
-              <div className="font-semibold text-xl">Ai-Assists</div>
-              <div className="text-[10px] text-zinc-500 -mt-1">Smart Flight Booking</div>
-            </div>
-          </div>
+  <div className="w-9 h-9 bg-sky-500 rounded-xl flex items-center justify-center">
+    <span className="font-bold text-xl">W</span>
+  </div>
+  <div className="flex items-center gap-2">
+    <div className="font-semibold text-xl">Ai-Assists</div>
+    
+    {/* PRO Badge next to title */}
+    {userIsPro && (
+      <div className="px-2.5 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded tracking-wider">
+        PRO
+      </div>
+    )}
+  </div>
+</div>
 
           <div className="flex items-center gap-4">
             {user && (
@@ -530,13 +536,6 @@ return (
     >
       AI Ideas
     </button>
-
-    {/* Pro Badge */}
-    {userIsPro && (
-      <div className="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full flex items-center">
-        PRO
-      </div>
-    )}
 
    {/* Manage Subscription Button (only for Pro users) */}
 {userIsPro && (
