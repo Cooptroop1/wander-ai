@@ -31,7 +31,7 @@ const [selectedTripForManage, setSelectedTripForManage] = useState<any>(null);
  const [savedIdeas, setSavedIdeas] = useState<any[]>([]);
  const [remainingIdeas, setRemainingIdeas] = useState(20); 
  const [userIsPro, setUserIsPro] = useState(false);
- 
+ const [remainingBookingMessages, setRemainingBookingMessages] = useState(100);
  // ====================== SUCCESS BANNER FROM STRIPE ======================
 const [showSuccessBanner, setShowSuccessBanner] = useState(false);
 
@@ -324,11 +324,15 @@ const handleLogout = async () => {
   // Open Manage Booking Modal (Pro only for AI chat)
 const openManageBooking = (trip: any) => {
   setSelectedTripForManage(trip);
-  setChatMessages([]);           // clear previous chat
+  setChatMessages([]);
   setChatInput('');
   setShowManageModal(true);
-};
 
+  // Fetch remaining booking helper messages
+  if (userIsPro) {
+    checkBookingHelperUsage();
+  }
+};
   const saveIdea = async () => {
   if (!user || !ideaDestination.trim() || !ideaResults.trim()) {
     alert("Nothing to save");
@@ -469,6 +473,23 @@ const openManageBooking = (trip: any) => {
 
   const used = usage?.count || 0;
   setRemainingIdeas(20 - used);
+};
+ // ====================== CHECK BOOKING HELPER USAGE ======================
+const checkBookingHelperUsage = async () => {
+  if (!user) return;
+
+  const currentMonth = new Date().toISOString().slice(0, 7);
+
+  const { data: usage } = await supabase
+    .from('feature_usage')
+    .select('count')
+    .eq('user_id', user.id)
+    .eq('feature', 'booking_helper')
+    .eq('month', currentMonth)
+    .single();
+
+  const used = usage?.count || 0;
+  setRemainingBookingMessages(100 - used);
 };
  
 return (
@@ -1425,9 +1446,17 @@ return (
 <div className="flex-1 flex flex-col p-6">
   <h4 className="font-semibold mb-3">Ai-Assists • Help & Guidance</h4>
 
+{/* Remaining messages counter */}
+{userIsPro && (
+  <div className="text-xs text-zinc-400 mb-2">
+    {remainingBookingMessages} / 100 AI Booking messages left this month
+  </div>
+)}
+ 
   {userIsPro ? (
     <>
-      {/* Pro users see the real AI chat */}
+     
+     {/* Pro users see the real AI chat */}
       <div className="flex flex-wrap gap-2 mb-4">
         {[
           "How do I cancel my flight?",
