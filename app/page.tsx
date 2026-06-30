@@ -500,167 +500,140 @@ const checkBookingHelperUsage = async () => {
 };
  
 return (
+        <div className="min-h-screen bg-zinc-950 text-white">
+      {/* Header */}
+         {/* ====================== STRIPE SUCCESS BANNER ====================== */}
+{showSuccessBanner && (
+  <div className="bg-emerald-600 text-white">
+    <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">🎉</span>
+        <div>
+          <span className="font-semibold">Thank you!</span> Your Pro plan is now active.
+          <span className="ml-2 text-emerald-100">You now have 20 AI Trip Ideas per Month + full Booking Helper access.</span>
+        </div>
+      </div>
+      <button
+        onClick={() => setShowSuccessBanner(false)}
+        className="text-emerald-100 hover:text-white text-xl leading-none px-2"
+      >
+        ×
+      </button>
+    </div>
+  </div>
+)}
+      <div className="border-b border-zinc-800 bg-zinc-950 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+  {/* Logo */}
+  <img 
+    src="/ai-assists-logo.png" 
+    alt="Ai-Assists Logo" 
+    className="w-12 h-12 rounded-2xl object-cover"
+  />
+
+  <div>
+    {/* Title + PRO badge */}
+    <div className="flex items-center gap-2">
+      <div className="font-semibold text-2xl tracking-tight">Ai-Assists</div>
+
+      {/* PRO Badge */}
+      {userIsPro && (
+        <div className="px-2.5 py-0.5 bg-emerald-600 text-white text-xs font-bold rounded tracking-wider">
+          PRO
+        </div>
+      )}
+    </div>
+
+    {/* Subtitle */}
+    <div className="text-sm text-zinc-400 -mt-0.5">Smart Flight Booking</div>
+  </div>
+</div>
+
+          <div className="flex items-center gap-4">
+            {user && (
   <>
-    {/* ====================== FULL SCREEN LANDING PAGE ====================== */}
-    {!user ? (
-      <div 
-        className="fixed inset-0 z-50 cursor-pointer"
+    <button 
+      onClick={() => setCurrentView('search')} 
+      className={`px-4 py-2 rounded-xl text-sm ${currentView === 'search' ? 'bg-zinc-800' : 'hover:bg-zinc-900'}`}
+    >
+      Search
+    </button>
+    <button 
+      onClick={() => setCurrentView('trips')} 
+      className={`px-4 py-2 rounded-xl text-sm ${currentView === 'trips' ? 'bg-zinc-800' : 'hover:bg-zinc-900'}`}
+    >
+      My Trips
+    </button>
+    <button
+      onClick={() => {
+        setShowIdeasModal(true);
+        checkRemainingIdeas();
+      }}
+      className="px-4 py-2 rounded-xl text-sm hover:bg-zinc-900"
+    >
+      AI Ideas
+    </button>
+
+   {/* Manage Subscription Button (only for Pro users) */}
+{userIsPro && (
+  <button
+    onClick={async () => {
+      if (!user) return;
+      
+      const res = await fetch('/api/stripe/create-portal-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.url) {
+        window.location.href = data.url; // Redirect to Stripe Portal
+      } else {
+        alert("Could not open subscription management");
+      }
+    }}
+    className="px-4 py-2 rounded-xl text-sm bg-zinc-800 hover:bg-zinc-700"
+  >
+    Manage Subscription
+  </button>
+)}
+
+    <button onClick={handleLogout} className="text-sm text-zinc-400 hover:text-white">Logout</button>
+  </>
+)}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {!user ? (
+  // ====================== LANDING PAGE ======================
+  <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+    
+    <img 
+      src="/landing-hero.jpg" 
+      alt="Ai-Assists" 
+      className="absolute inset-0 w-full h-full object-cover"
+    />
+
+    {/* Button positioned on the image */}
+    <div className="relative z-10">
+      <button
         onClick={async () => {
           const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
           });
           if (error) alert(error.message);
         }}
+        className="bg-[#00f0ff] hover:bg-[#00d4e6] text-black font-semibold px-10 py-4 rounded-2xl text-lg transition-all active:scale-[0.985]"
       >
-        <img 
-          src="/landing-hero.jpg" 
-          alt="Ai-Assists" 
-          className="w-screen h-screen object-cover"
-        />
-      </div>
-    ) : (
-      /* ====================== NORMAL APP ====================== */
-      <div className="min-h-screen bg-zinc-950 text-white">
-        {/* Header */}
-        <div className="border-b border-zinc-800 bg-zinc-950 sticky top-0 z-40">
-          <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="border-b border-zinc-800 bg-zinc-950 sticky top-0 z-40">
-  <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-    <div className="flex items-center gap-4">
-      {/* Logo */}
-      <img 
-        src="/ai-assists-logo.png" 
-        alt="Ai-Assists Logo" 
-        className="w-12 h-12 rounded-2xl object-cover"
-      />
-      <div>
-        <div className="flex items-center gap-2">
-          <div className="font-semibold text-2xl tracking-tight">Ai-Assists</div>
-          {userIsPro && (
-            <div className="px-2.5 py-0.5 bg-emerald-600 text-white text-xs font-bold rounded tracking-wider">
-              PRO
-            </div>
-          )}
-        </div>
-        <div className="text-sm text-zinc-400 -mt-0.5">Smart Flight Booking</div>
-      </div>
+        Get Started
+      </button>
     </div>
 
-    <div className="flex items-center gap-4">
-      {user && (
-        <>
-          <button 
-            onClick={() => setCurrentView('search')} 
-            className={`px-4 py-2 rounded-xl text-sm ${currentView === 'search' ? 'bg-zinc-800' : 'hover:bg-zinc-900'}`}
-          >
-            Search
-          </button>
-          <button 
-            onClick={() => setCurrentView('trips')} 
-            className={`px-4 py-2 rounded-xl text-sm ${currentView === 'trips' ? 'bg-zinc-800' : 'hover:bg-zinc-900'}`}
-          >
-            My Trips
-          </button>
-          <button
-            onClick={() => {
-              setShowIdeasModal(true);
-              checkRemainingIdeas();
-            }}
-            className="px-4 py-2 rounded-xl text-sm hover:bg-zinc-900"
-          >
-            AI Ideas
-          </button>
-
-          {userIsPro && (
-            <button
-              onClick={async () => {
-                if (!user) return;
-                const res = await fetch('/api/stripe/create-portal-session', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ userId: user.id }),
-                });
-                const data = await res.json();
-                if (data.url) window.location.href = data.url;
-                else alert("Could not open subscription management");
-              }}
-              className="px-4 py-2 rounded-xl text-sm bg-zinc-800 hover:bg-zinc-700"
-            >
-              Manage Subscription
-            </button>
-          )}
-
-          <button onClick={handleLogout} className="text-sm text-zinc-400 hover:text-white">Logout</button>
-        </>
-      )}
-    </div>
-  </div>
-</div>
-            <div className="flex items-center gap-4">
-              {/* Logo */}
-              <img 
-                src="/ai-assists-logo.png" 
-                alt="Ai-Assists Logo" 
-                className="w-12 h-12 rounded-2xl object-cover"
-              />
-              <div>
-                <div className="flex items-center gap-2">
-                  <div className="font-semibold text-2xl tracking-tight">Ai-Assists</div>
-                  {userIsPro && (
-                    <div className="px-2.5 py-0.5 bg-emerald-600 text-white text-xs font-bold rounded tracking-wider">
-                      PRO
-                    </div>
-                  )}
-                </div>
-                <div className="text-sm text-zinc-400 -mt-0.5">Smart Flight Booking</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {user && (
-                <>
-                  <button onClick={() => setCurrentView('search')} className={`px-4 py-2 rounded-xl text-sm ${currentView === 'search' ? 'bg-zinc-800' : 'hover:bg-zinc-900'}`}>Search</button>
-                  <button onClick={() => setCurrentView('trips')} className={`px-4 py-2 rounded-xl text-sm ${currentView === 'trips' ? 'bg-zinc-800' : 'hover:bg-zinc-900'}`}>My Trips</button>
-                  <button onClick={() => { setShowIdeasModal(true); checkRemainingIdeas(); }} className="px-4 py-2 rounded-xl text-sm hover:bg-zinc-900">AI Ideas</button>
-
-                  {userIsPro && (
-                    <button onClick={async () => {
-                      const res = await fetch('/api/stripe/create-portal-session', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ userId: user.id }),
-                      });
-                      const data = await res.json();
-                      if (data.url) window.location.href = data.url;
-                      else alert("Could not open subscription management");
-                    }} className="px-4 py-2 rounded-xl text-sm bg-zinc-800 hover:bg-zinc-700">Manage Subscription</button>
-                  )}
-
-                  <button onClick={handleLogout} className="text-sm text-zinc-400 hover:text-white">Logout</button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Main content */}
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          {currentView === 'search' ? (
-  // ====================== FULL SCREEN LANDING (No Header) ======================
-  <div 
-    onClick={async () => {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-      });
-      if (error) alert(error.message);
-    }}
-    className="cursor-pointer"
-  >
-    <img 
-      src="/landing-hero.jpg" 
-      alt="Ai-Assists" 
-      className="w-screen h-screen object-cover"
-    />
   </div>
 ) : currentView === 'search' ? (
           <>
@@ -1580,16 +1553,16 @@ return (
         }}
         className="bg-emerald-500 hover:bg-emerald-600 px-8 py-3 rounded-2xl font-medium"
       >
-       Upgrade to Pro (£2.99/mo)
+        Upgrade to Pro (£2.99/mo)
       </button>
     </div>
   )}
 </div>
-                        </div>
-      </div>
-    )}
-  </>
-);
-};
+        </div>
 
-export default WanderAI;
+      </div>
+    </div>
+)}
+    </div>
+  );
+}
