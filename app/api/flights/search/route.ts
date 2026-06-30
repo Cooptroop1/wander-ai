@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         passengers: Array.from({ length: passengers }, () => ({ type: "adult" })),
         cabin_class: cabinClass,
         return_available_services: true,
-        limit: 20,
+        limit: 50,
       }
     };
 
