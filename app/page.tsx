@@ -599,7 +599,7 @@ return (
               <div>
                 <h3 className="text-xl font-semibold mb-4">Choose your flight</h3>
                 <div className="space-y-3">
-                  {offers.map((offer: any, index: number) => {
+                  {offers.slice(0, 50).map((offer: any, index: number) => {
                     const slice = offer.slices?.[0];
                     const segment = slice?.segments?.[0];
                     const airline = segment?.marketing_carrier?.name || 'Airline';
