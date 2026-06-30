@@ -37,14 +37,13 @@ export async function POST(request: NextRequest) {
     const userId = session.metadata?.user_id;
 
     if (userId) {
-      console.log(`✅ Payment successful for user: ${userId}`);
-
-      // Upgrade user to Pro
-      await supabase
-        .from('profiles')
-        .update({ is_pro: true })
-        .eq('id', userId);
-
+  await supabase
+    .from('profiles')
+    .update({ 
+      is_pro: true,
+      stripe_customer_id: session.customer,   // Save customer ID
+    })
+    .eq('id', userId);
       // Reset monthly usage count for trip_ideas
       const currentMonth = new Date().toISOString().slice(0, 7);
       await supabase
