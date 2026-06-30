@@ -460,9 +460,16 @@ const openManageBooking = (trip: any) => {
     .eq('id', user.id)
     .single();
 
-  setUserIsPro(profile?.is_pro === true);
+  const isPro = profile?.is_pro === true;
+  setUserIsPro(isPro);
 
-  // Check usage
+  if (!isPro) {
+    // Free users always see 0/20
+    setRemainingIdeas(0);
+    return;
+  }
+
+  // Only Pro users check actual usage
   const { data: usage } = await supabase
     .from('feature_usage')
     .select('count')
