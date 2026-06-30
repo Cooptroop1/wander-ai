@@ -41,7 +41,7 @@ React.useEffect(() => {
     setShowSuccessBanner(true);
     window.history.replaceState({}, '', window.location.pathname);
 
-    // Auto refresh Pro status + remaining ideas
+    // Refresh Pro status + remaining ideas so the badge appears immediately
     checkRemainingIdeas();
   }
 }, []);
