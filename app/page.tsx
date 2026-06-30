@@ -40,6 +40,9 @@ React.useEffect(() => {
   if (params.get('success') === 'true') {
     setShowSuccessBanner(true);
     window.history.replaceState({}, '', window.location.pathname);
+
+    // Auto refresh Pro status + remaining ideas
+    checkRemainingIdeas();
   }
 }, []);
  // Airport suggestions
@@ -482,31 +485,39 @@ return (
 
           <div className="flex items-center gap-4">
             {user && (
-              <>
-                <button 
-                  onClick={() => setCurrentView('search')} 
-                  className={`px-4 py-2 rounded-xl text-sm ${currentView === 'search' ? 'bg-zinc-800' : 'hover:bg-zinc-900'}`}
-                >
-                  Search
-                </button>
-                <button 
-                  onClick={() => setCurrentView('trips')} 
-                  className={`px-4 py-2 rounded-xl text-sm ${currentView === 'trips' ? 'bg-zinc-800' : 'hover:bg-zinc-900'}`}
-                >
-                  My Trips
-                </button>
-                <button
-  onClick={() => {
-    setShowIdeasModal(true);
-    checkRemainingIdeas();
-  }}
-  className="px-4 py-2 rounded-xl text-sm hover:bg-zinc-900"
->
-  AI Ideas
-</button>
-                <button onClick={handleLogout} className="text-sm text-zinc-400 hover:text-white">Logout</button>
-              </>
-            )}
+  <>
+    <button 
+      onClick={() => setCurrentView('search')} 
+      className={`px-4 py-2 rounded-xl text-sm ${currentView === 'search' ? 'bg-zinc-800' : 'hover:bg-zinc-900'}`}
+    >
+      Search
+    </button>
+    <button 
+      onClick={() => setCurrentView('trips')} 
+      className={`px-4 py-2 rounded-xl text-sm ${currentView === 'trips' ? 'bg-zinc-800' : 'hover:bg-zinc-900'}`}
+    >
+      My Trips
+    </button>
+    <button
+      onClick={() => {
+        setShowIdeasModal(true);
+        checkRemainingIdeas();
+      }}
+      className="px-4 py-2 rounded-xl text-sm hover:bg-zinc-900"
+    >
+      AI Ideas
+    </button>
+
+    {/* Pro Badge */}
+    {userIsPro && (
+      <div className="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full flex items-center">
+        PRO
+      </div>
+    )}
+
+    <button onClick={handleLogout} className="text-sm text-zinc-400 hover:text-white">Logout</button>
+  </>
+)}
           </div>
         </div>
       </div>
