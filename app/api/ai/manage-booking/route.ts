@@ -1,24 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, bookingContext } = await request.json();
+    const cookieStore = await cookies();
 
-    if (!message) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
-    }
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
 
-    // Get logged in user
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { message, bookingContext } = await request.json();
+
+    if (!message) {
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
     // Check if user is Pro
@@ -32,16 +46,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Pro subscription required' }, { status: 403 });
     }
 
-    // === NEW: Check monthly limit for AI Booking Helper (100 messages) ===
+    // Check monthly limit (100 messages)
     const currentMonth = new Date().toISOString().slice(0, 7);
 
     const { data: usage } = await supabase
-  .from('feature_usage')
-  .select('id, count')           // ← Add "id," here
-  .eq('user_id', user.id)
-  .eq('feature', 'booking_helper')
-  .eq('month', currentMonth)
-  .single();
+      .from('feature_usage')
+      .select('id, count')
+      .eq('user_id', user.id)
+      .eq('feature', 'booking_helper')
+      .eq('month', currentMonth)
+      .single();
 
     const currentCount = usage?.count || 0;
 
@@ -63,9 +77,26 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful flight booking assistant. Booking reference: ${bookingContext?.booking_reference || 'unknown'}.`,
+            content: `You are an AI assistant that ONLY helps users with their existing flight bookings. 
+
+You can only answer questions about:
+- Cancelling or changing flights
+- Adding/removing bags
+- Seat selection
+- Special requests (meals, assistance, etc.)
+- Checking booking status or rules
+- Name changes or passenger issues
+
+Rules:
+- You must ONLY answer questions related to the user's booking.
+- If the user asks about anything else, politely say: "I'm only able to help with managing this specific booking."
+- Be concise and helpful.
+- Booking reference: ${bookingContext?.booking_reference || 'unknown'}.`,
           },
-          { role: 'user', content: message },
+          {
+            role: 'user',
+            content: message,
+          },
         ],
         temperature: 0.7,
         max_tokens: 500,
