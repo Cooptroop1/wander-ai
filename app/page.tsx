@@ -1509,16 +1509,18 @@ return (
         }}
         className="bg-emerald-500 hover:bg-emerald-600 px-8 py-3 rounded-2xl font-medium"
       >
-        Upgrade to Pro (£2.99/mo)
+       Upgrade to Pro (£2.99/mo)
       </button>
     </div>
   )}
 </div>
         </div>
-
       </div>
     </div>
-)}
-    </div>
-  );
-}
+  )}
+</div>
+  </>
+);
+};
+
+export default WanderAI;
