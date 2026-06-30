@@ -610,35 +610,37 @@ return (
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {!user ? (
-  // ====================== NEW LANDING PAGE ======================
-  <div className="min-h-screen bg-black text-white flex flex-col">
-    <div className="relative h-[100vh] flex items-center justify-center overflow-hidden">
-      <img 
-        src="/landing-hero.jpg" 
-        alt="Ai-Assists Hero" 
-        className="absolute inset-0 w-full h-full object-cover brightness-[0.55]"
-      />
+  // ====================== LANDING PAGE ======================
+  <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+    
+    {/* Background Image */}
+    <img 
+      src="/landing-hero.jpg" 
+      alt="Ai-Assists Background" 
+      className="absolute inset-0 w-full h-full object-cover brightness-[0.5]"
+    />
 
-      <div className="relative z-10 text-center px-6">
-        <h1 className="text-6xl md:text-7xl font-bold tracking-tight mb-4">
-          Ai-Assists.com
-        </h1>
-        <p className="text-2xl md:text-3xl text-white/90 mb-10">
-          Welcome to the Future
-        </p>
+    {/* Content */}
+    <div className="relative z-10 text-center px-6 max-w-4xl">
+      <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-white mb-4">
+        Ai-Assists.com
+      </h1>
+      
+      <p className="text-2xl md:text-3xl text-white/90 mb-10">
+        Welcome to the Future
+      </p>
 
-        <button
-          onClick={async () => {
-            const { error } = await supabase.auth.signInWithOAuth({
-              provider: 'google',
-            });
-            if (error) alert(error.message);
-          }}
-          className="bg-[#00f0ff] hover:bg-[#00d4e6] text-black font-semibold px-10 py-4 rounded-2xl text-lg transition-all active:scale-[0.985]"
-        >
-          Get Started
-        </button>
-      </div>
+      <button
+        onClick={async () => {
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+          });
+          if (error) alert(error.message);
+        }}
+        className="bg-[#00f0ff] hover:bg-[#00d4e6] text-black font-semibold px-10 py-4 rounded-2xl text-lg transition-all active:scale-[0.985]"
+      >
+        Get Started
+      </button>
     </div>
   </div>
 ) : currentView === 'search' ? (
