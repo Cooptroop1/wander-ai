@@ -609,13 +609,13 @@ return (
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
-                        {!user ? (
-          // ====================== FULL SCREEN LANDING (NO SCROLL) ======================
+                                {!user ? (
+          // ====================== FULL SCREEN LANDING (TOP PROTECTED) ======================
           <div className="fixed inset-0 overflow-hidden bg-black">
             <img 
               src="/landing-hero.jpg" 
               alt="Ai-Assists" 
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover object-top"
             />
             
             <div className="absolute inset-0 flex items-center justify-center z-10">
