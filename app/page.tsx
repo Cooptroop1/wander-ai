@@ -10,7 +10,7 @@ const supabase = createClient(
 );
 export default function WanderAI() {
 
- 
+
   // Auth
   const [user, setUser] = useState<any>(null);
   const [currentView, setCurrentView] = useState<'search' | 'trips'>('search');
@@ -65,13 +65,9 @@ const [isIdeasLoading, setIsIdeasLoading] = useState(false);
 const sendMessageToAI = async (message: string) => {
   if (!message.trim()) return;
 
+  // Block non-Pro users from even calling the AI
   if (!userIsPro) {
-    alert("AI Booking Helper is only available for Pro users.");
-    return;
-  }
-
-  if (!user?.id) {
-    alert("User not found. Please log in again.");
+    alert("AI Booking Helper is only available for Pro users. Please upgrade.");
     return;
   }
 
@@ -90,29 +86,17 @@ const sendMessageToAI = async (message: string) => {
           booking_reference: selectedTripForManage?.booking_reference,
           status: selectedTripForManage?.status,
           airline: selectedTripForManage?.slices?.[0]?.segments?.[0]?.marketing_carrier?.name,
-        },
-        userId: user.id,                    // ← This line is required now
+        }
       }),
     });
 
     const data = await res.json();
-
-    if (!res.ok) {
-      if (res.status === 429) {
-        alert("You've reached your monthly limit of 100 AI Booking Helper messages.");
-      } else {
-        alert(data.error || "Something went wrong.");
-      }
-      setChatMessages(prev => prev.slice(0, -1));
-      return;
-    }
 
     if (data.response) {
       setChatMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
     } else {
       setChatMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I couldn't get a response right now." }]);
     }
-
   } catch (error) {
     setChatMessages(prev => [...prev, { role: 'assistant', content: "There was an error contacting the AI." }]);
   } finally {
