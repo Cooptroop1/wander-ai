@@ -83,6 +83,7 @@ const sendMessageToAI = async (message: string) => {
       body: JSON.stringify({
         message,
         bookingContext: {
+         userId: user.id,
           booking_reference: selectedTripForManage?.booking_reference,
           status: selectedTripForManage?.status,
           airline: selectedTripForManage?.slices?.[0]?.segments?.[0]?.marketing_carrier?.name,
