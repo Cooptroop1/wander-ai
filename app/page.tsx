@@ -157,6 +157,7 @@ const sendMessageToAI = async (message: string) => {
   };
   getUser();
 
+  
   // Listen for auth changes (fixes Google login redirect)
   const { data: { subscription } } = supabase.auth.onAuthStateChange(
     (_event, session) => {
@@ -167,6 +168,12 @@ const sendMessageToAI = async (message: string) => {
   return () => subscription.unsubscribe();
 }, []);
 
+ // ====================== AUTO LOAD PRO STATUS ON LOGIN ======================
+React.useEffect(() => {
+  if (user) {
+    checkRemainingIdeas();
+  }
+}, [user]);
   // Fetch trips when user switches to My Trips tab
 React.useEffect(() => {
   const fetchTrips = async () => {
