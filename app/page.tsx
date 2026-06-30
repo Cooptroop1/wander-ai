@@ -610,31 +610,21 @@ return (
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {!user ? (
-  // ====================== FULL SCREEN LANDING ======================
-  <div className="relative h-screen w-full overflow-hidden bg-black">
-    
-    {/* Background Image - Full Screen */}
+  // ====================== JUST THE PICTURE ======================
+  <div 
+    onClick={async () => {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+      if (error) alert(error.message);
+    }}
+    className="cursor-pointer"
+  >
     <img 
       src="/landing-hero.jpg" 
       alt="Ai-Assists" 
-      className="absolute inset-0 w-full h-full object-cover"
+      className="w-full h-screen object-cover"
     />
-
-    {/* Get Started Button - Centered */}
-    <div className="absolute inset-0 flex items-center justify-center z-10">
-      <button
-        onClick={async () => {
-          const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-          });
-          if (error) alert(error.message);
-        }}
-        className="bg-[#00f0ff] hover:bg-[#00d4e6] text-black font-semibold px-10 py-4 rounded-2xl text-lg transition-all active:scale-[0.985]"
-      >
-        Get Started
-      </button>
-    </div>
-
   </div>
 ) : currentView === 'search' ? (
           <>
