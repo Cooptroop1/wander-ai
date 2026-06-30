@@ -511,6 +511,8 @@ return (
       </div>
     )}
   </div>
+           {/* Subtitle underneath */}
+    <div className="text-[10px] text-zinc-500 -mt-1">Smart Flight Booking</div>
 </div>
 
           <div className="flex items-center gap-4">
