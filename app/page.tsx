@@ -610,20 +610,38 @@ return (
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {!user ? (
-          <div className="max-w-md mx-auto mt-20 text-center">
-            <h1 className="text-4xl font-bold mb-4">Find flights.<br />Book instantly.</h1>
-            <p className="text-zinc-400 mb-8">Sign in to start searching</p>
-            <button 
-              onClick={async () => {
-                const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
-                if (error) alert(error.message);
-              }} 
-              className="bg-white text-black px-8 py-3 rounded-2xl font-semibold"
-            >
-              Continue with Google
-            </button>
-          </div>
-        ) : currentView === 'search' ? (
+  // ====================== NEW LANDING PAGE ======================
+  <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="relative h-[100vh] flex items-center justify-center overflow-hidden">
+      <img 
+        src="/landing-hero.jpg" 
+        alt="Ai-Assists Hero" 
+        className="absolute inset-0 w-full h-full object-cover brightness-[0.55]"
+      />
+
+      <div className="relative z-10 text-center px-6">
+        <h1 className="text-6xl md:text-7xl font-bold tracking-tight mb-4">
+          Ai-Assists.com
+        </h1>
+        <p className="text-2xl md:text-3xl text-white/90 mb-10">
+          Welcome to the Future
+        </p>
+
+        <button
+          onClick={async () => {
+            const { error } = await supabase.auth.signInWithOAuth({
+              provider: 'google',
+            });
+            if (error) alert(error.message);
+          }}
+          className="bg-[#00f0ff] hover:bg-[#00d4e6] text-black font-semibold px-10 py-4 rounded-2xl text-lg transition-all active:scale-[0.985]"
+        >
+          Get Started
+        </button>
+      </div>
+    </div>
+  </div>
+) : currentView === 'search' ? (
           <>
             {/* Journey Type */}
             <div className="flex gap-2 mb-6">
