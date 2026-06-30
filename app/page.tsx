@@ -613,23 +613,14 @@ return (
   // ====================== LANDING PAGE ======================
   <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
     
-    {/* Background Image */}
     <img 
       src="/landing-hero.jpg" 
-      alt="Ai-Assists Background" 
-      className="absolute inset-0 w-full h-full object-cover brightness-[0.5]"
+      alt="Ai-Assists" 
+      className="absolute inset-0 w-full h-full object-cover"
     />
 
-    {/* Content */}
-    <div className="relative z-10 text-center px-6 max-w-4xl">
-      <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-white mb-4">
-        Ai-Assists.com
-      </h1>
-      
-      <p className="text-2xl md:text-3xl text-white/90 mb-10">
-        Welcome to the Future
-      </p>
-
+    {/* Button positioned on the image */}
+    <div className="relative z-10">
       <button
         onClick={async () => {
           const { error } = await supabase.auth.signInWithOAuth({
@@ -642,6 +633,7 @@ return (
         Get Started
       </button>
     </div>
+
   </div>
 ) : currentView === 'search' ? (
           <>
