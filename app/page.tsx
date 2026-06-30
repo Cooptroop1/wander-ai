@@ -1184,42 +1184,21 @@ return (
 
         </div>
         
-        {/* ====================== NEW: ALL API DATA SECTION ====================== */}
-        <div className="mt-6">
-          <details className="group bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
-            <summary className="cursor-pointer px-6 py-4 font-semibold flex items-center justify-between hover:bg-zinc-900 transition-colors list-none">
-              <div className="flex items-center gap-3">
-                <span>📋 Show ALL raw API data from Duffel</span>
-                <span className="text-[10px] px-2 py-0.5 bg-zinc-800 rounded text-zinc-400 group-open:hidden">Click to expand • See every field</span>
-                <span className="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded hidden group-open:inline">Click to collapse</span>
-              </div>
-              <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
-            </summary>
-            
-            <div className="border-t border-zinc-800 p-6 bg-black">
-              <div className="flex justify-between items-center mb-3">
-                <div className="text-xs text-zinc-400">Complete offer object returned by the /api/flights/search Duffel endpoint</div>
-                <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(JSON.stringify(selectedFlight, null, 2));
-                    alert('Full API data copied to clipboard!');
-                  }}
-                  className="text-[10px] px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-emerald-400"
-                >
-                  📋 Copy JSON
-                </button>
-              </div>
-              <div className="bg-zinc-950 border border-zinc-700 rounded-xl p-4 overflow-auto max-h-[420px] text-xs font-mono whitespace-pre-wrap break-all">
-                {JSON.stringify(selectedFlight, null, 2)}
-              </div>
-              <p className="text-[10px] text-zinc-500 mt-3 leading-snug">
-                This is <strong>every single field</strong> the Duffel API returned for this flight offer. 
-                Use it to find baggage allowances, conditions, services, passenger requirements, 
-                fare rules, or any other data you need. Perfect for building the next features (baggage section, etc).
-              </p>
-            </div>
-          </details>
+        {/* 
+  ====================== RAW API DATA SECTION (Hidden for now) ======================
+  <div className="mt-6">
+    <details className="group bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+      <summary className="cursor-pointer px-6 py-4 font-semibold flex items-center justify-between hover:bg-zinc-900 transition-colors list-none">
+        <div className="flex items-center gap-3">
+          <span>Show ALL raw API data from Duffel</span>
         </div>
+      </summary>
+      <div className="border-t border-zinc-800 p-6 bg-black">
+        ... raw data ...
+      </div>
+    </details>
+  </div>
+*/}
 
       </div>
 
