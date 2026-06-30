@@ -65,9 +65,13 @@ const [isIdeasLoading, setIsIdeasLoading] = useState(false);
 const sendMessageToAI = async (message: string) => {
   if (!message.trim()) return;
 
-  // Block non-Pro users
   if (!userIsPro) {
     alert("AI Booking Helper is only available for Pro users.");
+    return;
+  }
+
+  if (!user?.id) {
+    alert("User not found. Please log in again.");
     return;
   }
 
@@ -83,24 +87,22 @@ const sendMessageToAI = async (message: string) => {
       body: JSON.stringify({
         message,
         bookingContext: {
-         userId: user.id,
           booking_reference: selectedTripForManage?.booking_reference,
           status: selectedTripForManage?.status,
           airline: selectedTripForManage?.slices?.[0]?.segments?.[0]?.marketing_carrier?.name,
-        }
+        },
+        userId: user.id,                    // ← This line is required now
       }),
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-      // Handle limit reached or other errors
       if (res.status === 429) {
-        alert("You've reached your monthly limit of 100 AI Booking Helper messages. Please try again next month.");
+        alert("You've reached your monthly limit of 100 AI Booking Helper messages.");
       } else {
-        alert(data.error || "Something went wrong. Please try again.");
+        alert(data.error || "Something went wrong.");
       }
-      // Remove the user message we added earlier since it failed
       setChatMessages(prev => prev.slice(0, -1));
       return;
     }
