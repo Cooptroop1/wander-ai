@@ -1,22 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-
-const supabase = createRouteHandlerClient({ cookies });
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, bookingContext } = await request.json();
+    const cookieStore = await cookies();
 
-    if (!message) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
-    }
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
 
-    // Get logged in user properly
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { message, bookingContext } = await request.json();
+
+    if (!message) {
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
     // Check if user is Pro
@@ -90,7 +106,7 @@ Rules:
     const grokData = await grokRes.json();
     const responseText = grokData.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
 
-    // Increment usage
+    // Increment usage count
     if (usage) {
       await supabase
         .from('feature_usage')
