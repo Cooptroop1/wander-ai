@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!   // Use service role so we can read profiles safely
 );
 
 export async function POST(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    // Get logged in user
+    // Get the logged in user
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -29,29 +29,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!profile?.is_pro) {
-      return NextResponse.json({ error: 'Pro subscription required' }, { status: 403 });
-    }
-
-    // === NEW: Check monthly limit for AI Booking Helper (100 messages) ===
-    const currentMonth = new Date().toISOString().slice(0, 7);
-
-    const { data: usage } = await supabase
-  .from('feature_usage')
-  .select('id, count')           // ← Add "id," here
-  .eq('user_id', user.id)
-  .eq('feature', 'booking_helper')
-  .eq('month', currentMonth)
-  .single();
-
-    const currentCount = usage?.count || 0;
-
-    if (currentCount >= 100) {
       return NextResponse.json({ 
-        error: 'You have reached your monthly limit of 100 AI Booking Helper messages.' 
-      }, { status: 429 });
+        error: 'Pro subscription required to use AI Booking Helper' 
+      }, { status: 403 });
     }
 
-    // Call Grok
+    // If we reach here, user is Pro → call Grok
     const grokRes = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -63,9 +46,12 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful flight booking assistant. Booking reference: ${bookingContext?.booking_reference || 'unknown'}.`,
+            content: `You are a helpful flight booking assistant. The user has a booking with reference ${bookingContext?.booking_reference || 'unknown'}. Be concise and helpful.`,
           },
-          { role: 'user', content: message },
+          {
+            role: 'user',
+            content: message,
+          },
         ],
         temperature: 0.7,
         max_tokens: 500,
@@ -74,21 +60,6 @@ export async function POST(request: NextRequest) {
 
     const grokData = await grokRes.json();
     const responseText = grokData.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
-
-    // Increment usage count
-    if (usage) {
-      await supabase
-        .from('feature_usage')
-        .update({ count: currentCount + 1, updated_at: new Date().toISOString() })
-        .eq('id', usage.id);
-    } else {
-      await supabase.from('feature_usage').insert({
-        user_id: user.id,
-        feature: 'booking_helper',
-        count: 1,
-        month: currentMonth,
-      });
-    }
 
     return NextResponse.json({ response: responseText });
 
