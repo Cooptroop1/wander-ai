@@ -654,7 +654,6 @@ return (
   const airline = segment?.marketing_carrier?.name || 'Airline';
   const price = offer.total_amount;
 
-  // Get nicer cabin class name if available (e.g. "Economy Comfort")
   const cabinName = segment?.passengers?.[0]?.fare_family || 
                     segment?.passengers?.[0]?.cabin_class || 
                     'Economy';
@@ -663,28 +662,47 @@ return (
     ? `${slice.segments.length - 1} stop${slice.segments.length > 2 ? 's' : ''}` 
     : 'Direct';
 
+  // Improved baggage display
+  const baggages = segment?.passengers?.[0]?.baggages || [];
+  const baggageText = baggages.length > 0 
+    ? baggages.map((b: any) => {
+        if (b.weight_kg) {
+          return `${b.quantity} × ${b.weight_kg}kg ${b.type.replace('_', ' ')}`;
+        } else {
+          return `${b.quantity} ${b.type.replace('_', ' ')}`;
+        }
+      }).join(' + ')
+    : 'Baggage info not available';
+
   return (
     <div 
       key={index} 
       onClick={() => setSelectedFlight(offer)} 
-      className="bg-zinc-900 border border-zinc-700 hover:border-sky-500 rounded-2xl p-6 cursor-pointer flex justify-between items-center"
+      className="bg-zinc-900 border border-zinc-700 hover:border-sky-500 rounded-2xl p-6 cursor-pointer"
     >
-      <div className="flex-1">
-        <div className="flex items-center gap-3">
-          <div className="font-semibold text-lg">{airline}</div>
-          <div className="text-xs px-2 py-0.5 bg-zinc-800 rounded-full text-zinc-400">
-            {cabinName}
+      <div className="flex justify-between items-start">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="font-semibold text-lg">{airline}</div>
+            <div className="text-xs px-2.5 py-0.5 bg-zinc-800 rounded-full text-zinc-400">
+              {cabinName}
+            </div>
+          </div>
+
+          <div className="text-sm text-zinc-400 mt-1">
+            {formatDuration(slice?.duration)} • {stops}
+          </div>
+
+          {/* Baggage */}
+          <div className="text-xs text-emerald-400 mt-2">
+            🧳 {baggageText}
           </div>
         </div>
 
-        <div className="text-sm text-zinc-400 mt-1">
-          {formatDuration(slice?.duration)} • {stops}
+        <div className="text-right">
+          <div className="text-2xl font-bold">£{price}</div>
+          <div className="text-emerald-400 text-sm mt-1">Click to book →</div>
         </div>
-      </div>
-
-      <div className="text-right">
-        <div className="text-2xl font-bold">£{price}</div>
-        <div className="text-emerald-400 text-sm">Click to book →</div>
       </div>
     </div>
   );
