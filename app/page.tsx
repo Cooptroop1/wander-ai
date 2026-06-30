@@ -518,9 +518,11 @@ return (
       <div className="border-b border-zinc-800 bg-zinc-950 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-  <div className="w-9 h-9 bg-sky-500 rounded-xl flex items-center justify-center">
-    <span className="font-bold text-xl">W</span>
-  </div>
+  <img 
+  src="/ai-assists-logo.png" 
+  alt="Ai-Assists Logo" 
+  className="w-11 h-11 rounded-xl object-cover ring-1 ring-white/10"
+/>
 
   <div>
     {/* Title row with PRO badge */}
