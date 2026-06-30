@@ -52,19 +52,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Call Grok
-    const grokRes = await fetch('https://api.x.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'grok-3-latest',
-        messages: [
-          {
-            {
-  role: 'system',
-  content: `You are an AI assistant that ONLY helps users with their existing flight bookings. 
+const grokRes = await fetch('https://api.x.ai/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
+  },
+  body: JSON.stringify({
+    model: 'grok-3-latest',
+    messages: [
+      {
+        role: 'system',
+        content: `You are an AI assistant that ONLY helps users with their existing flight bookings. 
 
 You can only answer questions about:
 - Cancelling or changing flights
@@ -80,13 +79,16 @@ Rules:
 - Never give advice outside of flight booking management.
 - Be concise and helpful.
 - Booking reference: ${bookingContext?.booking_reference || 'unknown'}.`,
-},
-          { role: 'user', content: message },
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-      }),
-    });
+      },
+      {
+        role: 'user',
+        content: message,
+      },
+    ],
+    temperature: 0.7,
+    max_tokens: 500,
+  }),
+});
 
     const grokData = await grokRes.json();
     const responseText = grokData.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
