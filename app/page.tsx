@@ -24,7 +24,7 @@ export default function WanderAI() {
   const [depart, setDepart] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [passengers, setPassengers] = useState(1);
-  const [cabinClass, setCabinClass] = useState('economy');
+  const [cabinClass, setCabinClass] = useState('');   // '' = Any Class
   const [offers, setOffers] = useState<any[]>([]);
 const [showManageModal, setShowManageModal] = useState(false);
 const [selectedTripForManage, setSelectedTripForManage] = useState<any>(null);
@@ -576,9 +576,22 @@ return (
               <input type="date" value={depart} onChange={e => setDepart(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />
               {journeyType === 'return' && <input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="p-4 bg-zinc-800 rounded-2xl" />}
               <select value={passengers} onChange={e => setPassengers(Number(e.target.value))} className="p-4 bg-zinc-800 rounded-2xl">
-                {[1,2,3,4,5,6,7,8,9].map(n => <option key={n} value={n}>{n} passengers</option>)}
-              </select>
-              <button onClick={handleRealSearch} className="bg-sky-500 text-white py-4 rounded-2xl font-bold">SEARCH FLIGHTS</button>
+  {[1,2,3,4,5,6,7,8,9].map(n => <option key={n} value={n}>{n} passengers</option>)}
+</select>
+
+<select 
+  value={cabinClass} 
+  onChange={e => setCabinClass(e.target.value)} 
+  className="p-4 bg-zinc-800 rounded-2xl"
+>
+  <option value="">Any Class</option>
+  <option value="economy">Economy</option>
+  <option value="premium_economy">Premium Economy</option>
+  <option value="business">Business</option>
+  <option value="first">First Class</option>
+</select>
+
+<button onClick={handleRealSearch} className="bg-sky-500 text-white py-4 rounded-2xl font-bold">SEARCH FLIGHTS</button>
             </div>
 
             {/* Offers */}
