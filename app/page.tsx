@@ -610,7 +610,7 @@ return (
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {!user ? (
-  // ====================== JUST THE PICTURE ======================
+  // ====================== FULL SCREEN LANDING (No Header) ======================
   <div 
     onClick={async () => {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -623,7 +623,7 @@ return (
     <img 
       src="/landing-hero.jpg" 
       alt="Ai-Assists" 
-      className="w-full h-screen object-cover"
+      className="w-screen h-screen object-cover"
     />
   </div>
 ) : currentView === 'search' ? (
