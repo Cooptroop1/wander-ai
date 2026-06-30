@@ -502,6 +502,7 @@ return (
   </div>
   <div className="flex items-center gap-2">
     <div className="font-semibold text-xl">Ai-Assists</div>
+    <div className="text-[10px] text-zinc-500 -mt-1">Smart Flight Booking</div>
     
     {/* PRO Badge next to title */}
     {userIsPro && (
@@ -510,7 +511,6 @@ return (
       </div>
     )}
   </div>
-           <div className="text-[10px] text-zinc-500 -mt-1">Smart Flight Booking</div>
 </div>
 
           <div className="flex items-center gap-4">
