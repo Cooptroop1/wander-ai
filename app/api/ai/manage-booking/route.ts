@@ -36,12 +36,12 @@ export async function POST(request: NextRequest) {
     const currentMonth = new Date().toISOString().slice(0, 7);
 
     const { data: usage } = await supabase
-      .from('feature_usage')
-      .select('count')
-      .eq('user_id', user.id)
-      .eq('feature', 'booking_helper')
-      .eq('month', currentMonth)
-      .single();
+  .from('feature_usage')
+  .select('id, count')           // ← Add "id," here
+  .eq('user_id', user.id)
+  .eq('feature', 'booking_helper')
+  .eq('month', currentMonth)
+  .single();
 
     const currentCount = usage?.count || 0;
 
