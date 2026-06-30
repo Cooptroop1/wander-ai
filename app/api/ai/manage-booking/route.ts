@@ -1,58 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
+    const { message, bookingContext, userId } = await request.json();
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          },
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!message || !userId) {
+      return NextResponse.json({ error: 'Missing data' }, { status: 400 });
     }
 
-    const { message, bookingContext } = await request.json();
-
-    if (!message) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
-    }
-
-    // Check if user is Pro
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_pro')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile?.is_pro) {
-      return NextResponse.json({ error: 'Pro subscription required' }, { status: 403 });
-    }
-
-    // Check monthly limit (100 messages)
+    // Check monthly limit for AI Booking Helper (100 messages)
     const currentMonth = new Date().toISOString().slice(0, 7);
 
     const { data: usage } = await supabase
       .from('feature_usage')
       .select('id, count')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('feature', 'booking_helper')
       .eq('month', currentMonth)
       .single();
@@ -114,7 +82,7 @@ Rules:
         .eq('id', usage.id);
     } else {
       await supabase.from('feature_usage').insert({
-        user_id: user.id,
+        user_id: userId,
         feature: 'booking_helper',
         count: 1,
         month: currentMonth,
