@@ -610,17 +610,18 @@ return (
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {!user ? (
-  // ====================== LANDING PAGE ======================
-  <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+  // ====================== FULL SCREEN LANDING ======================
+  <div className="relative h-screen w-full overflow-hidden bg-black">
     
+    {/* Background Image - Full Screen */}
     <img 
       src="/landing-hero.jpg" 
       alt="Ai-Assists" 
       className="absolute inset-0 w-full h-full object-cover"
     />
 
-    {/* Button positioned on the image */}
-    <div className="relative z-10">
+    {/* Get Started Button - Centered */}
+    <div className="absolute inset-0 flex items-center justify-center z-10">
       <button
         onClick={async () => {
           const { error } = await supabase.auth.signInWithOAuth({
