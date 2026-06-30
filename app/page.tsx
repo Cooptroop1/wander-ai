@@ -649,24 +649,46 @@ return (
                 <h3 className="text-xl font-semibold mb-4">Choose your flight</h3>
                 <div className="space-y-3">
                   {offers.slice(0, 50).map((offer: any, index: number) => {
-                    const slice = offer.slices?.[0];
-                    const segment = slice?.segments?.[0];
-                    const airline = segment?.marketing_carrier?.name || 'Airline';
-                    const price = offer.total_amount;
+  const slice = offer.slices?.[0];
+  const segment = slice?.segments?.[0];
+  const airline = segment?.marketing_carrier?.name || 'Airline';
+  const price = offer.total_amount;
 
-                    return (
-                      <div key={index} onClick={() => setSelectedFlight(offer)} className="bg-zinc-900 border border-zinc-700 hover:border-sky-500 rounded-2xl p-6 cursor-pointer flex justify-between items-center">
-                        <div>
-                          <div className="font-semibold">{airline}</div>
-                          <div className="text-sm text-zinc-400">{formatDuration(slice?.duration)} • {slice?.segments?.length > 1 ? `${slice.segments.length - 1} stop` : 'Direct'}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold">£{price}</div>
-                          <div className="text-emerald-400 text-sm">Click to book →</div>
-                        </div>
-                      </div>
-                    );
-                  })}
+  // Get nicer cabin class name if available (e.g. "Economy Comfort")
+  const cabinName = segment?.passengers?.[0]?.fare_family || 
+                    segment?.passengers?.[0]?.cabin_class || 
+                    'Economy';
+
+  const stops = slice?.segments?.length > 1 
+    ? `${slice.segments.length - 1} stop${slice.segments.length > 2 ? 's' : ''}` 
+    : 'Direct';
+
+  return (
+    <div 
+      key={index} 
+      onClick={() => setSelectedFlight(offer)} 
+      className="bg-zinc-900 border border-zinc-700 hover:border-sky-500 rounded-2xl p-6 cursor-pointer flex justify-between items-center"
+    >
+      <div className="flex-1">
+        <div className="flex items-center gap-3">
+          <div className="font-semibold text-lg">{airline}</div>
+          <div className="text-xs px-2 py-0.5 bg-zinc-800 rounded-full text-zinc-400">
+            {cabinName}
+          </div>
+        </div>
+
+        <div className="text-sm text-zinc-400 mt-1">
+          {formatDuration(slice?.duration)} • {stops}
+        </div>
+      </div>
+
+      <div className="text-right">
+        <div className="text-2xl font-bold">£{price}</div>
+        <div className="text-emerald-400 text-sm">Click to book →</div>
+      </div>
+    </div>
+  );
+})}
                 </div>
               </div>
             )}
