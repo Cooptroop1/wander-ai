@@ -1,5 +1,5 @@
 // app/api/duffel/book/route.ts
-// Temporary version with hardcoded test passengers
+// Temporary version that gets real passenger IDs from Duffel
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DuffelService } from '@/lib/duffel';
@@ -15,9 +15,28 @@ export async function POST(request: NextRequest) {
 
     const duffel = new DuffelService(process.env.DUFFEL_ACCESS_TOKEN!);
 
-    // Hardcoded test passengers (same data that worked in your test script)
-    const testPassengers = [
+    // Step 1: Create a small offer request just to get passenger IDs
+    const offerRequestResponse = await duffel.duffel.offerRequests.create({
+      slices: [
+        {
+          origin: 'LHR',           // You can make these dynamic later
+          destination: 'JFK',
+          departure_date: '2026-08-15',
+        },
+      ],
+      passengers: [
+        { type: 'adult' },
+        { type: 'adult' },
+      ],
+      cabin_class: 'economy',
+    });
+
+    const offerRequest = offerRequestResponse.data;
+
+    // Step 2: Build passengers using real IDs from the offer request
+    const passengers = [
       {
+        id: offerRequest.passengers[0].id,
         phone_number: '+442080160508',
         email: 'tony@example.com',
         born_on: '1980-07-24',
@@ -27,6 +46,7 @@ export async function POST(request: NextRequest) {
         given_name: 'Tony',
       },
       {
+        id: offerRequest.passengers[1].id,
         phone_number: '+442080160509',
         email: 'potts@example.com',
         born_on: '1983-11-02',
@@ -37,9 +57,10 @@ export async function POST(request: NextRequest) {
       },
     ];
 
+    // Step 3: Create and pay the order using real IDs
     const paidOrder = await duffel.createAndPayOrder({
       offerId,
-      passengers: testPassengers,
+      passengers,
       services: [],
       totalAmount: amount,
       currency,
