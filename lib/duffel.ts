@@ -104,7 +104,7 @@ export class DuffelService {
     services?: ServiceInput[];
   }) {
     const orderResponse = await this.duffel.orders.create({
-      type: 'hold',
+      type: 'pay_later',
       selected_offers: [params.offerId],
       passengers: params.passengers,
       services: params.services || [],
