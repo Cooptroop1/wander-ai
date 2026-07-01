@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       offerId,
       passengers,
       services,
-      amount,
+      totalAmount: amount,   // ← Correct
       currency,
     });
 
