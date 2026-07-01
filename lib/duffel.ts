@@ -33,32 +33,37 @@ export class DuffelService {
 
   // 1. Search flights and get offers
   async searchFlights(params: {
-    origin: string;
-    destination: string;
-    departure_date: string;
-    return_date?: string;
-    passengers: PassengerInput[];
-    cabin_class: 'economy' | 'premium_economy' | 'business' | 'first';
-  }) {
-    const offerRequest = await this.duffel.offerRequests.create({
-      slices: [
-        {
-          origin: params.origin,
-          destination: params.destination,
-          departure_date: params.departure_date,
-        },
-        ...(params.return_date ? [{
-          origin: params.destination,
-          destination: params.origin,
-          departure_date: params.return_date,
-        }] : []),
-      ],
-      passengers: params.passengers,
-      cabin_class: params.cabin_class,
-    });
+  origin: string;
+  destination: string;
+  departure_date: string;
+  return_date?: string;
+  passengers: PassengerInput[];
+  cabin_class: 'economy' | 'premium_economy' | 'business' | 'first';
+}) {
+  const slices: any[] = [
+    {
+      origin: params.origin,
+      destination: params.destination,
+      departure_date: params.departure_date,
+    },
+  ];
 
-    return offerRequest.data;
+  if (params.return_date) {
+    slices.push({
+      origin: params.destination,
+      destination: params.origin,
+      departure_date: params.return_date,
+    });
   }
+
+  const offerRequest = await this.duffel.offerRequests.create({
+    slices,
+    passengers: params.passengers,
+    cabin_class: params.cabin_class,
+  });
+
+  return offerRequest.data;
+}
 
   // 2. Create and pay for a normal (paid immediately) order
   async createAndPayOrder(params: {
