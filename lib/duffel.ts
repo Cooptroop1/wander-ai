@@ -23,7 +23,7 @@ export interface ServiceInput {
 }
 
 export class DuffelService {
-  private duffel: Duffel;
+  public duffel: Duffel;
 
   constructor(token: string) {
     this.duffel = new Duffel({ token });
