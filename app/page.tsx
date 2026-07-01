@@ -1246,14 +1246,11 @@ return (
           Cancel
         </button>
         <button 
-          onClick={() => {
-            createDuffelLink(selectedFlight.id);
-            setSelectedFlight(null);
-          }} 
-          className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-2xl font-bold text-lg transition active:scale-[0.985]"
-        >
-          Book on Duffel →
-        </button>
+  onClick={() => createDuffelLink(selectedFlight.id)} 
+  className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-2xl font-bold text-lg transition active:scale-[0.985]"
+>
+  Pay & Book →
+</button>
       </div>
 
     </div>
