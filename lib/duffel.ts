@@ -114,7 +114,7 @@ export class DuffelService {
   }
 
   async payForHoldOrder(orderId: string, amount: string, currency: string) {
-    const paymentResponse = await this.duffel.orders.pay({
+    const paymentResponse = await this.duffel.orders.payForHold({
       order_id: orderId,
       payment: {
         type: 'balance',
