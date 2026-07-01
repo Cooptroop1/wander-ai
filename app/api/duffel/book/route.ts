@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const duffel = new DuffelService(process.env.DUFFEL_TOKEN!);
+    const duffel = new DuffelService(process.env.DUFFEL_ACCESS_TOKEN!);
 
     // 1. Create + pay the order on Duffel
     const paidOrder = await duffel.createAndPayOrder({
