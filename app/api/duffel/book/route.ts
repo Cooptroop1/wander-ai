@@ -1,5 +1,5 @@
 // app/api/duffel/book/route.ts
-// Temporary working version - creates everything internally
+// Working version - creates offer internally + uses correct amount
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DuffelService } from '@/lib/duffel';
@@ -7,25 +7,19 @@ import { DuffelService } from '@/lib/duffel';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { amount, currency } = body;
-
-    if (!amount || !currency) {
-      return NextResponse.json({ error: 'Missing amount or currency' }, { status: 400 });
-    }
+    const { amount, currency } = body;   // amount from frontend is now ignored for payment
 
     const duffel = new DuffelService(process.env.DUFFEL_ACCESS_TOKEN!);
 
-        // Step 1: Create a small offer request just to get passenger IDs
-    const slices: any[] = [
-      {
-        origin: 'LHR',
-        destination: 'JFK',
-        departure_date: '2026-08-15',
-      },
-    ];
-
+    // Step 1: Create offer request to get real passenger IDs + a valid offer
     const offerRequestResponse = await duffel.duffel.offerRequests.create({
-      slices,
+      slices: [
+        {
+          origin: 'LHR',
+          destination: 'JFK',
+          departure_date: '2026-08-15',
+        },
+      ],
       passengers: [
         { type: 'adult' },
         { type: 'adult' },
@@ -34,9 +28,9 @@ export async function POST(request: NextRequest) {
     });
 
     const offerRequest = offerRequestResponse.data;
-    const offer = offerRequest.offers[0]; // take first offer
+    const offer = offerRequest.offers[0];
 
-    // Step 2: Build passengers using real IDs from this offer request
+    // Step 2: Build passengers using real IDs
     const passengers = [
       {
         id: offerRequest.passengers[0].id,
@@ -60,13 +54,13 @@ export async function POST(request: NextRequest) {
       },
     ];
 
-    // Step 3: Create and pay the order
+    // Step 3: Create and pay using the offer we just created
     const paidOrder = await duffel.createAndPayOrder({
       offerId: offer.id,
       passengers,
       services: [],
-      totalAmount: amount,
-      currency,
+      totalAmount: offer.total_amount,     // ← Use correct amount
+      currency: offer.total_currency,
     });
 
     return NextResponse.json({
