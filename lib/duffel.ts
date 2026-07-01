@@ -1,6 +1,5 @@
 // lib/duffel.ts
-// Cleaned Duffel service for ai-assists.com
-// All TypeScript errors fixed for current @duffel/api types
+// Final cleaned version for ai-assists.com
 
 import { Duffel } from '@duffel/api';
 
@@ -14,7 +13,7 @@ export interface PassengerInput {
   title?: string;
   gender?: 'm' | 'f';
   infant_passenger_id?: string;
-  age?: number; // Added for offer request compatibility
+  age?: number;
 }
 
 export interface ServiceInput {
@@ -53,7 +52,6 @@ export class DuffelService {
       });
     }
 
-    // Convert passengers to what Duffel expects for offerRequests.create
     const offerPassengers = params.passengers.map(p => {
       if (p.type === 'adult') {
         return { type: 'adult' as const };
@@ -113,15 +111,16 @@ export class DuffelService {
     return orderResponse.data;
   }
 
-async payForHoldOrder(orderId: string, amount: string, currency: string) {
-  const paymentResponse = await this.duffel.orders.payForHold(orderId, {
-    type: 'balance',
-    amount,
-    currency,
-  });
+  async payForHoldOrder(orderId: string, amount: string, currency: string) {
+    const paymentResponse = await this.duffel.orders.payForHold(orderId, {
+      type: 'balance',
+      amount,
+      currency,
+    });
 
-  return paymentResponse.data;
-}
+    return paymentResponse.data;
+  }
+
   async getOrder(orderId: string) {
     const orderResponse = await this.duffel.orders.get(orderId);
     return orderResponse.data;
