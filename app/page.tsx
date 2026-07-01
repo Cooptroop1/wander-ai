@@ -274,49 +274,40 @@ const handleLogout = async () => {
   }
 };
 
-  // Create Duffel Link and redirect
-  const createDuffelLink = async (offerId: string) => {
+  // Create booking via our new integrated flow (Stripe + Duffel Balance)
+const createDuffelLink = async (offerId: string) => {
   if (!user) {
     alert('You must be logged in to book');
     return;
-  }    
+  }
+
+  // For now we just call our new route directly.
+  // Later we will add Stripe payment before this call.
   try {
-    // 1. Save a pending booking record first (so webhook can update it later)
-    const { error: insertError } = await supabase.from('bookings').insert({
-      user_id: user.id,
-      offer_id: offerId,
-      status: 'pending_payment',
-      slices: selectedFlight.slices,
-      passengers: selectedFlight.passengers,
-      total_amount: selectedFlight.total_amount,
-      total_currency: selectedFlight.total_currency || 'GBP',
-      raw_offer: selectedFlight,
-      created_at: new Date().toISOString(),
-    });
-
-    if (insertError) {
-      console.error('Failed to save pending booking:', insertError);
-    }
-
-    // 2. Create Duffel payment link
-    const res = await fetch('/api/duffel/create-link', {
+    const res = await fetch('/api/duffel/book', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        selected_offers: [offerId],
+        offerId: offerId,
+        passengers: selectedFlight.passengers || [],
+        services: [],                    // add selected seats/bags here later
+        amount: selectedFlight.total_amount,
+        currency: selectedFlight.total_currency || 'GBP',
       }),
     });
 
     const result = await res.json();
 
-    if (result.success && result.link_url) {
-      window.location.href = result.link_url;
+    if (result.success) {
+      alert('Booking successful! Reference: ' + result.order.booking_reference);
+      // Later we can redirect to /my-trips or /success
+      setSelectedFlight(null);
     } else {
-      alert('Error creating booking link: ' + (result.error || 'Unknown error'));
+      alert('Booking failed: ' + (result.error || 'Unknown error'));
       console.error(result);
     }
   } catch (error) {
-    alert('Failed to create booking link');
+    alert('Failed to create booking');
     console.error(error);
   }
 };
