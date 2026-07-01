@@ -79,28 +79,29 @@ export class DuffelService {
 
   // 2. Create and pay for a normal (paid immediately) order
   async createAndPayOrder(params: {
-    offerId: string;
-    passengers: any[];                    // full passenger objects with ids from offer request
-    services?: ServiceInput[];            // seats + bags
-    paymentType?: 'balance';              // we use balance as tested
-    currency: string;
-    totalAmount: string;                  // must include services cost!
-  }) {
-    const orderResponse = await this.duffel.orders.create({
-      selected_offers: [params.offerId],
-      payments: [
-        {
-          type: params.paymentType || 'balance',
-          currency: params.currency,
-          amount: params.totalAmount,
-        },
-      ],
-      passengers: params.passengers,
-      services: params.services || [],
-    });
+  offerId: string;
+  passengers: any[];
+  services?: ServiceInput[];
+  paymentType?: 'balance';
+  currency: string;
+  totalAmount: string;
+}) {
+  const orderResponse = await this.duffel.orders.create({
+    type: 'instant',                    // ← Added this line
+    selected_offers: [params.offerId],
+    payments: [
+      {
+        type: params.paymentType || 'balance',
+        currency: params.currency,
+        amount: params.totalAmount,
+      },
+    ],
+    passengers: params.passengers,
+    services: params.services || [],
+  });
 
-    return orderResponse.data;
-  }
+  return orderResponse.data;
+}
 
   // 3. Create Hold order (pay later)
   async createHoldOrder(params: {
