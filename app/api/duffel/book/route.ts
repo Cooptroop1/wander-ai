@@ -1,5 +1,5 @@
 // app/api/duffel/book/route.ts
-// Temporary version using test passenger data so orders appear in Duffel
+// Temporary version with hardcoded test passengers
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DuffelService } from '@/lib/duffel';
@@ -15,10 +15,9 @@ export async function POST(request: NextRequest) {
 
     const duffel = new DuffelService(process.env.DUFFEL_ACCESS_TOKEN!);
 
-    // Using the same test passenger data that worked in your test script
+    // Hardcoded test passengers (same data that worked in your test script)
     const testPassengers = [
       {
-        id: 'pas_adult1', // temporary id
         phone_number: '+442080160508',
         email: 'tony@example.com',
         born_on: '1980-07-24',
@@ -28,7 +27,6 @@ export async function POST(request: NextRequest) {
         given_name: 'Tony',
       },
       {
-        id: 'pas_adult2',
         phone_number: '+442080160509',
         email: 'potts@example.com',
         born_on: '1983-11-02',
