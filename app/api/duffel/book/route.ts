@@ -15,15 +15,17 @@ export async function POST(request: NextRequest) {
 
     const duffel = new DuffelService(process.env.DUFFEL_ACCESS_TOKEN!);
 
-    // Step 1: Create offer request (to get real passenger IDs)
+        // Step 1: Create a small offer request just to get passenger IDs
+    const slices: any[] = [
+      {
+        origin: 'LHR',
+        destination: 'JFK',
+        departure_date: '2026-08-15',
+      },
+    ];
+
     const offerRequestResponse = await duffel.duffel.offerRequests.create({
-      slices: [
-        {
-          origin: 'LHR',
-          destination: 'JFK',
-          departure_date: '2026-08-15',
-        },
-      ],
+      slices,
       passengers: [
         { type: 'adult' },
         { type: 'adult' },
