@@ -1,7 +1,5 @@
 // app/api/duffel/book/route.ts
-// Booking API route for ai-assists.com
-// Handles creating + paying for a flight order using Duffel Balance
-// Call this route AFTER the customer has successfully paid via Stripe
+// Booking route for ai-assists.com (Stripe + Duffel Balance)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DuffelService } from '@/lib/duffel';
@@ -27,21 +25,14 @@ export async function POST(request: NextRequest) {
 
     const duffel = new DuffelService(process.env.DUFFEL_TOKEN!);
 
-    // Step 1: Create a hold order first (safer)
-    const holdOrder = await duffel.createHoldOrder({
+    // Create and pay the order in one go
+    const paidOrder = await duffel.createAndPayOrder({
       offerId,
       passengers,
       services,
-    });
-
-    // Step 2: Pay the hold order using your Duffel Balance
-    const paidOrder = await duffel.payForHoldOrder(
-      holdOrder.id,
       amount,
-      currency
-    );
-
-    // TODO: Later we will add Supabase save here
+      currency,
+    });
 
     return NextResponse.json({
       success: true,
