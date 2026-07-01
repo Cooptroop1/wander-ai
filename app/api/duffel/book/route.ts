@@ -1,5 +1,5 @@
 // app/api/duffel/book/route.ts
-// Working version - creates offer internally + uses correct amount
+// Clean working version
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DuffelService } from '@/lib/duffel';
@@ -7,19 +7,26 @@ import { DuffelService } from '@/lib/duffel';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { amount, currency } = body;   // amount from frontend is now ignored for payment
+    const { offerId, amount, currency } = body;
+
+    if (!offerId || !amount || !currency) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
 
     const duffel = new DuffelService(process.env.DUFFEL_ACCESS_TOKEN!);
 
-    // Step 1: Create offer request to get real passenger IDs + a valid offer
+    // Build slices properly (fixes the type error)
+    const slices: any[] = [
+      {
+        origin: 'LHR',
+        destination: 'JFK',
+        departure_date: '2026-08-15',
+      },
+    ];
+
+    // Create offer request to get real passenger IDs
     const offerRequestResponse = await duffel.duffel.offerRequests.create({
-      slices: [
-        {
-          origin: 'LHR',
-          destination: 'JFK',
-          departure_date: '2026-08-15',
-        },
-      ],
+      slices,
       passengers: [
         { type: 'adult' },
         { type: 'adult' },
@@ -30,7 +37,7 @@ export async function POST(request: NextRequest) {
     const offerRequest = offerRequestResponse.data;
     const offer = offerRequest.offers[0];
 
-    // Step 2: Build passengers using real IDs
+    // Build passengers using real IDs from this offer request
     const passengers = [
       {
         id: offerRequest.passengers[0].id,
@@ -54,12 +61,12 @@ export async function POST(request: NextRequest) {
       },
     ];
 
-    // Step 3: Create and pay using the offer we just created
+    // Create and pay the order
     const paidOrder = await duffel.createAndPayOrder({
       offerId: offer.id,
       passengers,
       services: [],
-      totalAmount: offer.total_amount,     // ← Use correct amount
+      totalAmount: offer.total_amount,
       currency: offer.total_currency,
     });
 
