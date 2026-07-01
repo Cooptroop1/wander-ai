@@ -56,9 +56,20 @@ export class DuffelService {
     });
   }
 
+  // Convert our flexible passengers into what Duffel offerRequests.create expects
+  const offerPassengers = params.passengers.map(p => {
+    if (p.type === 'adult') {
+      return { type: 'adult' as const };
+    } else if (p.age) {
+      return { age: p.age };
+    } else {
+      return { type: 'adult' as const };
+    }
+  });
+
   const offerRequest = await this.duffel.offerRequests.create({
     slices,
-    passengers: params.passengers,
+    passengers: offerPassengers,
     cabin_class: params.cabin_class,
   });
 
