@@ -1,69 +1,51 @@
 // app/api/duffel/book/route.ts
-// Full booking route for ai-assists.com
+// Temporary version using test passenger data so orders appear in Duffel
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { DuffelService } from '@/lib/duffel';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const { offerId, amount, currency } = body;
 
-    const {
-      offerId,
-      passengers,
-      services = [],
-      amount,
-      currency,
-    } = body;
-
-    if (!offerId || !passengers || !amount || !currency) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+    if (!offerId || !amount || !currency) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const duffel = new DuffelService(process.env.DUFFEL_ACCESS_TOKEN!);
 
-    // 1. Create + pay the order on Duffel
+    // Using the same test passenger data that worked in your test script
+    const testPassengers = [
+      {
+        id: 'pas_adult1', // temporary id
+        phone_number: '+442080160508',
+        email: 'tony@example.com',
+        born_on: '1980-07-24',
+        title: 'mr',
+        gender: 'm',
+        family_name: 'Stark',
+        given_name: 'Tony',
+      },
+      {
+        id: 'pas_adult2',
+        phone_number: '+442080160509',
+        email: 'potts@example.com',
+        born_on: '1983-11-02',
+        title: 'mrs',
+        gender: 'f',
+        family_name: 'Potts',
+        given_name: 'Pepper',
+      },
+    ];
+
     const paidOrder = await duffel.createAndPayOrder({
       offerId,
-      passengers,
-      services,
+      passengers: testPassengers,
+      services: [],
       totalAmount: amount,
       currency,
     });
-
-    // 2. Save to Supabase
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (user) {
-      await supabase.from('bookings').insert({
-        user_id: user.id,
-        duffel_order_id: paidOrder.id,
-        booking_reference: paidOrder.booking_reference,
-        status: 'booked',
-        total_amount: paidOrder.total_amount,
-        currency: paidOrder.total_currency,
-        raw_order: paidOrder,
-        created_at: new Date().toISOString(),
-      });
-    }
 
     return NextResponse.json({
       success: true,
