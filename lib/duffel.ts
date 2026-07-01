@@ -13,7 +13,8 @@ export interface PassengerInput {
   born_on?: string;
   title?: string;
   gender?: 'm' | 'f';
-  infant_passenger_id?: string; // for linking infant to adult
+  infant_passenger_id?: string;
+  age?: number;           // ← Added this line
 }
 
 export interface ServiceInput {
@@ -56,7 +57,7 @@ export class DuffelService {
     });
   }
 
-  // Convert our flexible passengers into what Duffel offerRequests.create expects
+  // Convert passengers to what Duffel expects for offer requests
   const offerPassengers = params.passengers.map(p => {
     if (p.type === 'adult') {
       return { type: 'adult' as const };
