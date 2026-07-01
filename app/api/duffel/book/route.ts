@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       order: {
         id: paidOrder.id,
         booking_reference: paidOrder.booking_reference,
-        status: paidOrder.status,
+        
         total_amount: paidOrder.total_amount,
         currency: paidOrder.total_currency,
       },
