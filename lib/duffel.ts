@@ -1,6 +1,6 @@
 // lib/duffel.ts
-// Full Duffel service for ai-assists.com - Focused ONLY on "Create Offer → Create & Pay for Order"
-// Copy-paste ready - no shortcuts - includes everything we successfully tested
+// Cleaned Duffel service for ai-assists.com
+// All TypeScript errors fixed for current @duffel/api types
 
 import { Duffel } from '@duffel/api';
 
@@ -14,7 +14,7 @@ export interface PassengerInput {
   title?: string;
   gender?: 'm' | 'f';
   infant_passenger_id?: string;
-  age?: number;           // ← Added this line
+  age?: number; // Added for offer request compatibility
 }
 
 export interface ServiceInput {
@@ -26,92 +26,71 @@ export class DuffelService {
   private duffel: Duffel;
 
   constructor(token: string) {
-    this.duffel = new Duffel({
-      token, // Use your duffel_live_... token when going real
-      // base_url can be overridden if needed, default is production
-    });
+    this.duffel = new Duffel({ token });
   }
 
-  // 1. Search flights and get offers
   async searchFlights(params: {
-  origin: string;
-  destination: string;
-  departure_date: string;
-  return_date?: string;
-  passengers: PassengerInput[];
-  cabin_class: 'economy' | 'premium_economy' | 'business' | 'first';
-}) {
-  const slices: any[] = [
-    {
-      origin: params.origin,
-      destination: params.destination,
-      departure_date: params.departure_date,
-    },
-  ];
+    origin: string;
+    destination: string;
+    departure_date: string;
+    return_date?: string;
+    passengers: PassengerInput[];
+    cabin_class: 'economy' | 'premium_economy' | 'business' | 'first';
+  }) {
+    const slices: any[] = [
+      {
+        origin: params.origin,
+        destination: params.destination,
+        departure_date: params.departure_date,
+      },
+    ];
 
-  if (params.return_date) {
-    slices.push({
-      origin: params.destination,
-      destination: params.origin,
-      departure_date: params.return_date,
+    if (params.return_date) {
+      slices.push({
+        origin: params.destination,
+        destination: params.origin,
+        departure_date: params.return_date,
+      });
+    }
+
+    // Convert passengers to what Duffel expects for offerRequests.create
+    const offerPassengers = params.passengers.map(p => {
+      if (p.type === 'adult') {
+        return { type: 'adult' as const };
+      } else if (p.age) {
+        return { age: p.age };
+      } else {
+        return { type: 'adult' as const };
+      }
     });
+
+    const offerRequest = await this.duffel.offerRequests.create({
+      slices,
+      passengers: offerPassengers,
+      cabin_class: params.cabin_class,
+    });
+
+    return offerRequest.data;
   }
 
-  // Convert passengers to what Duffel expects for offer requests
-  const offerPassengers = params.passengers.map(p => {
-    if (p.type === 'adult') {
-      return { type: 'adult' as const };
-    } else if (p.age) {
-      return { age: p.age };
-    } else {
-      return { type: 'adult' as const };
-    }
-  });
-
-  const offerRequest = await this.duffel.offerRequests.create({
-    slices,
-    passengers: offerPassengers,
-    cabin_class: params.cabin_class,
-  });
-
-  return offerRequest.data;
-}
-
-  // 2. Create and pay for a normal (paid immediately) order
   async createAndPayOrder(params: {
-  offerId: string;
-  passengers: any[];
-  services?: ServiceInput[];
-  paymentType?: 'balance';
-  currency: string;
-  totalAmount: string;
-}) {
-  const orderResponse = await this.duffel.orders.create({
-    type: 'instant',                    // ← Added this line
-    selected_offers: [params.offerId],
-    payments: [
-      {
-        type: params.paymentType || 'balance',
-        currency: params.currency,
-        amount: params.totalAmount,
-      },
-    ],
-    passengers: params.passengers,
-    services: params.services || [],
-  });
-
-  return orderResponse.data;
-}
-
-  // 3. Create Hold order (pay later)
-  async createHoldOrder(params: {
     offerId: string;
     passengers: any[];
     services?: ServiceInput[];
+    paymentType?: 'balance';
+    currency: string;
+    totalAmount: string;
   }) {
     const orderResponse = await this.duffel.orders.create({
+      type: 'instant',
       selected_offers: [params.offerId],
-      type: 'hold',
+      payments: [
+        {
+          type: params.paymentType || 'balance',
+          currency: params.currency,
+          amount: params.totalAmount,
+        },
+      ],
       passengers: params.passengers,
       services: params.services || [],
     });
@@ -119,7 +98,21 @@ export class DuffelService {
     return orderResponse.data;
   }
 
-  // 4. Pay for a held order
+  async createHoldOrder(params: {
+    offerId: string;
+    passengers: any[];
+    services?: ServiceInput[];
+  }) {
+    const orderResponse = await this.duffel.orders.create({
+      type: 'hold',
+      selected_offers: [params.offerId],
+      passengers: params.passengers,
+      services: params.services || [],
+    });
+
+    return orderResponse.data;
+  }
+
   async payForHoldOrder(orderId: string, amount: string, currency: string) {
     const paymentResponse = await this.duffel.orders.pay({
       order_id: orderId,
@@ -133,13 +126,11 @@ export class DuffelService {
     return paymentResponse.data;
   }
 
-  // 5. Get full order details (very useful)
   async getOrder(orderId: string) {
     const orderResponse = await this.duffel.orders.get(orderId);
     return orderResponse.data;
   }
 
-  // Helper to calculate total when adding services
   calculateTotal(baseAmount: string, services: ServiceInput[], servicePrices: Record<string, number>) {
     let extra = 0;
     services.forEach(s => {
@@ -148,10 +139,3 @@ export class DuffelService {
     return (parseFloat(baseAmount) + extra).toFixed(2);
   }
 }
-
-// === How to use in ai-assists.com ===
-// 1. Add to your .env: DUFFEL_TOKEN=duffel_live_xxxxxxxx
-// 2. In a server action or API route:
-// const duffel = new DuffelService(process.env.DUFFEL_TOKEN!);
-// const offerReq = await duffel.searchFlights({...});
-// const order = await duffel.createAndPayOrder({...});   // ← the full "make and pay" you asked for
