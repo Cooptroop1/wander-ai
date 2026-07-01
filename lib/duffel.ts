@@ -113,18 +113,18 @@ export class DuffelService {
     return orderResponse.data;
   }
 
-  async payForHoldOrder(orderId: string, amount: string, currency: string) {
-    const paymentResponse = await this.duffel.orders.payForHold({
-      order_id: orderId,
-      payment: {
-        type: 'balance',
-        amount,
-        currency,
-      },
-    });
-
-    return paymentResponse.data;
-  }
+  // Temporarily disabled - SDK version in this project doesn't have .pay or .payForHold
+// async payForHoldOrder(orderId: string, amount: string, currency: string) {
+//   const paymentResponse = await this.duffel.orders.payForHold({
+//     order_id: orderId,
+//     payment: {
+//       type: 'balance',
+//       amount,
+//       currency,
+//     },
+//   });
+//   return paymentResponse.data;
+// }
 
   async getOrder(orderId: string) {
     const orderResponse = await this.duffel.orders.get(orderId);
