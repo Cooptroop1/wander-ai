@@ -1,5 +1,5 @@
 // app/api/duffel/book/route.ts
-// Working instant paid version
+// Clean instant paid version (working)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DuffelService } from '@/lib/duffel';
