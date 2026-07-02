@@ -1,5 +1,5 @@
 // lib/duffel.ts
-// Final cleaned version for ai-assists.com
+// Cleaned version for v4.28.0 (Hold + Pay supported via type assertion)
 
 import { Duffel } from '@duffel/api';
 
@@ -112,7 +112,8 @@ export class DuffelService {
   }
 
   async payForHoldOrder(orderId: string, amount: string, currency: string) {
-    const paymentResponse = await this.duffel.orders.payForHold(orderId, {
+    // Using type assertion because the method exists at runtime in v4 but types are incomplete
+    const paymentResponse = await (this.duffel.orders as any).payForHold(orderId, {
       type: 'balance',
       amount,
       currency,
